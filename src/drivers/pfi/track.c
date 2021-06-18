@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pfi/track.c                                      *
  * Created:     2012-01-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -200,6 +200,23 @@ int pfi_trk_get_index (const pfi_trk_t *trk, unsigned idx, unsigned long *pos, u
 	}
 
 	return (0);
+}
+
+unsigned long pfi_trk_get_clk (const pfi_trk_t *trk, unsigned long pos)
+{
+	unsigned long i, clk;
+
+	if (pos > trk->pulse_cnt) {
+		pos = trk->pulse_cnt;
+	}
+
+	clk = 0;
+
+	for (i = 0; i < pos; i++) {
+		clk += trk->pulse[i];
+	}
+
+	return (clk);
 }
 
 int pfi_trk_add_index (pfi_trk_t *trk, uint32_t clk)

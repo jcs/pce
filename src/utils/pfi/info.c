@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/info.c                                         *
  * Created:     2013-12-27 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -157,7 +157,7 @@ int pfi_list_track_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned
 {
 	unsigned      i;
 	int           *verb;
-	unsigned long len, clock;
+	unsigned long len, clk, clock;
 	double        rpm;
 
 	if (trk->pulse_cnt == 0) {
@@ -181,18 +181,48 @@ int pfi_list_track_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned
 		c, h, trk->pulse_cnt, clock, len, trk->index_cnt, rpm
 	);
 
-	if (*verb) {
-		for (i = 1; i < trk->index_cnt; i++) {
-			len = trk->index[i] - trk->index[i - 1];
-			rpm = (60.0 * clock) / len;
+	if (*verb == 0) {
+		return (0);
+	}
 
-			printf ("\t\tR%u: IDX=[%8lu, %8lu]  LEN=%lu  RPM=%.4f\n",
-				i,
-				(unsigned long) trk->index[i - 1],
-				(unsigned long) trk->index[i],
-				len, rpm
-			);
+	if (trk->index_cnt > 0) {
+		printf ("\t    [%8lu, %8lu]  T=%7.3f  LEN=%lu\n",
+			0UL,
+			(unsigned long) trk->index[0],
+			(1000.0 * trk->index[0]) / clock,
+			(unsigned long) trk->index[0]
+		);
+	}
+
+	for (i = 1; i < trk->index_cnt; i++) {
+		len = trk->index[i] - trk->index[i - 1];
+		rpm = (60.0 * clock) / len;
+
+		printf ("\tR%u: [%8lu, %8lu]  T=%7.3f  LEN=%lu  RPM=%.4f\n",
+			i,
+			(unsigned long) trk->index[i - 1],
+			(unsigned long) trk->index[i],
+			(1000.0 * len) / clock,
+			len, rpm
+		);
+	}
+
+	if (trk->index_cnt > 0) {
+		clk = pfi_trk_get_clk (trk, trk->pulse_cnt);
+
+		if (clk < trk->index[trk->index_cnt - 1]) {
+			len = 0;
 		}
+		else {
+			len = clk - trk->index[trk->index_cnt - 1];
+		}
+
+		printf ("\t    [%8lu, %8lu]  T=%7.3f  LEN=%lu\n",
+			(unsigned long) trk->index[trk->index_cnt - 1],
+			clk,
+			(1000.0 * len) / clock,
+			len
+		);
 	}
 
 	return (0);

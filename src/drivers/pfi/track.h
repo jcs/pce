@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pfi/track.h                                      *
  * Created:     2012-01-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -60,6 +60,7 @@ unsigned long pfi_trk_get_clock (const pfi_trk_t *trk);
 
 int pfi_trk_get_pos (const pfi_trk_t *trk, uint32_t clk, unsigned long *pos, uint32_t *ofs);
 int pfi_trk_get_index (const pfi_trk_t *trk, unsigned idx, unsigned long *pos, uint32_t *ofs);
+unsigned long pfi_trk_get_clk (const pfi_trk_t *trk, unsigned long pos);
 
 int pfi_trk_add_index (pfi_trk_t *trk, uint32_t clk);
 int pfi_trk_add_pulses (pfi_trk_t *trk, const uint32_t *buf, unsigned long cnt);
