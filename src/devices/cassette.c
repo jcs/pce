@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/devices/cassette.c                                       *
  * Created:     2020-04-30 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2020-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -240,7 +240,7 @@ int cas_set_msg_write (cassette_t *cas, const char *msg, const char *val)
 
 static cas_msg_list_t set_msg_list[] = {
 	{ "emu.cas.commit", cas_set_msg_commit },
-	{ "emu.cas.crate", cas_set_msg_create },
+	{ "emu.cas.create", cas_set_msg_create },
 	{ "emu.cas.c", cas_set_msg_create },
 	{ "emu.cas.open", cas_set_msg_open },
 	{ "emu.cas.play", cas_set_msg_play },
