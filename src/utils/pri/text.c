@@ -797,12 +797,17 @@ int txt_enc_track_finish (pri_text_t *ctx)
 	}
 
 	if ((ctx->index_position != 0) || (ctx->rotate != 0)) {
-		unsigned long cnt, max;
+		unsigned long cnt, max, rot;
 
 		max = pri_trk_get_size (ctx->trk);
+		rot = ctx->rotate;
 
 		if (max > 0) {
-			cnt = (ctx->index_position + ctx->rotate) % max;
+			if (-rot < rot) {
+				rot = max - (-rot % max);
+			}
+
+			cnt = (ctx->index_position + rot) % max;
 			pri_trk_rotate (ctx->trk, cnt);
 		}
 	}
