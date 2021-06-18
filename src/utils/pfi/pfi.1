@@ -1,4 +1,4 @@
-.TH PFI 1 "2019-11-30" "HH" "pce"
+.TH PFI 1 "2021-06-18" "HH" "pce"
 \
 .SH NAME
 pfi \- convert and modify PFI flux images
@@ -241,6 +241,24 @@ between the two revolutions.
 .B pfi-clock
 Set the clock rate that is used to encode images. The default is
 24027428.
+.TP
+.BI "pfi-fold-compare " "size"
+Set the pfi fold compare size in pulses. This specifies the number of
+pulses that are compared between two revolutions to find a better index
+position. The default is 2048.
+.TP
+.BI "pfi-fold-revolution " "revolution"
+Set the the revolution to fold. The default is to fold all revolutions.
+.TP
+.BI "pfi-fold-right " "val"
+If \fIval\fR is non-zero, instead of centering the compare interval
+on the compare positions, only values to the right of the compare
+positions are compared. The default is false.
+.TP
+.BI "pfi-fold-window " "window-size"
+Set the pfi fold window size in pulses. During track folding a better
+index position is looked for \fIwindow-size\fR/2 pulses before and after
+the current index. The default is 1024.
 .TP
 .B slack1
 When extracting revolutions using the \fBrevolutions\fR operation include

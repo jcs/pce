@@ -78,6 +78,11 @@ unsigned      par_fold_mode = PFI_FOLD_MAXRUN;
 unsigned      par_fold_window = 32;
 unsigned long par_fold_max = 16384;
 
+unsigned      par_pfi_fold_revolution = 0;
+unsigned long par_pfi_fold_window = 1024;
+unsigned long par_pfi_fold_compare = 2048;
+int           par_pfi_fold_right = 0;
+
 
 static pce_option_t opts[] = {
 	{ '?', 0, "help", NULL, "Print usage information" },
@@ -126,6 +131,7 @@ void print_help (void)
 		"  double-step-even       Remove even numbered tracks\n"
 		"  encode <type> <file>   Encode a file\n"
 		"  export <filename>      Export tracks as text\n"
+		"  fold <revolutions>     Fold tracks\n"
 		"  import <filename>      Import tracks as text\n"
 		"  info                   Print image information\n"
 		"  revolutions <range>    Extract revolutions\n"
@@ -140,7 +146,18 @@ void print_help (void)
 		"  wpcom                  Simulate write precompensation\n"
 		"\n"
 		"parameters are:\n"
-		"  clock-tolerance, fold-max, fold-mode, pfi-clock, slack1, slack2, weak-bits\n"
+		"  clock-tolerance\n"
+		"  fold-max\n"
+		"  fold-mode\n"
+		"  pfi-clock\n"
+		"  pfi-fold-compare\n"
+		"  pfi-fold-revolution\n"
+		"  pfi-fold-right\n"
+		"  pfi-fold-window\n"
+		"  pll\n"
+		"  slack1\n"
+		"  slack2\n"
+		"  weak-bits\n"
 		"\n"
 		"decode types are:\n"
 		"  pri, pri-mac, pri-mac-490, pri-mac-500,"
@@ -459,6 +476,9 @@ int pfi_operation (pfi_img_t **img, const char *op, int argc, char **argv)
 
 		r = pfi_encode (*img, optarg1[0], optarg2[0]);
 	}
+	else if (strcmp (op, "fold") == 0) {
+		r = pfi_fold (*img);
+	}
 	else if (strcmp (op, "info") == 0) {
 		r = pfi_print_info (*img);
 	}
@@ -683,6 +703,26 @@ int pfi_set_parameter (const char *name, const char *val)
 	}
 	else if (strcmp (name, "pfi-clock") == 0) {
 		if (pfi_parse_rate (val, &par_pfi_clock)) {
+			return (1);
+		}
+	}
+	else if (strcmp (name, "pfi-fold-compare") == 0) {
+		if (pfi_parse_ulong (val, &par_pfi_fold_compare)) {
+			return (1);
+		}
+	}
+	else if (strcmp (name, "pfi-fold-revolution") == 0) {
+		if (pfi_parse_uint (val, &par_pfi_fold_revolution)) {
+			return (1);
+		}
+	}
+	else if (strcmp (name, "pfi-fold-right") == 0) {
+		if (pfi_parse_bool (val, &par_pfi_fold_right)) {
+			return (1);
+		}
+	}
+	else if (strcmp (name, "pfi-fold-window") == 0) {
+		if (pfi_parse_ulong (val, &par_pfi_fold_window)) {
 			return (1);
 		}
 	}

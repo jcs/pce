@@ -3110,6 +3110,12 @@ src/utils/pfi/encode.o: src/utils/pfi/encode.c \
 	src/drivers/pri/pri.h \
 	src/utils/pfi/main.h
 
+src/utils/pfi/fold.o: src/utils/pfi/fold.c \
+	src/config.h \
+	src/drivers/pfi/pfi.h \
+	src/drivers/pfi/track.h \
+	src/utils/pfi/main.h
+
 src/utils/pfi/info.o: src/utils/pfi/info.c \
 	src/config.h \
 	src/drivers/pfi/pfi.h \

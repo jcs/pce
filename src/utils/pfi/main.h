@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/main.h                                         *
  * Created:     2012-01-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -60,6 +60,11 @@ extern unsigned      par_fold_mode;
 extern unsigned      par_fold_window;
 extern unsigned long par_fold_max;
 
+extern unsigned      par_pfi_fold_revolution;
+extern unsigned long par_pfi_fold_window;
+extern unsigned long par_pfi_fold_compare;
+extern int           par_pfi_fold_right;
+
 
 int pfi_parse_double (const char *str, double *val);
 int pfi_parse_long (const char *str, long *val);
@@ -89,6 +94,8 @@ int pfi_encode (pfi_img_t *img, const char *type, const char *fname);
 
 int pfi_export_tracks (pfi_img_t *img, const char *fname);
 int pfi_import_tracks (pfi_img_t *img, const char *fname);
+
+int pfi_fold (pfi_img_t *img);
 
 int pfi_print_info (pfi_img_t *img);
 int pfi_list_tracks (pfi_img_t *img, int verb);
