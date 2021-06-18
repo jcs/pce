@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/iwm.c                                       *
  * Created:     2007-11-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -154,28 +154,28 @@ void iwm_drv_write_end (mac_iwm_drive_t *drv)
 static
 void iwm_drv_print_status (mac_iwm_drive_t *drv)
 {
-	char str[4];
+	char state1, state2;
 
 	if (drv->motor_on == 0) {
 		return;
 	}
 
-	str[0] = drv->dirty ? '*' : ' ';
+	state1 = drv->dirty ? '*' : ' ';
 
 	if (drv->track_dirty & 2) {
-		str[1] = '+';
+		state2 = '+';
 	}
 	else if (drv->track_dirty & 1) {
-		str[1] = '*';
+		state2 = '*';
 	}
 	else {
-		str[1] = ' ';
+		state2 = ' ';
 	}
 
-	str[2] = 0;
-
-	pce_printf ("IWM: D%u%s %u/%u    \r",
-		drv->drive + 1, str,
+	pce_printf ("IWM: %cD%u %c%u/%u    \r",
+		state1,
+		drv->drive + 1,
+		state2,
 		drv->cur_cyl, drv->cur_head
 	);
 }
