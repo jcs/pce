@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/fdc.c                                         *
  * Created:     2012-07-05 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -301,13 +301,13 @@ int rc759_fdc_load_psi (rc759_fdc_t *fdc, psi_img_t *img, unsigned drive)
 {
 	pri_enc_mfm_t par;
 
-	pri_encode_mfm_init (&par, 500000, 300);
+	pri_encode_mfm_init (&par, 1000000, 360);
 
-	par.enable_iam = 0;
+	par.enable_iam = 1;
 	par.auto_gap3 = 1;
-	par.gap4a = 96;
-	par.gap1 = 0;
-	par.gap3 = 80;
+	par.gap4a = 80;
+	par.gap1 = 50;
+	par.gap3 = 54;
 
 	fdc->img[drive] = pri_encode_mfm (img, &par);
 	fdc->img_del[drive] = (fdc->img[drive] != NULL);
