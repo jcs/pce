@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/keyboard.c                                    *
  * Created:     2012-07-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2013 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -423,6 +423,7 @@ void rc759_kbd_clock (rc759_kbd_t *kbd, unsigned cnt)
 	}
 
 	if (kbd->key_valid) {
+		rc759_kbd_set_irq (kbd, 1);
 		return;
 	}
 
@@ -432,7 +433,6 @@ void rc759_kbd_clock (rc759_kbd_t *kbd, unsigned cnt)
 	kbd->key_valid = 1;
 
 	kbd->key_i = (kbd->key_i + 1) % RC759_KBD_BUF;
-
 
 	rc759_kbd_check_mouse (kbd);
 
