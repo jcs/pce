@@ -1439,6 +1439,7 @@ void cmd_write_sector_idam (wd179x_t *fdc)
 
 	fdc->write_idx = 0;
 	fdc->write_cnt = 16 * (22 + 12 + 4 + (128U << (fdc->scan_val[3] & 3)) + 2 + 1);
+	fdc->write_buf = 0;
 
 	fdc->clock = cmd_write_sector_clock;
 
