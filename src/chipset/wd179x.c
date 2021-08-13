@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/chipset/wd179x.c                                         *
  * Created:     2012-07-05 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -219,6 +219,9 @@ void wd179x_reset (wd179x_t *fdc)
 	fdc->write_val[0] = 0;
 	fdc->write_val[1] = 0;
 	fdc->write_crc = 0;
+
+	fdc->delay_interrupt = 0;
+	fdc->delay_interrupt_command = 0;
 
 	wd179x_drv_reset (&fdc->drive[0]);
 	wd179x_drv_reset (&fdc->drive[1]);
@@ -833,6 +836,29 @@ void cmd_done (wd179x_t *fdc, int irq)
 	wd179x_write_track (fdc, fdc->drv);
 }
 
+/*
+ * Check for and re-issue a delayed force interrupt command.
+ */
+static
+int cmd_delayed_interrupt (wd179x_t *fdc)
+{
+	if (fdc->delay_interrupt == 0) {
+		return (0);
+	}
+
+	fdc->delay_interrupt = 0;
+
+	if (fdc->delay_interrupt_command == 0) {
+		return (0);
+	}
+
+	cmd_force_interrupt (fdc, fdc->delay_interrupt_command);
+
+	fdc->delay_interrupt_command = 0;
+
+	return (1);
+}
+
 static
 void cmd_set_type1_status (wd179x_t *fdc)
 {
@@ -1304,6 +1330,10 @@ void cmd_write_sector_clock (wd179x_t *fdc)
 				if ((fdc->write_idx + 16) < (fdc->write_cnt - 48)) {
 					wd179x_set_drq (fdc, 1);
 				}
+
+				if (fdc->write_idx >= (fdc->write_cnt - 64)) {
+					fdc->delay_interrupt = 1;
+				}
 			}
 			else if (fdc->write_idx < (fdc->write_cnt - 32)) {
 				fdc->write_crc = fdc->crc;
@@ -1321,6 +1351,10 @@ void cmd_write_sector_clock (wd179x_t *fdc)
 					fdc->scan_val[0], fdc->scan_val[1], fdc->scan_val[2], fdc->scan_val[3]
 				);
 #endif
+
+				if (cmd_delayed_interrupt (fdc)) {
+					return;
+				}
 
 				if (fdc->cmd & 0x10) {
 					fdc->sector += 1;
@@ -1815,6 +1849,11 @@ void cmd_force_interrupt (wd179x_t *fdc, unsigned char cmd)
 	);
 #endif
 
+	if (fdc->delay_interrupt) {
+		fdc->delay_interrupt_command = cmd;
+		return;
+	}
+
 	/* wd179x_set_irq (fdc, 0); */
 
 	fdc->status = WD179X_ST_BUSY;
@@ -1851,6 +1890,9 @@ void wd179x_set_cmd (wd179x_t *fdc, unsigned char val)
 
 	wd179x_set_irq (fdc, 0);
 	wd179x_set_drq (fdc, 0);
+
+	fdc->delay_interrupt = 0;
+	fdc->delay_interrupt_command = 0;
 
 	if ((val & 0xf0) == 0) {
 		cmd_restore (fdc);

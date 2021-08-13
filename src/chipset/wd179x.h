@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/chipset/wd179x.h                                         *
  * Created:     2012-07-05 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -96,6 +96,9 @@ typedef struct wd179x_t {
 
 	unsigned char  last_mark_a1;
 	unsigned char  last_mark_c2;
+
+	char           delay_interrupt;
+	unsigned char  delay_interrupt_command;
 
 	unsigned long  input_clock;
 	unsigned long  bit_clock;
