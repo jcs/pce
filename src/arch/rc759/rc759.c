@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/rc759.c                                       *
  * Created:     2012-06-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -1345,7 +1345,11 @@ void rc759_set_cpu_clock (rc759_t *sim, unsigned long clk)
 
 void rc759_set_speed (rc759_t *sim, unsigned factor)
 {
-	rc759_set_cpu_clock (sim, (4 + factor) * 1000000);
+	if (factor == 0) {
+		factor = 30;
+	}
+
+	rc759_set_cpu_clock (sim, (4 + 2 * factor) * 1000000);
 }
 
 unsigned long rc759_get_cpu_clock (rc759_t *sim)

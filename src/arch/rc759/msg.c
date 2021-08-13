@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/msg.c                                         *
  * Created:     2012-06-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -103,25 +103,23 @@ static
 int rc759_set_msg_emu_cpu_speed_step (rc759_t *sim, const char *msg, const char *val)
 {
 	int           v;
-	unsigned long clk;
+	unsigned long clk, tmp;
 
 	if (msg_get_sint (val, &v)) {
 		return (1);
 	}
 
-	clk = sim->cpu_clock_frq;
+	clk = sim->cpu_clock_frq / 2000000;
 
-	while (v > 0) {
-		clk = (9 * clk + 4) / 8;
-		v -= 1;
+	if (v > 0) {
+		clk += v;
+	}
+	else {
+		tmp = -v;
+		clk = (tmp < clk) ? (clk - tmp) : 1;
 	}
 
-	while (v < 0) {
-		clk = (8 * clk + 4) / 9;
-		v += 1;
-	}
-
-	rc759_set_cpu_clock (sim, clk);
+	rc759_set_cpu_clock (sim, 2000000 * clk);
 
 	return (0);
 }
