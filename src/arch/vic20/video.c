@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/vic20/video.c                                       *
  * Created:     2020-04-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2020-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -79,9 +79,9 @@ void v20_video_update_palette (vic20_video_t *vid)
 		ts[1] = 0.5 * vid->saturation * *(s++);
 		ts[2] = 0.5 * vid->saturation * *(s++);
 
-		ts[4] = ch * ts[1] + sh * ts[2];
+		ts[3] = ch * ts[1] + sh * ts[2];
 		ts[2] = ch * ts[2] - sh * ts[1];
-		ts[1] = ts[4];
+		ts[1] = ts[3];
 
 		td[0] = ts[0] + 1.402 * ts[2];
 		td[1] = ts[0] - 0.43469847 * ts[1] - 0.71413629 * ts[2];
