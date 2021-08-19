@@ -40,6 +40,7 @@ typedef struct {
 	char          last;
 	char          clock;
 
+	unsigned      encoding;
 	unsigned      min_sct_size;
 
 	unsigned      crc;
@@ -225,6 +226,7 @@ psi_sct_t *mfm_decode_idam (mfm_code_t *mfm)
 	psi_sct_set_mfm_size (sct, buf[3]);
 	psi_sct_set_position (sct, pos / 2);
 	psi_sct_set_flags (sct, PSI_FLAG_NO_DAM, 1);
+	psi_sct_set_encoding (sct, mfm->encoding);
 
 	if (mfm->crc != crc) {
 		fprintf (stderr, "mfm: sector %u/%u/%u: id crc error\n",
@@ -413,8 +415,6 @@ int mfm_decode_mark (mfm_code_t *mfm, psi_trk_t *trk, unsigned mark)
 			return (1);
 		}
 
-		psi_sct_set_encoding (sct, PSI_ENC_MFM);
-
 		if (sct->n < mfm->min_sct_size) {
 			psi_sct_set_size (sct, mfm->min_sct_size, 0);
 		}
@@ -484,7 +484,12 @@ psi_trk_t *pri_decode_mfm_trk (pri_trk_t *trk, unsigned c, unsigned h, pri_dec_m
 	mfm.c = c;
 	mfm.h = h;
 	mfm.clock = 0;
+	mfm.encoding = PSI_ENC_MFM_DD;
 	mfm.min_sct_size = par->min_sct_size;
+
+	if (pri_trk_get_size (trk) > 133333) {
+		mfm.encoding = PSI_ENC_MFM_HD;
+	}
 
 	pri_trk_set_pos (trk, 0);
 
