@@ -37,6 +37,13 @@ system {
 	#   1: 512K, 640K, 832K
 	alt_mem_size = 0
 
+	# Enable access to real time
+	#
+	# If this option is enabled, the emulated real time clock is
+	# initialized with the current time. Otherwise it is initialized
+	# to all zeros.
+	rtc = 1
+
 	# Fast boot
 	#
 	# If this option is set, the POST is skipped.

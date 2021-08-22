@@ -709,6 +709,7 @@ void rc759_setup_system (rc759_t *sim, ini_sct_t *ini)
 {
 	int           mem2;
 	int           fastboot;
+	int           rtc_enable;
 	unsigned long clock;
 	ini_sct_t     *sct;
 
@@ -724,10 +725,11 @@ void rc759_setup_system (rc759_t *sim, ini_sct_t *ini)
 	ini_get_bool (sct, "alt_mem_size", &mem2, 0);
 	ini_get_uint32 (sct, "clock", &clock, 6000000);
 	ini_get_bool (sct, "fastboot", &fastboot, 0);
+	ini_get_bool (sct, "rtc", &rtc_enable, 1);
 
 	pce_log_tag (MSG_INF, "SYSTEM:",
-		"model=rc759 clock=%lu alt_mem_size=%d fastboot=%d\n",
-		clock, mem2, fastboot
+		"model=rc759 clock=%lu alt_mem_size=%d rtc=%d fastboot=%d\n",
+		clock, mem2, rtc_enable, fastboot
 	);
 
 	sim->cpu_clock_frq = clock;
@@ -736,6 +738,8 @@ void rc759_setup_system (rc759_t *sim, ini_sct_t *ini)
 	if (mem2) {
 		sim->flags |= RC759_FLAG_MEM2;
 	}
+
+	sim->rtc_enable = (rtc_enable != 0);
 
 	sim->fastboot = (fastboot != 0);
 }
@@ -922,9 +926,15 @@ static
 void rc759_setup_rtc (rc759_t *sim, ini_sct_t *ini)
 {
 	rc759_rtc_init (&sim->rtc);
-	rc759_rtc_set_time_now (&sim->rtc);
 	rc759_rtc_set_irq_fct (&sim->rtc, &sim->pic, e8259_set_irq3);
 	rc759_rtc_set_input_clock (&sim->rtc, sim->cpu_clock_frq);
+
+	if (sim->rtc_enable) {
+		rc759_rtc_set_time_now (&sim->rtc);
+	}
+	else {
+		rc759_rtc_set_time (&sim->rtc, 0, 0, 0, 0);
+	}
 }
 
 static
@@ -1305,7 +1315,7 @@ int rc759_intlog_check (rc759_t *sim, unsigned n)
 
 void rc759_reset (rc759_t *sim)
 {
-	sim_log_deb ("reset system\n");
+	pce_log_tag (MSG_INF, "RC759:", "reset\n");
 
 	e86_reset (sim->cpu);
 	e82730_reset (&sim->crt);
@@ -1318,6 +1328,10 @@ void rc759_reset (rc759_t *sim)
 	rc759_fdc_reset (&sim->fdc);
 	rc759_par_reset (&sim->par[0]);
 	rc759_par_reset (&sim->par[1]);
+
+	if (sim->rtc_enable) {
+		rc759_rtc_set_time_now (&sim->rtc);
+	}
 }
 
 void rc759_set_cpu_clock (rc759_t *sim, unsigned long clk)
