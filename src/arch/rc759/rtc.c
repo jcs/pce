@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/rtc.c                                         *
  * Created:     2012-07-06 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -37,8 +37,22 @@
 #endif
 
 
+static void rc759_rtc_set_irq (rc759_rtc_t *rtc, int val);
+
+
 void rc759_rtc_init (rc759_rtc_t *rtc)
 {
+	rtc->clk = 0;
+
+	rtc->msec[0] = 0;
+	rtc->csec[0] = 0;
+	rtc->sec[0] = 0;
+	rtc->min[0] = 0;
+	rtc->hrs[0] = 0;
+	rtc->wday[0] = 0;
+	rtc->mday[0] = 0;
+	rtc->month[0] = 0;
+
 	rtc->input_clock = 6000000;
 	rtc->clock_div = rtc->input_clock / 10000;
 
@@ -60,6 +74,11 @@ void rc759_rtc_reset (rc759_rtc_t *rtc)
 	rtc->write_pulse = 0;
 	rtc->write_addr = 0;
 	rtc->write_data = 0;
+
+	rtc->int_status = 0;
+	rtc->int_ctrl = 0;
+
+	rc759_rtc_set_irq (rtc, 0);
 }
 
 void rc759_rtc_set_irq_fct (rc759_rtc_t *rtc, void *ext, void *fct)
