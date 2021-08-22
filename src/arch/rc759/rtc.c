@@ -93,6 +93,21 @@ void rc759_rtc_set_input_clock (rc759_rtc_t *rtc, unsigned long clk)
 	rtc->clock_div = clk / 10000;
 }
 
+void rc759_rtc_set_time (rc759_rtc_t *rtc, unsigned h, unsigned m, unsigned s, unsigned ms)
+{
+	rtc->msec[0] = (10 * ms) % 100;
+	rtc->csec[0] = ms / 10;
+	rtc->sec[0] = s;
+	rtc->min[0] = m;
+	rtc->hrs[0] = h;
+}
+
+void rc759_rtc_set_date (rc759_rtc_t *rtc, unsigned month, unsigned day)
+{
+	rtc->month[0] = month;
+	rtc->mday[0] = day;
+}
+
 void rc759_rtc_set_time_now (rc759_rtc_t *rtc)
 {
 	time_t    tm;
