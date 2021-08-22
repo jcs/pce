@@ -43,6 +43,7 @@ PCE_RC759_BAS  := \
 	msg \
 	nvm \
 	parport \
+	ports \
 	rc759 \
 	rtc \
 	speaker \
@@ -111,6 +112,7 @@ $(rel)/keyboard.o:	$(rel)/keyboard.c
 $(rel)/main.o:		$(rel)/main.c
 $(rel)/msg.o:		$(rel)/msg.c
 $(rel)/nvm.o:		$(rel)/nvm.c
+$(rel)/ports.o:		$(rel)/ports.c
 $(rel)/parport.o:	$(rel)/parport.c
 $(rel)/rc759.o:		$(rel)/rc759.c
 $(rel)/rtc.o:		$(rel)/rtc.c
