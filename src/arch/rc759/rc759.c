@@ -703,6 +703,67 @@ void rc759_set_mouse (void *ext, int dx, int dy, unsigned button)
 	rc759_kbd_set_mouse (&sim->kbd, dx, dy, button);
 }
 
+/*
+ * Patch the ROM for fast boot.
+ */
+static
+void rc759_patch_fastboot (rc759_t *sim)
+{
+	unsigned i;
+
+	static unsigned char check[] = { 0xbd, 0x00, 0x90, 0x73 };
+
+	if (sim->fastboot == 0) {
+		return;
+	}
+
+	for (i = 0; i < 4; i++) {
+		if (mem_get_uint8 (sim->mem, 0xfff8c + i) != check[i]) {
+			return;
+		}
+	}
+
+	pce_log_tag (MSG_INF, "RC759:", "patching ROM for fastboot\n");
+
+	mem_set_uint8_rw (sim->mem, 0xfff8d, 0x10);
+}
+
+/*
+ * Fix the ROM checksum.
+ */
+static
+void rc759_patch_checksum (rc759_t *sim)
+{
+	int      patch;
+	unsigned i, v1, v2;
+
+	patch = 0;
+
+	v1 = 0;
+	v2 = 0;
+
+	for (i = 0; i < 0x4000; i++) {
+		v1 += mem_get_uint8 (sim->mem, 0xf8000 + 2 * i);
+		v2 += mem_get_uint8 (sim->mem, 0xf8000 + 2 * i + 1);
+	}
+
+	if (v1 & 0xff) {
+		v1 = mem_get_uint8 (sim->mem, 0xf8000) - v1;
+		mem_set_uint8_rw (sim->mem, 0xf8000, v1 & 0xff);
+		patch = 1;
+	}
+
+	if (v2 & 0xff) {
+		v2 = mem_get_uint8 (sim->mem, 0xf8001) - v2;
+		mem_set_uint8_rw (sim->mem, 0xf8001, v2 & 0xff);
+		patch = 1;
+	}
+
+	if (patch) {
+		pce_log_tag (MSG_INF, "RC759:", "patching ROM checksum\n");
+	}
+}
+
 
 static
 void rc759_setup_system (rc759_t *sim, ini_sct_t *ini)
@@ -798,10 +859,6 @@ void rc759_setup_cpu (rc759_t *sim, ini_sct_t *ini)
 	}
 	else {
 		e86_set_ram (sim->cpu, NULL, 0);
-	}
-
-	if (sim->fastboot) {
-		sim->cpu->reset_flags = E86_FLG_C;
 	}
 }
 
@@ -1210,6 +1267,9 @@ rc759_t *rc759_new (ini_sct_t *ini)
 	pce_load_mem_ini (sim->mem, ini);
 
 	mem_move_to_front (sim->mem, 0xf8000);
+
+	rc759_patch_fastboot (sim);
+	rc759_patch_checksum (sim);
 
 	rc759_clock_reset (sim);
 
