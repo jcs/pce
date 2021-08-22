@@ -88,6 +88,7 @@ typedef struct rc759_t {
 	unsigned char      ppi_port_c;
 
 	char               rtc_enable;
+	char               rtc_stop;
 
 	unsigned char      fastboot;
 

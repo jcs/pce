@@ -709,7 +709,7 @@ void rc759_setup_system (rc759_t *sim, ini_sct_t *ini)
 {
 	int           mem2;
 	int           fastboot;
-	int           rtc_enable;
+	int           rtc_enable, rtc_stop;
 	unsigned long clock;
 	ini_sct_t     *sct;
 
@@ -726,6 +726,11 @@ void rc759_setup_system (rc759_t *sim, ini_sct_t *ini)
 	ini_get_uint32 (sct, "clock", &clock, 6000000);
 	ini_get_bool (sct, "fastboot", &fastboot, 0);
 	ini_get_bool (sct, "rtc", &rtc_enable, 1);
+	ini_get_bool (sct, "rtc_stop", &rtc_stop, 0);
+
+	if (rtc_stop) {
+		rtc_enable = 0;
+	}
 
 	pce_log_tag (MSG_INF, "SYSTEM:",
 		"model=rc759 clock=%lu alt_mem_size=%d rtc=%d fastboot=%d\n",
@@ -740,6 +745,7 @@ void rc759_setup_system (rc759_t *sim, ini_sct_t *ini)
 	}
 
 	sim->rtc_enable = (rtc_enable != 0);
+	sim->rtc_stop = (rtc_stop != 0);
 
 	sim->fastboot = (fastboot != 0);
 }
@@ -1457,7 +1463,10 @@ void rc759_clock (rc759_t *sim, unsigned cnt)
 
 	e82730_clock (&sim->crt, clk);
 	rc759_fdc_clock (&sim->fdc.wd179x, clk);
-	rc759_rtc_clock (&sim->rtc, clk);
+
+	if (sim->rtc_stop == 0) {
+		rc759_rtc_clock (&sim->rtc, clk);
+	}
 
 	sim->cpu_clock_rem1024 += clk;
 
