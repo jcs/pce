@@ -793,7 +793,14 @@ void rc759_setup_system (rc759_t *sim, ini_sct_t *ini)
 		rtc_enable = 0;
 	}
 
-	sim->speed = speed;
+	if (speed == 0) {
+		sim->auto_speed = 1;
+		sim->speed = 1;
+	}
+	else {
+		sim->auto_speed = 0;
+		sim->speed = speed;
+	}
 
 	sim->rtc_enable = (rtc_enable != 0);
 	sim->rtc_stop = (rtc_stop != 0);
@@ -1409,8 +1416,11 @@ unsigned long rc759_get_clock (rc759_t *sim)
 
 void rc759_set_speed (rc759_t *sim, unsigned speed)
 {
-	if (speed == 0) {
-		speed = 1;
+	sim->auto_speed = (speed == 0);
+
+	if (sim->auto_speed) {
+		pce_log (MSG_INF, "setting CPU speed to auto\n");
+		return;
 	}
 
 	sim->speed = speed;
@@ -1423,21 +1433,23 @@ void rc759_set_speed (rc759_t *sim, unsigned speed)
 
 void rc759_clock_reset (rc759_t *sim)
 {
-	sim->sync_clock_sim = 0;
-	sim->sync_clock_real = 0;
-
-	pce_get_interval_us (&sim->sync_interval);
+	sim->sync_vclock = 0;
+	sim->sync_rclock = 0;
+	sim->sync_vclock_last = sim->clock_cnt;
+	pce_get_interval_us (&sim->sync_rclock_last);
 
 	sim->clock_cnt = 0;
 	sim->clock_rem8 = 0;
 	sim->clock_rem1024 = 0;
-	sim->clock_rem32768 = 0;
+	sim->clock_rem65536 = 0;
 }
 
 void rc759_clock_discontinuity (rc759_t *sim)
 {
-	sim->sync_clock_real = sim->sync_clock_sim;
-	pce_get_interval_us (&sim->sync_interval);
+	sim->sync_vclock = 0;
+	sim->sync_rclock = 0;
+	sim->sync_vclock_last = sim->clock_cnt;
+	pce_get_interval_us (&sim->sync_rclock_last);
 }
 
 /*
@@ -1446,37 +1458,55 @@ void rc759_clock_discontinuity (rc759_t *sim)
 static
 void rc759_clock_delay (rc759_t *sim)
 {
-	unsigned long vclk;
-	unsigned long rclk;
+	unsigned long vclk, dvclk;
+	unsigned long rclk, drclk;
 	unsigned long us;
 
-	vclk = sim->sync_clock_sim;
+	dvclk = sim->clock_cnt - sim->sync_vclock_last;
+	sim->sync_vclock_last = sim->clock_cnt;
 
-	rclk = pce_get_interval_us (&sim->sync_interval);
-	rclk = (sim->clock_freq * (unsigned long long) rclk) / 1000000;
-	rclk += sim->sync_clock_real;
+	drclk = pce_get_interval_us (&sim->sync_rclock_last);
+	drclk = (sim->clock_freq * (unsigned long long) drclk) / 1000000;
+
+	vclk = sim->sync_vclock + dvclk;
+	rclk = sim->sync_rclock + drclk;
 
 	if (vclk < rclk) {
-		sim->sync_clock_sim = 0;
-		sim->sync_clock_real = rclk - vclk;
+		sim->sync_vclock = 0;
+		sim->sync_rclock = rclk - vclk;
 
-		if (sim->sync_clock_real > sim->clock_freq) {
-			sim->sync_clock_real = 0;
-			pce_log (MSG_INF, "host system too slow, skipping 1 second.\n");
+		if (sim->auto_speed) {
+			if (dvclk < drclk) {
+				if (sim->speed > 1) {
+					sim->speed -= 1;
+				}
+			}
 		}
 
-		return;
+		if (sim->sync_rclock > sim->clock_freq) {
+			sim->sync_rclock -= sim->clock_freq;
+
+			pce_log (MSG_INF,
+				"host system too slow, skipping 1 second.\n"
+			);
+		}
 	}
+	else {
+		sim->sync_vclock = vclk - rclk;
+		sim->sync_rclock = 0;
 
-	vclk -= rclk;
+		if (sim->auto_speed) {
+			if (drclk < dvclk) {
+				sim->speed += 1;
+			}
+		}
+		else {
+			us = (1000000ULL * sim->sync_vclock) / sim->clock_freq;
 
-	sim->sync_clock_sim = vclk;
-	sim->sync_clock_real = 0;
-
-	us = (1000000 * (unsigned long long) vclk) / sim->clock_freq;
-
-	if (us > PCE_IBMPC_SLEEP) {
-		pce_usleep (us);
+			if (us > PCE_IBMPC_SLEEP) {
+				pce_usleep (us);
+			}
+		}
 	}
 }
 
@@ -1493,7 +1523,6 @@ void rc759_clock (rc759_t *sim, unsigned cnt)
 	e80186_dma_clock (&sim->dma, cpuclk);
 	rc759_fdc_clock (&sim->fdc.wd179x, cpuclk);
 
-	sim->sync_clock_sim += sysclk;
 	sim->clock_cnt += sysclk;
 	sim->clock_rem8 += sysclk;
 
@@ -1528,15 +1557,15 @@ void rc759_clock (rc759_t *sim, unsigned cnt)
 	rc759_kbd_clock (&sim->kbd, sysclk);
 	rc759_spk_clock (&sim->spk, sysclk);
 
-	sim->clock_rem32768 += sysclk;
+	sim->clock_rem65536 += sysclk;
 
-	if (sim->clock_rem32768 < 32768) {
+	if (sim->clock_rem65536 < 65536) {
 		return;
 	}
 
-	sysclk = sim->clock_rem32768;
-	sim->clock_rem32768 &= 32767;
-	sysclk -= sim->clock_rem32768;
+	sysclk = sim->clock_rem65536;
+	sim->clock_rem65536 &= 65535;
+	sysclk -= sim->clock_rem65536;
 
 	rc759_clock_delay (sim);
 }

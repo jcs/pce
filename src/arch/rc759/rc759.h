@@ -93,17 +93,19 @@ typedef struct rc759_t {
 
 	unsigned           current_int;
 
+	char               auto_speed;
 	unsigned           speed;
 
 	unsigned long      clock_freq;
 	unsigned long      clock_cnt;
 	unsigned long      clock_rem8;
 	unsigned long      clock_rem1024;
-	unsigned long      clock_rem32768;
+	unsigned long      clock_rem65536;
 
-	unsigned long      sync_clock_sim;
-	unsigned long      sync_clock_real;
-	unsigned long      sync_interval;
+	unsigned long      sync_vclock;
+	unsigned long      sync_rclock;
+	unsigned long      sync_vclock_last;
+	unsigned long      sync_rclock_last;
 
 	unsigned           brk;
 	char               pause;
