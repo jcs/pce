@@ -768,47 +768,48 @@ void rc759_patch_checksum (rc759_t *sim)
 static
 void rc759_setup_system (rc759_t *sim, ini_sct_t *ini)
 {
-	int           mem2;
-	int           fastboot;
-	int           rtc_enable, rtc_stop;
-	unsigned long clock;
-	ini_sct_t     *sct;
+	unsigned  model, speed;
+	int       fastboot, rtc_enable, rtc_stop;
+	ini_sct_t *sct;
 
-	sim->flags = 0;
+	sct = ini_next_sct (ini, NULL, "system");
+
+	ini_get_uint16 (sct, "model", &model, 1);
+	ini_get_uint16 (sct, "speed", &speed, 1);
+	ini_get_bool (sct, "fastboot", &fastboot, 0);
+	ini_get_bool (sct, "rtc", &rtc_enable, 1);
+	ini_get_bool (sct, "rtc_stop", &rtc_stop, 0);
+
+	if (model == 2) {
+		sim->model = 2;
+		sim->clock_freq = 8000000;
+	}
+	else {
+		sim->model = 1;
+		sim->clock_freq = 6000000;
+	}
+
+	if (rtc_stop) {
+		rtc_enable = 0;
+	}
+
+	sim->speed = speed;
+
+	sim->rtc_enable = (rtc_enable != 0);
+	sim->rtc_stop = (rtc_stop != 0);
+
+	sim->fastboot = (fastboot != 0);
 
 	sim->current_int = 0;
 
 	sim->brk = 0;
 	sim->pause = 0;
 
-	sct = ini_next_sct (ini, NULL, "system");
-
-	ini_get_bool (sct, "alt_mem_size", &mem2, 0);
-	ini_get_uint32 (sct, "clock", &clock, 6000000);
-	ini_get_bool (sct, "fastboot", &fastboot, 0);
-	ini_get_bool (sct, "rtc", &rtc_enable, 1);
-	ini_get_bool (sct, "rtc_stop", &rtc_stop, 0);
-
-	if (rtc_stop) {
-		rtc_enable = 0;
-	}
-
 	pce_log_tag (MSG_INF, "SYSTEM:",
-		"model=rc759 clock=%lu alt_mem_size=%d rtc=%d fastboot=%d\n",
-		clock, mem2, rtc_enable, fastboot
+		"model=rc759-%u %lu MHz speed=%u rtc=%d fastboot=%d\n",
+		sim->model, sim->clock_freq / 1000000, speed,
+		rtc_enable, fastboot
 	);
-
-	sim->cpu_clock_frq = clock;
-	sim->cpu_clock_cnt = 0;
-
-	if (mem2) {
-		sim->flags |= RC759_FLAG_MEM2;
-	}
-
-	sim->rtc_enable = (rtc_enable != 0);
-	sim->rtc_stop = (rtc_stop != 0);
-
-	sim->fastboot = (fastboot != 0);
 }
 
 static
@@ -912,8 +913,8 @@ void rc759_setup_ppi (rc759_t *sim, ini_sct_t *ini)
 	sim->ppi_port_b = 0x87;
 
 	if (sim->ram != NULL) {
-		if (sim->flags & RC759_FLAG_MEM2) {
-			if (sim->ram->size >= (832* 1024)) {
+		if (sim->model == 2) {
+			if (sim->ram->size >= (832 * 1024)) {
 				sim->ppi_port_a |= 0x00;
 			}
 			else if (sim->ram->size >= (640 * 1024)) {
@@ -990,7 +991,7 @@ void rc759_setup_rtc (rc759_t *sim, ini_sct_t *ini)
 {
 	rc759_rtc_init (&sim->rtc);
 	rc759_rtc_set_irq_fct (&sim->rtc, &sim->pic, e8259_set_irq3);
-	rc759_rtc_set_input_clock (&sim->rtc, sim->cpu_clock_frq);
+	rc759_rtc_set_input_clock (&sim->rtc, sim->clock_freq);
 
 	if (sim->rtc_enable) {
 		rc759_rtc_set_time_now (&sim->rtc);
@@ -1018,7 +1019,7 @@ void rc759_setup_fdc (rc759_t *sim, ini_sct_t *ini)
 	wd179x_set_irq_fct (&sim->fdc.wd179x, &sim->pic, e8259_set_irq0);
 	wd179x_set_drq_fct (&sim->fdc.wd179x, &sim->dma, e80186_dma_set_dreq0);
 
-	wd179x_set_input_clock (&sim->fdc.wd179x, sim->cpu_clock_frq);
+	wd179x_set_input_clock (&sim->fdc.wd179x, sim->clock_freq);
 	wd179x_set_bit_clock (&sim->fdc.wd179x, 2000000);
 
 	rc759_fdc_set_disks (&sim->fdc, sim->dsks);
@@ -1040,8 +1041,8 @@ void rc759_setup_speaker (rc759_t *sim, ini_sct_t *ini)
 	ini_sct_t     *sct;
 
 	rc759_spk_init (&sim->spk);
-	rc759_spk_set_clk_fct (&sim->spk, sim, rc759_get_cpu_clock);
-	rc759_spk_set_input_clock (&sim->spk, sim->cpu_clock_frq);
+	rc759_spk_set_clk_fct (&sim->spk, sim, rc759_get_clock);
+	rc759_spk_set_input_clock (&sim->spk, sim->clock_freq);
 
 	sct = ini_next_sct (ini, NULL, "speaker");
 
@@ -1127,17 +1128,18 @@ void rc759_setup_video (rc759_t *sim, ini_sct_t *ini)
 	e82730_set_monochrome (&sim->crt, mono);
 	e82730_set_min_h (&sim->crt, min_h);
 
-	pce_log_tag (MSG_INF, "VIDEO:", "monochrome=%d 22KHz=%d min_h=%u\n",
+	pce_log_tag (MSG_INF, "VIDEO:",
+		"monochrome=%d 22KHz=%d min_h=%u\n",
 		mono, hires, min_h
 	);
 
 	if (hires) {
 		sim->ppi_port_b |= 0x40;
-		e82730_set_clock (&sim->crt, 1250000, sim->cpu_clock_frq);
+		e82730_set_clock (&sim->crt, 1250000, sim->clock_freq);
 	}
 	else {
 		sim->ppi_port_b &= ~0x40;
-		e82730_set_clock (&sim->crt, 750000, sim->cpu_clock_frq);
+		e82730_set_clock (&sim->crt, 750000, sim->clock_freq);
 	}
 
 	if (mono) {
@@ -1400,41 +1402,22 @@ void rc759_reset (rc759_t *sim)
 	}
 }
 
-void rc759_set_cpu_clock (rc759_t *sim, unsigned long clk)
+unsigned long rc759_get_clock (rc759_t *sim)
 {
-	if (sim->cpu_clock_frq == clk) {
-		return;
-	}
-
-	pce_log_tag (MSG_INF, "CPU:", "setting clock to %lu\n", clk);
-
-	sim->cpu_clock_frq = clk;
-
-	wd179x_set_input_clock (&sim->fdc.wd179x, sim->cpu_clock_frq);
-	rc759_rtc_set_input_clock (&sim->rtc, clk);
-	rc759_spk_set_input_clock (&sim->spk, sim->cpu_clock_frq);
-
-	if (sim->ppi_port_b & 0x40) {
-		/* hires */
-		e82730_set_clock (&sim->crt, 1250000, sim->cpu_clock_frq);
-	}
-	else {
-		e82730_set_clock (&sim->crt, 750000, sim->cpu_clock_frq);
-	}
+	return (sim->clock_cnt);
 }
 
-void rc759_set_speed (rc759_t *sim, unsigned factor)
+void rc759_set_speed (rc759_t *sim, unsigned speed)
 {
-	if (factor == 0) {
-		factor = 30;
+	if (speed == 0) {
+		speed = 1;
 	}
 
-	rc759_set_cpu_clock (sim, (4 + 2 * factor) * 1000000);
-}
+	sim->speed = speed;
 
-unsigned long rc759_get_cpu_clock (rc759_t *sim)
-{
-	return (sim->cpu_clock_cnt);
+	pce_log (MSG_INF, "setting CPU speed to %lu MHz\n",
+		(sim->speed * sim->clock_freq) / 1000000
+	);
 }
 
 
@@ -1445,10 +1428,10 @@ void rc759_clock_reset (rc759_t *sim)
 
 	pce_get_interval_us (&sim->sync_interval);
 
-	sim->cpu_clock_cnt = 0;
-	sim->cpu_clock_rem8 = 0;
-	sim->cpu_clock_rem1024 = 0;
-	sim->cpu_clock_rem32768 = 0;
+	sim->clock_cnt = 0;
+	sim->clock_rem8 = 0;
+	sim->clock_rem1024 = 0;
+	sim->clock_rem32768 = 0;
 }
 
 void rc759_clock_discontinuity (rc759_t *sim)
@@ -1470,14 +1453,14 @@ void rc759_clock_delay (rc759_t *sim)
 	vclk = sim->sync_clock_sim;
 
 	rclk = pce_get_interval_us (&sim->sync_interval);
-	rclk = (sim->cpu_clock_frq * (unsigned long long) rclk) / 1000000;
+	rclk = (sim->clock_freq * (unsigned long long) rclk) / 1000000;
 	rclk += sim->sync_clock_real;
 
 	if (vclk < rclk) {
 		sim->sync_clock_sim = 0;
 		sim->sync_clock_real = rclk - vclk;
 
-		if (sim->sync_clock_real > sim->cpu_clock_frq) {
+		if (sim->sync_clock_real > sim->clock_freq) {
 			sim->sync_clock_real = 0;
 			pce_log (MSG_INF, "host system too slow, skipping 1 second.\n");
 		}
@@ -1490,7 +1473,7 @@ void rc759_clock_delay (rc759_t *sim)
 	sim->sync_clock_sim = vclk;
 	sim->sync_clock_real = 0;
 
-	us = (1000000 * (unsigned long long) vclk) / sim->cpu_clock_frq;
+	us = (1000000 * (unsigned long long) vclk) / sim->clock_freq;
 
 	if (us > PCE_IBMPC_SLEEP) {
 		pce_usleep (us);
@@ -1499,61 +1482,61 @@ void rc759_clock_delay (rc759_t *sim)
 
 void rc759_clock (rc759_t *sim, unsigned cnt)
 {
-	unsigned long clk;
+	unsigned long sysclk, cpuclk;
 
-	if (cnt == 0) {
-		cnt = 4;
-	}
+	sysclk = 1;
+	cpuclk = sim->speed;
 
-	e86_clock (sim->cpu, cnt);
-	e80186_tcu_clock (&sim->tcu, cnt);
-	e80186_dma_clock (&sim->dma, cnt);
+	e86_clock (sim->cpu, cpuclk);
 
-	sim->sync_clock_sim += cnt;
-	sim->cpu_clock_cnt += cnt;
-	sim->cpu_clock_rem8 += cnt;
+	e80186_tcu_clock (&sim->tcu, sysclk);
+	e80186_dma_clock (&sim->dma, cpuclk);
+	rc759_fdc_clock (&sim->fdc.wd179x, cpuclk);
 
-	if (sim->cpu_clock_rem8 < 8) {
+	sim->sync_clock_sim += sysclk;
+	sim->clock_cnt += sysclk;
+	sim->clock_rem8 += sysclk;
+
+	if (sim->clock_rem8 < 8) {
 		return;
 	}
 
-	clk = sim->cpu_clock_rem8;
-	sim->cpu_clock_rem8 &= 7;
-	clk -= sim->cpu_clock_rem8;
+	sysclk = sim->clock_rem8;
+	sim->clock_rem8 &= 7;
+	sysclk -= sim->clock_rem8;
 
-	e82730_clock (&sim->crt, clk);
-	rc759_fdc_clock (&sim->fdc.wd179x, clk);
+	e82730_clock (&sim->crt, sysclk);
 
 	if (sim->rtc_stop == 0) {
-		rc759_rtc_clock (&sim->rtc, clk);
+		rc759_rtc_clock (&sim->rtc, sysclk);
 	}
 
-	sim->cpu_clock_rem1024 += clk;
+	sim->clock_rem1024 += sysclk;
 
-	if (sim->cpu_clock_rem1024 < 1024) {
+	if (sim->clock_rem1024 < 1024) {
 		return;
 	}
 
-	clk = sim->cpu_clock_rem1024;
-	sim->cpu_clock_rem1024 &= 1023;
-	clk -= sim->cpu_clock_rem1024;
+	sysclk = sim->clock_rem1024;
+	sim->clock_rem1024 &= 1023;
+	sysclk -= sim->clock_rem1024;
 
 	if (sim->trm != NULL) {
 		trm_check (sim->trm);
 	}
 
-	rc759_kbd_clock (&sim->kbd, clk);
-	rc759_spk_clock (&sim->spk, clk);
+	rc759_kbd_clock (&sim->kbd, sysclk);
+	rc759_spk_clock (&sim->spk, sysclk);
 
-	sim->cpu_clock_rem32768 += clk;
+	sim->clock_rem32768 += sysclk;
 
-	if (sim->cpu_clock_rem32768 < 32768) {
+	if (sim->clock_rem32768 < 32768) {
 		return;
 	}
 
-	clk = sim->cpu_clock_rem32768;
-	sim->cpu_clock_rem32768 &= 32767;
-	clk -= sim->cpu_clock_rem32768;
+	sysclk = sim->clock_rem32768;
+	sim->clock_rem32768 &= 32767;
+	sysclk -= sim->clock_rem32768;
 
 	rc759_clock_delay (sim);
 }

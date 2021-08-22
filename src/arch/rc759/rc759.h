@@ -53,11 +53,8 @@
 #include <libini/libini.h>
 
 
-#define RC759_FLAG_MEM2 1
-
-
 typedef struct rc759_t {
-	unsigned           flags;
+	unsigned           model;
 
 	memory_t           *mem;
 	mem_blk_t          *ram;
@@ -96,11 +93,13 @@ typedef struct rc759_t {
 
 	unsigned           current_int;
 
-	unsigned long      cpu_clock_frq;
-	unsigned long      cpu_clock_cnt;
-	unsigned long      cpu_clock_rem8;
-	unsigned long      cpu_clock_rem1024;
-	unsigned long      cpu_clock_rem32768;
+	unsigned           speed;
+
+	unsigned long      clock_freq;
+	unsigned long      clock_cnt;
+	unsigned long      clock_rem8;
+	unsigned long      clock_rem1024;
+	unsigned long      clock_rem32768;
 
 	unsigned long      sync_clock_sim;
 	unsigned long      sync_clock_real;
@@ -130,17 +129,15 @@ int rc759_intlog_check (rc759_t *sim, unsigned n);
  *****************************************************************************/
 void rc759_reset (rc759_t *sim);
 
-void rc759_set_cpu_clock (rc759_t *sim, unsigned long clk);
-
 /*!***************************************************************************
  * @short Set the emulated cpu clock frequency as a multiple of 4.77 MHz
  *****************************************************************************/
 void rc759_set_speed (rc759_t *sim, unsigned factor);
 
 /*!***************************************************************************
- * @short Get the CPU clock
+ * @short Get the clock count
  *****************************************************************************/
-unsigned long rc759_get_cpu_clock (rc759_t *sim);
+unsigned long rc759_get_clock (rc759_t *sim);
 
 /*!***************************************************************************
  * @short Reset the clock counters

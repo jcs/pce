@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/cmd.c                                         *
  * Created:     2012-06-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -501,7 +501,7 @@ void rc759_run (rc759_t *sim)
 
 	while (sim->brk == 0) {
 		if (sim->pause == 0) {
-			rc759_clock (sim, 8);
+			rc759_clock (sim, 1);
 		}
 		else {
 			pce_usleep (100000);

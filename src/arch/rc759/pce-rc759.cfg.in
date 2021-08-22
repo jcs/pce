@@ -22,20 +22,22 @@ cfg.prom ?= "rc759-1-2.1.rom"
 
 
 system {
-	# The CPU clock in Hz
+	# Set the RC759 model
 	#
-	# Values that correspond to real machines are 6 MHz and 8 MHz.
-	# Larger values will cause problems for the PROM.
-	clock = 6000000
+	# Model 1 has a system clock speed of 6 MHz and supports
+	# RAM sizes of 256K, 386K, 640K and 768K.
+	#
+	# Model 2 has a system clock speed of 8 MHz and supports
+	# RAM sizes of 512K, 640K and 832K.
+	model = 1
 
-	# Alternate RAM size
+	# Set the CPU speed
 	#
-	# If this option is set, the PROM expects alternate RAM sizes. It
-	# has to correspond the the specific PROM used.
-	# Valid RAM sizes are:
-	#   0: 256K, 384K, 640K, 768K
-	#   1: 512K, 640K, 832K
-	alt_mem_size = 0
+	# This sets the CPU clock speed as a multiple of the system
+	# clock speed. If this is set to anything other than 1, the
+	# fastboot option should also be enabled, because the POST
+	# code is CPU speed sensitive.
+	speed = 1
 
 	# Enable access to real time
 	#

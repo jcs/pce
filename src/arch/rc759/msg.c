@@ -102,24 +102,24 @@ int rc759_set_msg_emu_cpu_speed (rc759_t *sim, const char *msg, const char *val)
 static
 int rc759_set_msg_emu_cpu_speed_step (rc759_t *sim, const char *msg, const char *val)
 {
-	int           v;
-	unsigned long clk, tmp;
+	int      v;
+	unsigned speed;
 
 	if (msg_get_sint (val, &v)) {
 		return (1);
 	}
 
-	clk = sim->cpu_clock_frq / 2000000;
+	speed = sim->speed;
 
 	if (v > 0) {
-		clk += v;
+		speed = sim->speed + v;
 	}
 	else {
-		tmp = -v;
-		clk = (tmp < clk) ? (clk - tmp) : 1;
+		speed = -v;
+		speed = (-v < sim->speed) ? (sim->speed - -v) : 1;
 	}
 
-	rc759_set_cpu_clock (sim, 2000000 * clk);
+	rc759_set_speed (sim, speed);
 
 	return (0);
 }

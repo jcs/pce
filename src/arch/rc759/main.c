@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/main.c                                        *
  * Created:     2012-06-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -297,7 +297,7 @@ int main (int argc, char *argv[])
 			break;
 
 		case 's':
-			ini_str_add (&par_ini_str, "cpu.speed = ",
+			ini_str_add (&par_ini_str, "system.speed = ",
 				optarg[0], "\n"
 			);
 			break;
