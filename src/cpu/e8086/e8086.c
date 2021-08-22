@@ -471,9 +471,16 @@ void e86_reset (e8086_t *c)
 
 	c->irq = 0;
 
-	c->state = E86_STATE_RESET;
+	c->state = 0;
 
 	c->prefix = 0;
+}
+
+void e86_reset_callback (e8086_t *c)
+{
+	e86_reset (c);
+
+	c->state = E86_STATE_RESET;
 }
 
 void e86_execute (e8086_t *c)

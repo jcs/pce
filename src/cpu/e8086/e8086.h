@@ -418,6 +418,7 @@ int e86_interrupt (e8086_t *cpu, unsigned n);
 unsigned e86_undefined (e8086_t *c);
 
 void e86_reset (e8086_t *c);
+void e86_reset_callback (e8086_t *c);
 
 void e86_execute (e8086_t *c);
 
