@@ -317,8 +317,11 @@ int bios_get_disk (cpm80_t *sim, unsigned drv, disk_t **dsk, c80_disk_t **dt)
 	return (0);
 }
 
+/*
+ * Map a CP/M sector to a cylinder, head, sector and subsector.
+ */
 static
-int bios_map_sector (c80_disk_t *dt, unsigned trk, unsigned sct, c80_chsi_t *chs)
+int bios_map_sector (const c80_disk_t *dt, unsigned trk, unsigned sct, c80_chsi_t *chs)
 {
 	unsigned char *trn;
 
@@ -342,6 +345,7 @@ int bios_map_sector (c80_disk_t *dt, unsigned trk, unsigned sct, c80_chsi_t *chs
 	chs->i = sct % (dt->n / 128);
 
 	if (dt->cpmtrn) {
+		/* we let the bdos do the skew translation via bios_sectran */
 		return (0);
 	}
 
@@ -476,9 +480,41 @@ int bios_write_sector (cpm80_t *sim, const void *buf, unsigned drv, unsigned trk
 }
 
 static
+unsigned bios_get_sector_size (const c80_disk_t *dt, disk_t *dsk)
+{
+	c80_chsi_t chs;
+	psi_img_t  *img;
+	psi_sct_t  *sct;
+
+	if (dsk->type != PCE_DISK_PSI) {
+		return (512);
+	}
+
+	img = ((disk_psi_t *) dsk->ext)->img;
+
+	if (img == NULL) {
+		return (0);
+	}
+
+	bios_map_sector (dt, dt->off, 0, &chs);
+
+	if (dt->cpmtrn) {
+		chs.s = dt->trn0[chs.s];
+	}
+
+	sct = psi_img_get_sector (img, chs.c, chs.h, chs.s, 0);
+
+	if (sct == NULL) {
+		return (0);
+	}
+
+	return (sct->n);
+}
+
+static
 unsigned bios_get_disk_type (cpm80_t *sim, unsigned drv)
 {
-	unsigned   i;
+	unsigned   i, ss;
 	c80_disk_t *dt;
 	disk_t     *dsk;
 
@@ -491,7 +527,11 @@ unsigned bios_get_disk_type (cpm80_t *sim, unsigned drv)
 
 	while (dt->c != 0) {
 		if ((dsk->c == dt->c) && (dsk->h == dt->h) && (dsk->s == dt->s)) {
-			return (i + 1);
+			ss = bios_get_sector_size (dt, dsk);
+
+			if ((ss == 0) || (ss == dt->n)) {
+				return (i + 1);
+			}
 		}
 
 		i += 1;
