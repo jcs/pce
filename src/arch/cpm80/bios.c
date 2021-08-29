@@ -654,7 +654,9 @@ void bios_boot (cpm80_t *sim, int warm)
 	}
 	else {
 		drv = mem_get_uint8 (sim->mem, 4);
+#if DEBUG_BIOS >=1
 		fprintf (stderr, "bios: boot (%c:)\n", 'A' + drv);
+#endif
 	}
 
 	if (pce_load_mem (sim->mem, sim->cpm, NULL, 0)) {
@@ -851,7 +853,7 @@ void bios_seldsk (cpm80_t *sim)
 
 	addr = bios_setup_disk (sim, sim->bios_dsk);
 
-#if DEBUG_BIOS >= 1
+#if DEBUG_BIOS >= 2
 	sim_log_deb ("BIOS: %c: SELDSK D=%u DPH=%04lX-%04lX+%04lX\n",
 		'A' + sim->bios_dsk, sim->bios_dsk, addr, sim->bios_index,
 		sim->bios_limit - sim->bios_index
