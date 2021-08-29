@@ -44,7 +44,7 @@ static psi_geometry_t disk_sizes[] = {
 	{ 2949120, 80, 2, 36, 512, PSI_ENC_MFM_HD },
 	{ 1261568, 77, 2, 8, 1024, PSI_ENC_MFM_HD },
 	{  256256, 77, 1, 26, 128, PSI_ENC_FM_DD },
-	{  512512, 77, 2, 26, 128, PSI_ENC_FM_DD },
+	{  512512, 77, 1, 26, 256, PSI_ENC_MFM_DD },
 	{  524288, 256, 1, 8, 256, PSI_ENC_MFM_DD },
 	{ 1048576, 256, 1, 16, 256, PSI_ENC_MFM_DD },
 	{ 2097152, 256, 1, 32, 256, PSI_ENC_MFM_DD },
