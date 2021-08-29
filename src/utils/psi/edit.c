@@ -76,7 +76,7 @@ int psi_edit_deldam_cb (psi_img_t *img, psi_sct_t *sct,
 }
 
 static
-int psi_edit_fm_dd_cb (psi_img_t *img, psi_sct_t *sct,
+int psi_edit_fm_sd_cb (psi_img_t *img, psi_sct_t *sct,
 	unsigned c, unsigned h, unsigned s, unsigned a, void *p)
 {
 	psi_sct_set_encoding (sct, PSI_ENC_FM_DD);
@@ -263,10 +263,10 @@ int psi_edit_sectors (psi_img_t *img, const char *what, const char *val)
 		fct = psi_edit_deldam_cb;
 	}
 	else if (strcmp (what, "fm") == 0) {
-		fct = psi_edit_fm_dd_cb;
+		fct = psi_edit_fm_sd_cb;
 	}
-	else if (strcmp (what, "fm-dd") == 0) {
-		fct = psi_edit_fm_dd_cb;
+	else if (strcmp (what, "fm-sd") == 0) {
+		fct = psi_edit_fm_sd_cb;
 	}
 	else if (strcmp (what, "fm-hd") == 0) {
 		fct = psi_edit_fm_hd_cb;
