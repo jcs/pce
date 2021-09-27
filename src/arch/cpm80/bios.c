@@ -972,7 +972,7 @@ void bios_write (cpm80_t *sim)
 static
 void bios_listst (cpm80_t *sim)
 {
-	e8080_set_a (sim->cpu, 0);
+	e8080_set_a (sim->cpu, 0xff);
 }
 
 /*
