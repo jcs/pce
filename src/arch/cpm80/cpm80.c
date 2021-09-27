@@ -144,7 +144,7 @@ static
 void c80_setup_system (cpm80_t *sim, ini_sct_t *ini)
 {
 	unsigned   boot, altair;
-	const char *model, *cpm;
+	const char *model, *cpm, *load;
 	ini_sct_t  *sct;
 
 	sim->brk = 0;
@@ -154,6 +154,7 @@ void c80_setup_system (cpm80_t *sim, ini_sct_t *ini)
 	sim->boot = 0;
 	sim->altair_switches = 0xff;
 
+	sim->load = NULL;
 	sim->cpm = NULL;
 	sim->cpm_version = 0;
 	sim->addr_ccp = 0;
@@ -166,8 +167,13 @@ void c80_setup_system (cpm80_t *sim, ini_sct_t *ini)
 
 	ini_get_string (sct, "model", &model, "cpm");
 	ini_get_string (sct, "cpm", &cpm, "cpm.ihex");
+	ini_get_string (sct, "load", &load, NULL);
 	ini_get_uint16 (sct, "boot", &boot, 0);
 	ini_get_uint16 (sct, "altair_switches", &altair, 0xff);
+
+	if (load != NULL) {
+		sim->load = pce_path_get (load);
+	}
 
 	pce_log_tag (MSG_INF,
 		"SYSTEM:",
@@ -375,6 +381,9 @@ void c80_del (cpm80_t *sim)
 		return;
 	}
 
+	free (sim->load);
+	free (sim->cpm);
+
 	dsks_del (sim->dsks);
 	c80_del_char (sim);
 	e8080_del (sim->cpu);
@@ -395,6 +404,14 @@ void c80_reset (cpm80_t *sim)
 
 	if (sim->model == CPM80_MODEL_CPM) {
 		c80_bios_init (sim);
+	}
+
+	if (sim->load != NULL) {
+		pce_log_tag (MSG_INF, "Load:", "%s\n", sim->load);
+
+		if (pce_load_mem (sim->mem, sim->load, NULL, 0)) {
+			;
+		}
 	}
 }
 

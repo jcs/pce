@@ -88,6 +88,7 @@ typedef struct cpm80_s {
 
 	unsigned char  altair_switches;
 
+	char           *load;
 	char           *cpm;
 	unsigned char  cpm_version;
 	unsigned char  zcpr_version;
