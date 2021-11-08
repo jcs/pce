@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/devices/video/cga.c                                      *
  * Created:     2003-04-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -406,7 +406,7 @@ static
 void cga_line_mode1 (cga_t *cga, unsigned row)
 {
 	unsigned            i, j;
-	unsigned            hd, addr, val;
+	unsigned            hd, adr, val;
 	unsigned char       *ptr;
 	const unsigned char *col;
 
@@ -419,11 +419,11 @@ void cga_line_mode1 (cga_t *cga, unsigned row)
 	}
 
 	ptr = pce_video_get_row_ptr (&cga->video, row);
-	addr = (cga->crtc.ma ^ ((cga->crtc.ra & 1) << 12)) << 1;
+	adr = (cga->crtc.ra & 1) << 13;
 
 	for (i = 0; i < hd; i++) {
-		val = cga->mem[addr & 0x3fff];
-		val = (val << 8) | cga->mem[(addr + 1) & 0x3fff];
+		adr = (adr & 0x2000) ^ (((cga->crtc.ma + i) << 1) & 0x1ffe);
+		val = (cga->mem[adr] << 8) | cga->mem[adr + 1];
 
 		for (j = 0; j < 8; j++) {
 			col = cga_rgb[cga->pal[(val >> 14) & 3]];
@@ -434,8 +434,6 @@ void cga_line_mode1 (cga_t *cga, unsigned row)
 
 			val <<= 2;
 		}
-
-		addr += 2;
 	}
 }
 
@@ -446,7 +444,7 @@ static
 void cga_line_mode1c (cga_t *cga, unsigned row)
 {
 	unsigned      i, j;
-	unsigned      hd, addr, val;
+	unsigned      hd, adr, val;
 	unsigned char col;
 	unsigned char *rgb, *dst, *ptr;
 
@@ -462,11 +460,11 @@ void cga_line_mode1c (cga_t *cga, unsigned row)
 	dst = pce_video_get_row_ptr (&cga->video, row);
 
 	ptr = rgb;
-	addr = (cga->crtc.ma ^ ((cga->crtc.ra & 1) << 12)) << 1;
+	adr = (cga->crtc.ra & 1) << 13;
 
 	for (i = 0; i < hd; i++) {
-		val = cga->mem[addr & 0x3fff];
-		val = (val << 8) | cga->mem[(addr + 1) & 0x3fff];
+		adr = (adr & 0x2000) ^ (((cga->crtc.ma + i) << 1) & 0x1ffe);
+		val = (cga->mem[adr] << 8) | cga->mem[adr + 1];
 
 		for (j = 0; j < 8; j++) {
 			col = cga->pal[(val >> 14) & 3];
@@ -476,8 +474,6 @@ void cga_line_mode1c (cga_t *cga, unsigned row)
 
 			val <<= 2;
 		}
-
-		addr += 2;
 	}
 
 	cga_line_composite (cga, dst, rgb, 16 * hd);
@@ -490,7 +486,7 @@ static
 void cga_line_mode2 (cga_t *cga, unsigned row)
 {
 	unsigned            i, j;
-	unsigned            hd, addr, val;
+	unsigned            hd, adr, val;
 	unsigned char       *ptr;
 	const unsigned char *fg, *bg, *col;
 
@@ -503,14 +499,14 @@ void cga_line_mode2 (cga_t *cga, unsigned row)
 	}
 
 	ptr = pce_video_get_row_ptr (&cga->video, row);
-	addr = (cga->crtc.ma ^ ((cga->crtc.ra & 1) << 12)) << 1;
+	adr = (cga->crtc.ra & 1) << 13;
 
 	fg = cga_rgb[cga->reg[CGA_CSEL] & 15];
 	bg = cga_rgb[0];
 
 	for (i = 0; i < hd; i++) {
-		val = cga->mem[addr & 0x3fff];
-		val = (val << 8) | cga->mem[(addr + 1) & 0x3fff];
+		adr = (adr & 0x2000) ^ (((cga->crtc.ma + i) << 1) & 0x1ffe);
+		val = (cga->mem[adr] << 8) | cga->mem[adr + 1];
 
 		for (j = 0; j < 16; j++) {
 			col = (val & 0x8000) ? fg : bg;
@@ -521,8 +517,6 @@ void cga_line_mode2 (cga_t *cga, unsigned row)
 
 			val <<= 1;
 		}
-
-		addr += 2;
 	}
 }
 
@@ -533,7 +527,7 @@ static
 void cga_line_mode2c (cga_t *cga, unsigned row)
 {
 	unsigned      i, j;
-	unsigned      hd, addr, val;
+	unsigned      hd, adr, val;
 	unsigned char *rgb, *dst, *ptr;
 	unsigned char fg, bg;
 
@@ -549,21 +543,19 @@ void cga_line_mode2c (cga_t *cga, unsigned row)
 	dst = pce_video_get_row_ptr (&cga->video, row);
 
 	ptr = rgb;
-	addr = (cga->crtc.ma ^ ((cga->crtc.ra & 1) << 12)) << 1;
+	adr = (cga->crtc.ra & 1) << 13;
 
 	fg = cga->reg[CGA_CSEL] & 15;
 	bg = 0;
 
 	for (i = 0; i < hd; i++) {
-		val = cga->mem[addr & 0x3fff];
-		val = (val << 8) | cga->mem[(addr + 1) & 0x3fff];
+		adr = (adr & 0x2000) ^ (((cga->crtc.ma + i) << 1) & 0x1ffe);
+		val = (cga->mem[adr] << 8) | cga->mem[adr + 1];
 
 		for (j = 0; j < 16; j++) {
 			*(ptr++) = (val & 0x8000) ? fg : bg;
 			val <<= 1;
 		}
-
-		addr += 2;
 	}
 
 	cga_line_composite (cga, dst, rgb, 16 * hd);
