@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/track-edit.c                                   *
  * Created:     2013-12-27 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -30,7 +30,7 @@
 
 
 static
-int pfi_rectify_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
+int pfi_quantize_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
 {
 	unsigned      idx;
 	unsigned      cnt;
@@ -47,16 +47,14 @@ int pfi_rectify_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned lo
 	total1 = 0;
 	total2 = 0;
 
-	index = (idx < trk->index_cnt) ? trk->index[idx] : 0;
+	index = (trk->index_cnt > 0) ? trk->index[0] : 0;
 
 	for (i = 0; i < trk->pulse_cnt; i++) {
 		val1 = trk->pulse[i];
 
 		if ((idx < trk->index_cnt) && (total1 <= index) && ((total1 + val1) > index)) {
 			trk->index[idx] = (trk->index[idx] - total1) + total2;
-
 			idx += 1;
-
 			index = (idx < trk->index_cnt) ? trk->index[idx] : 0;
 		}
 
@@ -77,9 +75,9 @@ int pfi_rectify_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigned lo
 	return (0);
 }
 
-int pfi_rectify (pfi_img_t *img, unsigned long rate)
+int pfi_quantize (pfi_img_t *img, unsigned long rate)
 {
-	return (pfi_for_all_tracks (img, pfi_rectify_cb, &rate));
+	return (pfi_for_all_tracks (img, pfi_quantize_cb, &rate));
 }
 
 

@@ -134,6 +134,7 @@ void print_help (void)
 		"  fold <revolutions>     Fold tracks\n"
 		"  import <filename>      Import tracks as text\n"
 		"  info                   Print image information\n"
+		"  quantize <rate>        Quantize the pulses to <rate>\n"
 		"  revolutions <range>    Extract revolutions\n"
 		"  scale <factor>         Scale tracks by factor\n"
 		"  set-clock <clock>      Set the clock rate\n"
@@ -482,10 +483,10 @@ int pfi_operation (pfi_img_t **img, const char *op, int argc, char **argv)
 	else if (strcmp (op, "info") == 0) {
 		r = pfi_print_info (*img);
 	}
-	else if (strcmp (op, "rectify") == 0) {
+	else if (strcmp (op, "quantize") == 0) {
 		unsigned long rate;
 
-		if (pce_getopt (argc, argv, &optarg1, NULL) != 0) {
+		if (pce_getoptarg (argc, argv, &optarg1, 1) != 0) {
 			return (1);
 		}
 
@@ -493,7 +494,7 @@ int pfi_operation (pfi_img_t **img, const char *op, int argc, char **argv)
 			return (1);
 		}
 
-		r = pfi_rectify (*img, rate);
+		r = pfi_quantize (*img, rate);
 	}
 	else if (strcmp (op, "revolutions") == 0) {
 		if (pce_getopt (argc, argv, &optarg1, NULL) != 0) {

@@ -151,6 +151,10 @@ Encode a textual representation of the image produced by decode text.
 .B "info"
 Print information about the image.
 .TP
+.BI "quantize " "rate"
+Quantize all pulses to \fIrate\fR. After this operation all pulses are
+an exact multiple of \fIrate\fR.
+.TP
 .BI "rectify " "rate"
 Adjust all pulse widths to even multiples of \fIrate\fR. This may change
 the track lengths.
