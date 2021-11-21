@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/devices/video/ega.c                                      *
  * Created:     2003-09-06 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -530,7 +530,7 @@ void ega_mode0_update_char (ega_t *ega, unsigned char *dst, unsigned w,
 	c1 = ega->reg_crt[EGA_CRT_CS] & 0x1f;
 	c2 = ega->reg_crt[EGA_CRT_CE] & 0x1f;
 	crs = (crs && ega->blink_on);
-	incrs = (c2 < c1);
+	incrs = (c2 < c1) && (c1 < ch);
 
 	elg = 0;
 
@@ -567,11 +567,11 @@ void ega_mode0_update_char (ega_t *ega, unsigned char *dst, unsigned w,
 
 		if (crs) {
 			if (y == c1) {
-				incrs = !incrs;
+				incrs = 1;
 			}
 
 			if (y == c2) {
-				incrs = !incrs;
+				incrs = 0;
 			}
 
 			if (incrs) {
