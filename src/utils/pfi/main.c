@@ -65,8 +65,8 @@ unsigned long par_pfi_clock = 24027428;
 
 unsigned      par_revolution = 1;
 
-unsigned      par_slack1 = 10;
-unsigned      par_slack2 = 10;
+double        par_slack1 = 0.01;
+double        par_slack2 = 0.01;
 
 int           par_weak_bits = 0;
 unsigned long par_weak_i1 = 0;
@@ -142,6 +142,7 @@ void print_help (void)
 		"  set-rpm-mac            Set Macintosh RPMs at 500 kbit/s\n"
 		"  set-rpm-mac-490        Set Macintosh RPMs at 489.6 kbit/s\n"
 		"  set-rpm-mac-500        Set Macintosh RPMs at 500 kbit/s\n"
+		"  slack <ms>             Limit the slack space\n"
 		"  shift-index <offset>   Shift the index by offset clock cycles\n"
 		"  shift-index-us <us>    Shift the index by us microseconds\n"
 		"  wpcom                  Simulate write precompensation\n"
@@ -340,6 +341,49 @@ int pfi_parse_range (const char *str, unsigned long *v1, unsigned long *v2, char
 	}
 
 	if (*str != 0) {
+		return (1);
+	}
+
+	return (0);
+}
+
+int pfi_parse_time (const char *str, double *val, double def)
+{
+	char *end;
+
+	if ((str == NULL) || (*str == 0)) {
+		fprintf (stderr, "%s: bad value (%s)\n", arg0, str);
+		return (1);
+	}
+
+	*val = strtod (str, &end);
+
+	if (end == NULL) {
+		fprintf (stderr, "%s: bad value (%s)\n", arg0, str);
+		return (1);
+	}
+
+	while ((*end == ' ') || (*end == '\t')) {
+		end += 1;
+	}
+
+	if (*end == 0) {
+		*val *= def;
+	}
+	else if (strcmp (end, "s") == 0) {
+		;
+	}
+	else if (strcmp (end, "ms") == 0) {
+		*val /= 1000.0;
+	}
+	else if (strcmp (end, "us") == 0) {
+		*val /= 1000.0 * 1000.0;
+	}
+	else if (strcmp (end, "ns") == 0) {
+		*val /= 1000.0 * 1000.0 * 1000.0;
+	}
+	else {
+		fprintf (stderr, "%s: bad value (%s)\n", arg0, str);
 		return (1);
 	}
 
@@ -728,26 +772,21 @@ int pfi_set_parameter (const char *name, const char *val)
 		}
 	}
 	else if (strcmp (name, "slack") == 0) {
-		if (pfi_parse_uint (val, &par_slack1)) {
+		if (pfi_parse_time (val, &par_slack1, 0.001)) {
 			return (1);
 		}
 
-		par_slack1 %= 100;
 		par_slack2 = par_slack1;
 	}
 	else if (strcmp (name, "slack1") == 0) {
-		if (pfi_parse_uint (val, &par_slack1)) {
+		if (pfi_parse_time (val, &par_slack1, 0.001)) {
 			return (1);
 		}
-
-		par_slack1 %= 100;
 	}
 	else if (strcmp (name, "slack2") == 0) {
-		if (pfi_parse_uint (val, &par_slack2)) {
+		if (pfi_parse_time (val, &par_slack2, 0.001)) {
 			return (1);
 		}
-
-		par_slack2 %= 100;
 	}
 	else if (strcmp (name, "weak-bits") == 0) {
 		if (pfi_parse_bool (val, &par_weak_bits)) {

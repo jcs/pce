@@ -112,8 +112,8 @@ int pfi_revolutions_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigne
 	pos1 = trk->index[rev1 - 1];
 	pos2 = trk->index[rev2];
 
-	add1 = (par_slack1 * (trk->index[rev1] - trk->index[rev1 - 1])) / 100;
-	add2 = (par_slack2 * (trk->index[rev2] - trk->index[rev2 - 1])) / 100;
+	add1 = (unsigned long) (par_slack1 * trk->clock + 0.5);
+	add2 = (unsigned long) (par_slack2 * trk->clock + 0.5);
 
 	pos1 = (pos1 < add1) ? 0 : (pos1 - add1);
 	pos2 = pos2 + add2;
@@ -130,10 +130,15 @@ int pfi_revolutions_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigne
 	clk2 = 0;
 
 	while ((clk1 < pos2) && (pfi_trk_get_pulse (trk, &pulse, &index) == 0)) {
-		if ((clk1 >= pos1) && (clk1 < pos2)) {
+		if (pulse == 0) {
+			pfi_trk_add_index (dst, clk2 + index);
+			break;
+		}
+
+		if (((clk1 + pulse) > pos1) && (clk1 < pos2)) {
 			pfi_trk_add_pulse (dst, pulse);
 
-			if ((pulse == 0) || (index < pulse)) {
+			if (index < pulse) {
 				pfi_trk_add_index (dst, clk2 + index);
 			}
 
@@ -173,11 +178,10 @@ int pfi_slack (pfi_img_t *img, const char *str)
 {
 	unsigned revs[2];
 
-	if (pfi_parse_uint (str, &par_slack1)) {
+	if (pfi_parse_time (str, &par_slack1, 0.001)) {
 		return (1);
 	}
 
-	par_slack1 %= 100;
 	par_slack2 = par_slack1;
 
 	revs[0] = 0;

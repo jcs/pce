@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/encode.c                                       *
  * Created:     2014-01-03 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2014-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2014-2021 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -39,6 +39,7 @@ int pfi_encode_track (pfi_trk_t *dtrk, pri_trk_t *strk, unsigned c, unsigned h)
 	unsigned long       i, j, n;
 	unsigned long       dclk, sclk;
 	unsigned long       val, rem, cnt, tmp;
+	unsigned long       s1, s2;
 	const unsigned char *s;
 
 	pfi_trk_reset (dtrk);
@@ -47,9 +48,12 @@ int pfi_encode_track (pfi_trk_t *dtrk, pri_trk_t *strk, unsigned c, unsigned h)
 	sclk = strk->clock;
 	dclk = dtrk->clock;
 
-	j = ((100 - (par_slack1 % 100)) * strk->size) / 100;
+	s1 = (unsigned long) (par_slack1 * strk->clock + 0.5);
+	s2 = (unsigned long) (par_slack2 * strk->clock + 0.5);
+
+	j = (strk->size - s1 % strk->size) % strk->size;
 	n = par_revolution * strk->size;
-	n += ((par_slack1 + par_slack2) * strk->size + 99) / 100;
+	n += s1 + s2;
 	s = strk->data;
 
 	cnt = 0;
