@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/chipset/82xx/e8272.c                                     *
  * Created:     2005-03-06 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2005-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2005-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -1701,6 +1701,7 @@ void cmd_recalibrate (e8272_t *fdc)
 
 	if (fdc->accurate) {
 		fdc->delay_clock = steps * ((fdc->step_rate * fdc->input_clock) / 1000);
+		fdc->delay_clock += 100;
 	}
 	else {
 		fdc->delay_clock = 0;
@@ -1777,6 +1778,7 @@ void cmd_seek (e8272_t *fdc)
 
 	if (fdc->accurate) {
 		fdc->delay_clock = steps * ((fdc->step_rate * fdc->input_clock) / 1000);
+		fdc->delay_clock += 100;
 	}
 	else {
 		fdc->delay_clock = 0;
