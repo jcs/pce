@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e6502/e6502.c                                        *
  * Created:     2004-05-02 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2004-2011 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2004-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -146,6 +146,16 @@ void e6502_set_ioport (e6502_t *c, int enable)
 	}
 	else {
 		c->flags &= ~E6502_FLAG_IOPORT;
+	}
+}
+
+void e6502_set_undef (e6502_t *c, int enable)
+{
+	if (enable) {
+		c->flags |= E6502_FLAG_UNDEF;
+	}
+	else {
+		c->flags &= ~E6502_FLAG_UNDEF;
 	}
 }
 

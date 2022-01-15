@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e6502/e6502.h                                        *
  * Created:     2004-05-02 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2004-2011 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2004-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -28,6 +28,7 @@
 
 
 #define E6502_FLAG_IOPORT 1
+#define E6502_FLAG_UNDEF  2
 
 
 /* CPU flags */
@@ -228,6 +229,11 @@ void e6502_set_flags (e6502_t *c, unsigned flags);
  *****************************************************************************/
 void e6502_set_ioport (e6502_t *c, int enable);
 
+/*****************************************************************************
+ * @short Enable or disable undefined instructions
+ *****************************************************************************/
+void e6502_set_undef (e6502_t *c, int enable);
+
 void e6502_set_mem_read_fct (e6502_t *c, void *ext, void *get8);
 void e6502_set_mem_write_fct (e6502_t *c, void *ext, void *set8);
 void e6502_set_mem_f (e6502_t *c, void *mem, void *get8, void *set8);
@@ -307,6 +313,7 @@ void e6502_clock (e6502_t *c, unsigned n);
 #define E6502_OPF_JSR 0x0002
 #define E6502_OPF_RTI 0x0004
 #define E6502_OPF_RTS 0x0008
+#define E6502_OPF_UND 0x0010
 
 typedef struct {
 	unsigned       flags;
