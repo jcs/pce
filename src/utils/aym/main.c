@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/aym/main.c                                         *
  * Created:     2015-05-21 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2015-2016 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2015-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -85,7 +85,7 @@ void print_version (void)
 	fputs (
 		"aym version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2015-2016 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2015-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pce-img/pce-img.c                                  *
  * Created:     2005-11-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2005-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2005-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -102,7 +102,7 @@ void print_version (void)
 	fputs (
 		"pce-img version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2005-2019 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2005-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 

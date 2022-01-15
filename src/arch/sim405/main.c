@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/sim405/main.c                                       *
  * Created:     2004-06-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2004-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2004-2022 Hampa Hug <hampa@hampa.ch>                     *
  * Copyright:   (C) 2004-2006 Lukas Ruf <ruf@lpr.ch>                         *
  *****************************************************************************/
 
@@ -16,7 +16,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -96,7 +96,7 @@ void print_version (void)
 	fputs (
 		"pce-sim405 version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2004-2020 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2004-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
@@ -108,7 +108,7 @@ void s405_log_banner (void)
 {
 	pce_log (MSG_MSG,
 		"pce-sim405 version " PCE_VERSION_STR "\n"
-		"Copyright (C) 2004-2020 Hampa Hug <hampa@hampa.ch>\n"
+		"Copyright (C) 2004-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n"
 	);
 }
 

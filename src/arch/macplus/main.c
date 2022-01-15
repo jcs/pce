@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/main.c                                      *
  * Created:     2007-04-15 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -101,7 +101,7 @@ void print_version (void)
 	fputs (
 		"pce-macplus version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2007-2020 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2007-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
@@ -113,7 +113,7 @@ void mac_log_banner (void)
 {
 	pce_log (MSG_MSG,
 		"pce-macplus version " PCE_VERSION_STR "\n"
-		"Copyright (C) 2007-2020 Hampa Hug <hampa@hampa.ch>\n"
+		"Copyright (C) 2007-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n"
 	);
 }
 

@@ -182,7 +182,7 @@ void print_version (void)
 	fputs (
 		"pfi version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2012-2022 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2012-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 

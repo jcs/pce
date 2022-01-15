@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/vic20/main.c                                        *
  * Created:     2020-04-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2020-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -95,7 +95,7 @@ void print_version (void)
 	fputs (
 		"pce-vic20 version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2020 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2020-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
@@ -107,7 +107,7 @@ void v20_log_banner (void)
 {
 	pce_log (MSG_INF,
 		"pce-vic20 version " PCE_VERSION_STR "\n"
-		"Copyright (C) 2020 Hampa Hug <hampa@hampa.ch>\n"
+		"Copyright (C) 2020-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n"
 	);
 }
 

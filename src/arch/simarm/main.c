@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/simarm/main.c                                       *
  * Created:     2004-11-04 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2004-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2004-2022 Hampa Hug <hampa@hampa.ch>                     *
  * Copyright:   (C) 2004-2006 Lukas Ruf <ruf@lpr.ch>                         *
  *****************************************************************************/
 
@@ -16,7 +16,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -92,7 +92,7 @@ void print_version (void)
 	fputs (
 		"pce-simarm version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 1995-2020 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 1995-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
@@ -104,7 +104,7 @@ void sim_log_banner (void)
 {
 	pce_log (MSG_MSG,
 		"pce-simarm version " PCE_VERSION_STR "\n"
-		"Copyright (C) 2004-2020 Hampa Hug <hampa@hampa.ch>\n"
+		"Copyright (C) 2004-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n"
 	);
 }
 

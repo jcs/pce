@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/main.c                                        *
  * Created:     2012-06-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -92,7 +92,7 @@ void print_version (void)
 	fputs (
 		"pce-rc759 version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2012-2020 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2012-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
@@ -104,7 +104,7 @@ void rc759_log_banner (void)
 {
 	pce_log (MSG_MSG,
 		"pce-rc759 version " PCE_VERSION_STR "\n"
-		"Copyright (C) 2012-2020 Hampa Hug <hampa@hampa.ch>\n"
+		"Copyright (C) 2012-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n"
 	);
 }
 
