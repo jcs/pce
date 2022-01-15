@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/main.c                                         *
  * Created:     2012-01-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -182,7 +182,7 @@ void print_version (void)
 	fputs (
 		"pfi version " PCE_VERSION_STR
 		"\n\n"
-		"Copyright (C) 2012-2021 Hampa Hug <hampa@hampa.ch>\n",
+		"Copyright (C) 2012-2022 Hampa Hug <hampa@hampa.ch>\n",
 		stdout
 	);
 
@@ -282,6 +282,19 @@ int pfi_parse_rate (const char *str, unsigned long *val)
 	if ((str == NULL) || (*str == 0)) {
 		fprintf (stderr, "%s: bad value (%s)\n", arg0, str);
 		return (1);
+	}
+
+	if (strcmp (str, "a2r") == 0) {
+		*val = 8000000;
+		return (0);
+	}
+	else if ((strcmp (str, "kryoflux") == 0) || (strcmp (str, "kryo") == 0)) {
+		*val = 24027428;
+		return (0);
+	}
+	else if (strcmp (str, "scp") == 0) {
+		*val = 40000000;
+		return (0);
 	}
 
 	*val = strtoul (str, &end, 0);

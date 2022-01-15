@@ -1,4 +1,4 @@
-.TH PFI 1 "2021-12--4" "HH" "pce"
+.TH PFI 1 "2022-01-15" "HH" "pce"
 \
 .SH NAME
 pfi \- convert and modify PFI flux images
@@ -168,7 +168,21 @@ Multiply the pulse widths on all selected tracks by \fIfactor\fR. This
 has the same effect as dividing the rotational speed by \fIfactor\fR.
 .TP
 .BI "set-clock " "clock"
-Set the clock rate to \fIclock\fR.
+Set the PFI clock rate to \fIclock\fR Hz. The clock rate can also be
+specified in kilohertz (with a \fBk\fR suffix)
+or megahertz (with a \fBM\fR suffix).
+It can also be one of these symbolic constants:
+.RS
+.TP
+.B a2r
+8000000 Hz
+.TP
+.B kryoflux
+24027428 Hz
+.TP
+.B scp
+40000000 Hz
+.RE
 .TP
 .BI "set-rpm " "rpm"
 Adjust the rotational speed of all selected tracks to \fIrpm\fR
