@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/ibmpc.c                                       *
  * Created:     1999-04-16 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 1999-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 1999-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -1312,7 +1312,7 @@ void pc_setup_fdc (ibmpc_t *pc, ini_sct_t *ini)
 	ini_sct_t     *sct;
 	int           accurate, ignore_eot;
 	unsigned long addr;
-	unsigned      irq;
+	unsigned      irq, ss;
 	unsigned      drv[4];
 
 	pc->fdc = NULL;
@@ -1331,11 +1331,12 @@ void pc_setup_fdc (ibmpc_t *pc, ini_sct_t *ini)
 	ini_get_uint16 (sct, "drive1", &drv[1], 0xffff);
 	ini_get_uint16 (sct, "drive2", &drv[2], 0xffff);
 	ini_get_uint16 (sct, "drive3", &drv[3], 0xffff);
+	ini_get_uint16 (sct, "single_sided", &ss, 0);
 
 	pce_log_tag (MSG_INF, "FDC:",
-		"addr=0x%08lx irq=%u accurate=%d eot=%d drv=[%u %u %u %u]\n",
+		"addr=0x%08lx irq=%u accurate=%d eot=%d drv=[%u %u %u %u] ss=%02X\n",
 		addr, irq, accurate, !ignore_eot,
-		drv[0], drv[1], drv[2], drv[3]
+		drv[0], drv[1], drv[2], drv[3], ss
 	);
 
 	pc->fdc = dev_fdc_new (addr);
@@ -1357,6 +1358,7 @@ void pc_setup_fdc (ibmpc_t *pc, ini_sct_t *ini)
 	e8272_set_accuracy (&pc->fdc->e8272, accurate != 0);
 	e8272_set_ignore_eot (&pc->fdc->e8272, ignore_eot != 0);
 	e8272_set_drive_mask (&pc->fdc->e8272, (1 << pc->fd_cnt) - 1);
+	e8272_set_single_sided (&pc->fdc->e8272, ss);
 	e8272_set_irq_fct (&pc->fdc->e8272, &pc->pic, e8259_get_irq_fct (&pc->pic, irq));
 	e8272_set_dreq_fct (&pc->fdc->e8272, &pc->dma, e8237_set_dreq2);
 

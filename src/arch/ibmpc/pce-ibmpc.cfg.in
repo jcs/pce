@@ -538,6 +538,11 @@ fdc {
 	# work, but floppy disks with more than 8 or 9 sectors per track
 	# can be used even with older BIOSes.
 	ignore_eot = 0
+
+	# Specify single sided drives
+	# This option is a bit mask, with the least significant bit
+	# corresponding to drive 0. Set bits indicate single sided drives.
+	single_sided = 0
 }
 
 
