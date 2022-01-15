@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/vic20/setup.c                                       *
  * Created:     2020-04-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2020-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -82,8 +82,17 @@ void v20_setup_vic20 (vic20_t *sim, ini_sct_t *ini)
 		sim->clock, sim->speed, sim->speed_auto, sim->pal
 	);
 
-	sim->cpu = e6502_new();
-	sim->mem = mem_new();
+	if ((sim->cpu = e6502_new()) == NULL) {
+		pce_log (MSG_ERR, "*** creating the cpu failed\n");
+		return;
+	}
+
+	e6502_set_flags (sim->cpu, E6502_FLAG_UNDEF);
+
+	if ((sim->mem = mem_new()) == NULL) {
+		pce_log (MSG_ERR, "*** creating memory failed\n");
+		return;
+	}
 
 	e6502_set_mem_f (sim->cpu, sim->mem, mem_get_uint8, mem_set_uint8);
 }

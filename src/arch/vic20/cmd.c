@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/vic20/cmd.c                                         *
  * Created:     2020-04-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2020-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -58,7 +58,14 @@ void v20_disasm_str (char *dst, e6502_disasm_t *op)
 		n += sprintf (dst + n, " %02X", (unsigned) op->dat[i]);
 	}
 
-	while (n < 16) {
+	while (n < 15) {
+		dst[n++] = ' ';
+	}
+
+	if (op->flags & E6502_OPF_UND) {
+		dst[n++] = '*';
+	}
+	else {
 		dst[n++] = ' ';
 	}
 
