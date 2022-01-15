@@ -5,7 +5,7 @@
 ;-----------------------------------------------------------------------------
 ; File name:    src/arch/ibmpc/pce.inc
 ; Created:      2003-09-02 by Hampa Hug <hampa@hampa.ch>
-; Copyright:    (C) 2003-2017 Hampa Hug <hampa@hampa.ch>
+; Copyright:    (C) 2003-2022 Hampa Hug <hampa@hampa.ch>
 ;-----------------------------------------------------------------------------
 
 ;-----------------------------------------------------------------------------
@@ -89,6 +89,22 @@
 %define PCE_HOOK_XMS_INFO        0x0401
 %define PCE_HOOK_EMS             0x0500
 %define PCE_HOOK_EMS_INFO        0x0501
+%define PCE_HOOK_INT             0x0600
+%define PCE_HOOK_GET_MODEL       0x0700
+%define PCE_HOOK_GET_COM         0x0701
+%define PCE_HOOK_GET_LPT         0x0702
+%define PCE_HOOK_GET_BOOT        0x0703
+%define PCE_HOOK_GET_DRVCNT      0x0704
+
+
+%macro pce 0
+	db	0xd5, 0x00
+%endmacro
+
+%macro pce 1
+	mov	ax, %1
+	db	0xd5, 0x00
+%endmacro
 
 
 %endif

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/int13.c                                       *
  * Created:     2003-04-14 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -32,6 +32,31 @@
 
 #define INT13_MAX_BLOCKS 8
 
+
+int pc_int13_check (ibmpc_t *pc)
+{
+	unsigned drv;
+
+	drv = e86_get_dl (pc->cpu);
+
+	if (drv & 0x80) {
+		if (pc->hdc == NULL) {
+			return (1);
+		}
+
+		return (0);
+	}
+
+	if (pc->fdc == NULL) {
+		return (1);
+	}
+
+	if (dev_fdc_get_drive (pc->fdc, drv) == 0xffff) {
+		return (1);
+	}
+
+	return (0);
+}
 
 void dsk_int_13_check (ibmpc_t *pc)
 {
