@@ -244,6 +244,11 @@ void e8272_set_drive_mask (e8272_t *fdc, unsigned mask)
 	fdc->drvmsk = mask & 0x0f;
 }
 
+void e8272_set_single_sided (e8272_t *fdc, unsigned mask)
+{
+	fdc->single_sided = mask & 0x0f;
+}
+
 /*
  * Set the IRQ output
  */
@@ -278,7 +283,7 @@ void e8272_set_dreq (e8272_t *fdc, unsigned char val)
 
 
 static
-void e8272_diskop_init (e8272_diskop_t *p,
+void e8272_diskop_init (e8272_t *fdc, e8272_diskop_t *p,
 	unsigned pd, unsigned pc, unsigned ph, unsigned ps,
 	unsigned lc, unsigned lh, unsigned ls, unsigned ln,
 	void *buf, unsigned cnt)
@@ -297,6 +302,10 @@ void e8272_diskop_init (e8272_diskop_t *p,
 	p->cnt = cnt;
 
 	p->fill = 0;
+
+	if (fdc->single_sided & (1U << pd)) {
+		p->ph = 0;
+	}
 }
 
 static
@@ -315,7 +324,7 @@ unsigned e8272_diskop_read (e8272_t *fdc, void *buf, unsigned *cnt,
 		return (E8272_ERR_OTHER);
 	}
 
-	e8272_diskop_init (&p, pd, pc, ph, ps, 0, 0, s, 0, buf, *cnt);
+	e8272_diskop_init (fdc, &p, pd, pc, ph, ps, 0, 0, s, 0, buf, *cnt);
 
 	r = fdc->diskop (fdc->diskop_ext, E8272_DISKOP_READ, &p);
 
@@ -340,7 +349,7 @@ unsigned e8272_diskop_write (e8272_t *fdc, void *buf, unsigned *cnt,
 		return (E8272_ERR_OTHER);
 	}
 
-	e8272_diskop_init (&p, pd, pc, ph, ps, 0, 0, s, 0, buf, *cnt);
+	e8272_diskop_init (fdc, &p, pd, pc, ph, ps, 0, 0, s, 0, buf, *cnt);
 
 	r = fdc->diskop (fdc->diskop_ext, E8272_DISKOP_WRITE, &p);
 
@@ -361,7 +370,9 @@ int e8272_diskop_format (e8272_t *fdc,
 		return (1);
 	}
 
-	e8272_diskop_init (&p, pd, pc, ph, ps, id[0], id[1], id[2], id[3], NULL, 0);
+	e8272_diskop_init (fdc, &p, pd, pc, ph, ps,
+		id[0], id[1], id[2], id[3], NULL, 0
+	);
 
 	p.fill = fill;
 
@@ -382,7 +393,7 @@ unsigned e8272_diskop_readid (e8272_t *fdc,
 		return (1);
 	}
 
-	e8272_diskop_init (&p, pd, pc, ph, ps, 0, 0, 0, 0, NULL, 0);
+	e8272_diskop_init (fdc, &p, pd, pc, ph, ps, 0, 0, 0, 0, NULL, 0);
 
 	r = fdc->diskop (fdc->diskop_ext, E8272_DISKOP_READID, &p);
 

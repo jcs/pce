@@ -87,6 +87,7 @@ typedef struct e8272_t {
 	unsigned char  st[4];
 
 	unsigned char  drvmsk;
+	unsigned char  single_sided;
 
 	e8272_drive_t  drv[4];
 	e8272_drive_t  *curdrv;
@@ -175,6 +176,8 @@ void e8272_set_accuracy (e8272_t *fdc, int accurate);
 void e8272_set_ignore_eot (e8272_t *fdc, int ignore_eot);
 
 void e8272_set_drive_mask (e8272_t *fdc, unsigned mask);
+
+void e8272_set_single_sided (e8272_t *fdc, unsigned mask);
 
 
 void e8272_write_data (e8272_t *fdc, unsigned char val);
