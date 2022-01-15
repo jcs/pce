@@ -251,7 +251,7 @@ static
 void e8272_set_irq (e8272_t *fdc, unsigned char val)
 {
 	if (fdc->irq_val != val) {
-#if E8272_DEBUG >= 3
+#if E8272_DEBUG >= 4
 		fprintf (stderr, "E8272: irq = %d\n", val);
 #endif
 		fdc->irq_val = val;
@@ -699,7 +699,7 @@ unsigned char cmd_get_result (e8272_t *fdc)
 		cmd_done (fdc);
 	}
 
-#if E8272_DEBUG >= 3
+#if E8272_DEBUG >= 5
 	fprintf (stderr, "E8272: get result (%02X)\n", val);
 #endif
 
@@ -731,15 +731,22 @@ void cmd_result (e8272_t *fdc, unsigned cnt)
 static void cmd_read_clock (e8272_t *fdc, unsigned long cnt);
 
 static
-void cmd_read_tc (e8272_t *fdc)
+void cmd_read_log (e8272_t *fdc, const char *str)
 {
-#if E8272_DEBUG >= 2
-	fprintf (stderr, "E8272: CMD=%02X D=%u  READ TC"
-		" (pc=%u, ph=%u c=%u, h=%u, s=%u, n=%u eot=%u)\n",
-		fdc->cmd[0], fdc->curdrv->d, fdc->curdrv->c, fdc->curdrv->h,
-		fdc->cmd[2], fdc->cmd[3], fdc->cmd[4], fdc->cmd[5], fdc->cmd[6]
+#if E8272_DEBUG >= 1
+	fprintf (stderr, "E8272: CMD=%02X D=%u"
+		"  READ   [%02X %02X %02X %02X]  N=%u  EOT=%u%s",
+		fdc->cmd[0], fdc->curdrv->d,
+		fdc->cmd[2], fdc->cmd[3], fdc->sct0, fdc->cmd[5],
+		fdc->sctcnt, fdc->cmd[6], str
 	);
 #endif
+}
+
+static
+void cmd_read_tc (e8272_t *fdc)
+{
+	cmd_read_log (fdc, "  TC\n");
 
 	/* head and unit */
 	fdc->st[0] = (fdc->st[0] & ~0x07) | (fdc->cmd[1] & 0x07);
@@ -760,15 +767,7 @@ void cmd_read_tc (e8272_t *fdc)
 static
 void cmd_read_error (e8272_t *fdc, unsigned err)
 {
-#if E8272_DEBUG >= 1
-	fprintf (stderr,
-		"E8272: CMD=%02X D=%u  READ ERROR"
-		" (pc=%u, ph=%u c=%u, h=%u, s=%u, n=%u eot=%u)\n",
-		fdc->cmd[0], fdc->cmd[1] & 3,
-		fdc->curdrv->c, fdc->curdrv->h,
-		fdc->cmd[2], fdc->cmd[3], fdc->cmd[4], fdc->cmd[5], fdc->cmd[6]
-	);
-#endif
+	cmd_read_log (fdc, "  ERROR\n");
 
 	fdc->read_error = 1;
 
@@ -871,6 +870,8 @@ void cmd_read_clock (e8272_t *fdc, unsigned long cnt)
 		return;
 	}
 
+	cmd_read_log (fdc, "\r");
+
 	fdc->index_cnt = 0;
 
 	if (n > 6) {
@@ -924,6 +925,8 @@ void cmd_read_clock (e8272_t *fdc, unsigned long cnt)
 
 		fdc->set_clock = NULL;
 		fdc->get_data = cmd_read_get_data;
+
+		fdc->sctcnt += 1;
 	}
 	else {
 		cmd_read_tc (fdc);
@@ -936,13 +939,10 @@ void cmd_read (e8272_t *fdc)
 	e8272_select_head (fdc, fdc->cmd[1] & 3, (fdc->cmd[1] >> 2) & 1);
 	e8272_read_track (fdc);
 
-#if E8272_DEBUG >= 1
-	fprintf (stderr, "E8272: CMD=%02X D=%u"
-		"  READ (pc=%u, ph=%u, c=%u, h=%u, s=%u, n=%u, eot=%u)\n",
-		fdc->cmd[0], fdc->curdrv->d, fdc->curdrv->c, fdc->curdrv->h,
-		fdc->cmd[2], fdc->cmd[3], fdc->cmd[4], fdc->cmd[5], fdc->cmd[6]
-	);
-#endif
+	fdc->sct0 = fdc->cmd[4];
+	fdc->sctcnt = 0;
+
+	cmd_read_log (fdc, "\r");
 
 	fdc->st[0] = 0;
 	fdc->st[1] = 0;
@@ -968,13 +968,10 @@ void cmd_read_deleted (e8272_t *fdc)
 	e8272_select_head (fdc, fdc->cmd[1] & 3, (fdc->cmd[1] >> 2) & 1);
 	e8272_read_track (fdc);
 
-#if E8272_DEBUG >= 1
-	fprintf (stderr, "E8272: CMD=%02X D=%u"
-		"  READ DELETED (pc=%u, ph=%u, c=%u, h=%u, s=%u, n=%u, eot=%u)\n",
-		fdc->cmd[0], fdc->curdrv->d, fdc->curdrv->c, fdc->curdrv->h,
-		fdc->cmd[2], fdc->cmd[3], fdc->cmd[4], fdc->cmd[5], fdc->cmd[6]
-	);
-#endif
+	fdc->sct0 = fdc->cmd[4];
+	fdc->sctcnt = 0;
+
+	cmd_read_log (fdc, " (deleted)\r");
 
 	fdc->st[0] = 0;
 	fdc->st[1] = 0;
@@ -1308,13 +1305,22 @@ void cmd_read_id (e8272_t *fdc)
 static void cmd_write_clock (e8272_t *fdc, unsigned long cnt);
 
 static
-void cmd_write_tc (e8272_t *fdc)
+void cmd_write_log (e8272_t *fdc, const char *str)
 {
-#if E8272_DEBUG >= 2
-	fprintf (stderr, "E8272: CMD=%02X D=%u WRITE TC\n",
-		fdc->cmd[0], fdc->cmd[1] & 3
+#if E8272_DEBUG >= 1
+	fprintf (stderr, "E8272: CMD=%02X D=%u"
+		"  WRITE  [%02X %02X %02X %02X]  N=%u  EOT=%u%s",
+		fdc->cmd[0], fdc->curdrv->d,
+		fdc->cmd[2], fdc->cmd[3], fdc->sct0, fdc->cmd[5],
+		fdc->sctcnt, fdc->cmd[6], str
 	);
 #endif
+}
+
+static
+void cmd_write_tc (e8272_t *fdc)
+{
+	cmd_write_log (fdc, "  TC\n");
 
 	fdc->st[0] = (fdc->st[0] & ~0x07) | (fdc->cmd[1] & 0x07);
 
@@ -1334,14 +1340,7 @@ void cmd_write_tc (e8272_t *fdc)
 static
 void cmd_write_error (e8272_t *fdc, unsigned err)
 {
-#if E8272_DEBUG >= 1
-	fprintf (stderr,
-		"E8272: CMD=%02X D=%u  WRITE ERROR"
-		" (pc=%u, ph=%u c=%u, h=%u, s=%u, n=%u eot=%u)\n",
-		fdc->cmd[0], fdc->curdrv->d, fdc->curdrv->c, fdc->curdrv->h,
-		fdc->cmd[2], fdc->cmd[3], fdc->cmd[4], fdc->cmd[5], fdc->cmd[6]
-	);
-#endif
+	cmd_write_log (fdc, "  ERROR\n");
 
 	fdc->st[0] = (fdc->st[0] & 0x3f) | 0x40;
 
@@ -1370,6 +1369,8 @@ void cmd_write_set_data (e8272_t *fdc, unsigned char val)
 	if (fdc->dma) {
 		e8272_set_dreq (fdc, 0);
 	}
+
+	fdc->sctcnt += 1;
 
 	cnt = fdc->buf_n;
 
@@ -1436,6 +1437,8 @@ void cmd_write_clock (e8272_t *fdc, unsigned long cnt)
 		return;
 	}
 
+	cmd_write_log (fdc, "\r");
+
 	fdc->buf_i = 0;
 
 	if (n == 0) {
@@ -1463,14 +1466,10 @@ void cmd_write (e8272_t *fdc)
 	e8272_select_head (fdc, fdc->cmd[1] & 3, (fdc->cmd[1] >> 2) & 1);
 	e8272_read_track (fdc);
 
-#if E8272_DEBUG >= 1
-	fprintf (stderr,
-		"E8272: CMD=%02X D=%u  WRITE"
-		" (pc=%u, ph=%u c=%u, h=%u, s=%u, n=%u)\n",
-		fdc->cmd[0], fdc->curdrv->d, fdc->curdrv->c, fdc->curdrv->h,
-		fdc->cmd[2], fdc->cmd[3], fdc->cmd[4], fdc->cmd[5]
-	);
-#endif
+	fdc->sct0 = fdc->cmd[4];
+	fdc->sctcnt = 0;
+
+	cmd_write_log (fdc, "\r");
 
 	fdc->st[0] = 0;
 	fdc->st[1] = 0;
@@ -1754,7 +1753,7 @@ void cmd_seek (e8272_t *fdc)
 	pd = fdc->cmd[1] & 3;
 	pc = fdc->cmd[2];
 
-#if E8272_DEBUG >= 1
+#if E8272_DEBUG >= 2
 	fprintf (stderr, "E8272: CMD=%02X D=%u  SEEK (pc=%u)\n",
 		fdc->cmd[0], pd, pc
 	);
@@ -1835,7 +1834,7 @@ void cmd_sense_int_status_clock (e8272_t *fdc, unsigned long cnt)
 static
 void cmd_sense_int_status (e8272_t *fdc)
 {
-#if E8272_DEBUG >= 1
+#if E8272_DEBUG >= 3
 	fprintf (stderr, "E8272: CMD=%02X D=*  SENSE INTERRUPT STATUS\n",
 		fdc->cmd[0]
 	);
@@ -2082,7 +2081,7 @@ unsigned char e8272_read_data (e8272_t *fdc)
 		val = fdc->get_data (fdc);
 	}
 
-#if E8272_DEBUG >= 3
+#if E8272_DEBUG >= 5
 	fprintf (stderr, "E8272: read data: %02X\n", val);
 #endif
 
@@ -2116,7 +2115,7 @@ unsigned char e8272_get_uint8 (e8272_t *fdc, unsigned long addr)
 		break;
 	}
 
-#if E8272_DEBUG >= 3
+#if E8272_DEBUG >= 5
 	fprintf (stderr, "E8272: get %04lx -> %02x\n", addr, ret);
 #endif
 
@@ -2125,7 +2124,7 @@ unsigned char e8272_get_uint8 (e8272_t *fdc, unsigned long addr)
 
 void e8272_set_uint8 (e8272_t *fdc, unsigned long addr, unsigned char val)
 {
-#if E8272_DEBUG >= 3
+#if E8272_DEBUG >= 5
 	fprintf (stderr, "E8272: set %04lx <- %02x\n", addr, val);
 #endif
 
@@ -2152,7 +2151,7 @@ void e8272_set_tc (e8272_t *fdc, unsigned char val)
 		return;
 	}
 
-#if E8272_DEBUG >= 2
+#if E8272_DEBUG >= 4
 	fprintf (stderr, "E8272: TC\n");
 #endif
 
