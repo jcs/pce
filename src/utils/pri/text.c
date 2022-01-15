@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text.c                                         *
  * Created:     2014-08-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2014-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2014-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -855,6 +855,8 @@ int txt_enc_track (pri_text_t *ctx)
 	}
 
 	pri_trk_set_pos (ctx->trk, 0);
+
+	ctx->rotate = 0;
 
 	ctx->mac_check_active = 0;
 	ctx->last_val = 0;
