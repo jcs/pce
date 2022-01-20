@@ -85,6 +85,7 @@
 %define PCE_HOOK_GET_TIME_UNIX   0x0300
 %define PCE_HOOK_GET_TIME_UTC    0x0301
 %define PCE_HOOK_GET_TIME_LOCAL  0x0302
+%define PCE_HOOK_GET_TIME_BIOS   0x0303
 %define PCE_HOOK_XMS             0x0400
 %define PCE_HOOK_XMS_INFO        0x0401
 %define PCE_HOOK_EMS             0x0500

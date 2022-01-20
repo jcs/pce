@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/hook.h                                        *
  * Created:     2003-09-02 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2012 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -60,6 +60,7 @@
 #define PCE_HOOK_GET_TIME_UNIX   0x0300
 #define PCE_HOOK_GET_TIME_UTC    0x0301
 #define PCE_HOOK_GET_TIME_LOCAL  0x0302
+#define PCE_HOOK_GET_TIME_BIOS   0x0303
 #define PCE_HOOK_XMS             0x0400
 #define PCE_HOOK_XMS_INFO        0x0401
 #define PCE_HOOK_EMS             0x0500

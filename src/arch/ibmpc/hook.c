@@ -297,6 +297,36 @@ void pc_hook_get_time_unix (ibmpc_t *pc)
 }
 
 static
+void pc_hook_get_time_bios (ibmpc_t *pc, int local)
+{
+	unsigned long v;
+	time_t        tm;
+	struct tm     *tv;
+
+	if (pc->support_rtc == 0) {
+		pc_hook_set_result (pc, 0xffff);
+		return;
+	}
+
+	tm = time (NULL);
+
+	if (local) {
+		tv = localtime (&tm);
+	}
+	else {
+		tv = gmtime (&tm);
+	}
+
+	v = (60UL * ((60U * tv->tm_hour) + tv->tm_min)) + tv->tm_sec;
+	v = ((unsigned long long) PCE_IBMPC_CLK2 * v) / 65536;
+
+	e86_set_ax (pc->cpu, v & 0xffff);
+	e86_set_dx (pc->cpu, (v >> 16) & 0xffff);
+
+	pc_hook_set_result (pc, 0);
+}
+
+static
 void pc_hook_get_calendar (ibmpc_t *pc, int local)
 {
 	unsigned  cs;
@@ -515,6 +545,10 @@ int pc_hook (void *ext)
 
 	case PCE_HOOK_GET_TIME_UTC:
 		pc_hook_get_calendar (pc, 0);
+		break;
+
+	case PCE_HOOK_GET_TIME_BIOS:
+		pc_hook_get_time_bios (pc, 1);
 		break;
 
 	case PCE_HOOK_XMS:
