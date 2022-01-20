@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text.h                                         *
  * Created:     2017-10-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2017-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2017-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -56,6 +56,8 @@ typedef struct {
 
 	unsigned long  shift;
 	unsigned       shift_cnt;
+
+	char           free_track;
 
 	unsigned char  last_val;
 

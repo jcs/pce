@@ -189,6 +189,15 @@ void txt_dec_init (pri_text_t *ctx, FILE *fp, pri_img_t *img, pri_trk_t *trk, un
 }
 
 static
+void txt_dec_free (pri_text_t *ctx)
+{
+	if (ctx->free_track) {
+		pri_trk_del (ctx->trk);
+		ctx->trk = NULL;
+	}
+}
+
+static
 int pri_decode_text_auto_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned long h, void *opaque)
 {
 	unsigned   enc;
@@ -211,6 +220,8 @@ int pri_decode_text_auto_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, un
 		txt_raw_dec_track (&ctx);
 	}
 
+	txt_dec_free (&ctx);
+
 	return (0);
 }
 
@@ -221,6 +232,7 @@ int pri_decode_text_mfm_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, uns
 
 	txt_dec_init (&ctx, opaque, img, trk, c, h);
 	txt_mfm_dec_track (&ctx);
+	txt_dec_free (&ctx);
 
 	return (0);
 }
@@ -232,6 +244,7 @@ int pri_decode_text_fm_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsi
 
 	txt_dec_init (&ctx, opaque, img, trk, c, h);
 	txt_fm_dec_track (&ctx);
+	txt_dec_free (&ctx);
 
 	return (0);
 }
@@ -243,6 +256,7 @@ int pri_decode_text_mac_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, uns
 
 	txt_dec_init (&ctx, opaque, img, trk, c, h);
 	txt_mac_dec_track (&ctx);
+	txt_dec_free (&ctx);
 
 	return (0);
 }
@@ -254,6 +268,7 @@ int pri_decode_text_raw_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, uns
 
 	txt_dec_init (&ctx, opaque, img, trk, c, h);
 	txt_raw_dec_track (&ctx);
+	txt_dec_free (&ctx);
 
 	return (0);
 }
