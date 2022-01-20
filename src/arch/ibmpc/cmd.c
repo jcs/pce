@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/cmd.c                                         *
  * Created:     2010-09-21 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -601,10 +601,6 @@ void pce_op_int (void *ext, unsigned char n)
 		}
 
 		if (pc->patch_bios_int19 == 0) {
-			return;
-		}
-
-		if (pc->patch_bios_init) {
 			return;
 		}
 
