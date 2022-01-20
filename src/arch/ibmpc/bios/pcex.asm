@@ -62,9 +62,9 @@ msg_cksmbad	db " bad checksum", 0
 
 start:
 	cli
-	mov	ax, 0x0050
+	mov	ax, 0x0040
 	mov	ss, ax
-	mov	sp, 1024
+	mov	sp, 4096
 
 	pce	PCE_HOOK_CHECK
 	sub	ax, 0x0fce		; check if we are running under pce
