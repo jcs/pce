@@ -54,11 +54,6 @@ msg_memchk2	db "KB", 13, 0
 msg_serial	db "Serial ports:   ", 0
 msg_parallel	db "Parallel ports: ", 0
 
-msg_rom1	db "ROM[", 0
-msg_rom2	db "]:", 0
-msg_cksmok	db " checksum ok", 0
-msg_cksmbad	db " bad checksum", 0
-
 
 start:
 	cli
