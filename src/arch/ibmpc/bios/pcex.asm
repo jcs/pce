@@ -48,11 +48,11 @@ pce_ext_end:
 msg_init	db "PCE IBM PC BIOS extension"
 		db 13, 10, 13, 10, 0
 
-msg_memchk1	db "Memory size:    ", 0
-msg_memchk2	db "KB", 13, 0
-
+msg_memsize	db "Memory size:    ", 0
 msg_serial	db "Serial ports:   ", 0
 msg_parallel	db "Parallel ports: ", 0
+
+msg_kib		db " KiB", 13, 10, 0
 
 
 start:
@@ -501,60 +501,57 @@ init_rom2:
 	ret
 
 
+;-----------------------------------------------------------------------------
+; Initialize the RAM size
+;-----------------------------------------------------------------------------
 init_mem:
 	push	ax
 	push	cx
 	push	bx
 	push	si
-	push	es
 
-	mov	cx, 64
-	mov	bx, 0x1000
-
-.next:
-	mov	es, bx
-
+	mov	cx, 16				; start at 16 KiB
+	mov	bx, 0x0400
 	mov	ax, 0xaa55
+	xor	si, si
 
-	xchg	[es:0], al
-	xchg	[es:0], al
-	xchg	[es:0], ah
-	xchg	[es:0], ah
+	push	ds
 
-	cmp	ax, 0xaa55
+.next1:
+	mov	ds, bx
+
+.next2:
+	xchg	[si], al
+	xchg	[si], al
+	cmp	al, 0x55
 	jne	.done
 
-	xchg	[es:0 + 1023], al
-	xchg	[es:0 + 1023], al
-	xchg	[es:0 + 1023], ah
-	xchg	[es:0 + 1023], ah
-
-	cmp	ax, 0xaa55
+	xchg	[si], ah
+	xchg	[si], ah
+	cmp	ah, 0xaa
 	jne	.done
+
+	xor	si, 1023
+	jnz	.next2
 
 	inc	cx
 	add	bx, 1024 / 16
 
 	cmp	cx, 640
-	jae	.done
-
-	jmp	.next
+	jb	.next1
 
 .done:
-	mov	si, msg_memchk1
-	call	prt_string
+	pop	ds
 
+	mov	[0x0013], cx			; ram size
+
+	mov	si, msg_memsize
+	call	prt_string
 	mov	ax, cx
 	call	prt_uint16
-
-	mov	si, msg_memchk2
+	mov	si, msg_kib
 	call	prt_string
 
-	call	prt_nl
-
-	mov	[0x0013], cx
-
-	pop	es
 	pop	si
 	pop	bx
 	pop	cx
