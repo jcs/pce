@@ -1,23 +1,23 @@
-;*****************************************************************************
-;* pce                                                                       *
-;*****************************************************************************
+;-----------------------------------------------------------------------------
+; pce
+;-----------------------------------------------------------------------------
 
-;*****************************************************************************
-;* File name:   src/arch/ibmpc/bios/pcex.asm                                 *
-;* Created:     2003-04-14 by Hampa Hug <hampa@hampa.ch>                     *
-;* Copyright:   (C) 2003-2021 Hampa Hug <hampa@hampa.ch>                     *
-;*****************************************************************************
+;-----------------------------------------------------------------------------
+; File name:    src/arch/ibmpc/bios/pcex.asm
+; Created:      2003-04-14 by Hampa Hug <hampa@hampa.ch>
+; Copyright:    (C) 2003-2022 Hampa Hug <hampa@hampa.ch>
+;-----------------------------------------------------------------------------
 
-;*****************************************************************************
-;* This program is free software. You can redistribute it and / or modify it *
-;* under the terms of the GNU General Public License version 2 as  published *
-;* by the Free Software Foundation.                                          *
-;*                                                                           *
-;* This program is distributed in the hope  that  it  will  be  useful,  but *
-;* WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
-;* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
-;* Public License for more details.                                          *
-;*****************************************************************************
+;-----------------------------------------------------------------------------
+; This program is free software. You can redistribute it and / or modify it
+; under the terms of the GNU General Public License version 2 as  published
+; by the Free Software Foundation.
+;
+; This program is distributed in the hope  that  it  will  be  useful,  but
+; WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+; Public License for more details.
+;-----------------------------------------------------------------------------
 
 
 %include "pce.inc"
@@ -65,6 +65,11 @@ start:
 	mov	ax, 0x0050
 	mov	ss, ax
 	mov	sp, 1024
+
+	pce	PCE_HOOK_CHECK
+	sub	ax, 0x0fce		; check if we are running under pce
+.stop:
+	jne	.stop
 
 	call	set_bios_ds
 
