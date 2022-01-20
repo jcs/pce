@@ -800,14 +800,14 @@ prt_uint16:
 ;-----------------------------------------------------------------------------
 
 inttab:
-	dw	int_00, 0x0000			; 00: F000:FF47
-	dw	int_01, 0x0000			; 01: F000:FF47
+	dw	int_nn, 0x0000			; 00: F000:FF47
+	dw	int_nn, 0x0000			; 01: F000:FF47
 	dw	0xe2c3, 0xf000			; 02: F000:E2C3
-	dw	int_03, 0x0000			; 03: F000:FF47
-	dw	int_04, 0x0000			; 04: F000:FF47
+	dw	int_nn, 0x0000			; 03: F000:FF47
+	dw	int_nn, 0x0000			; 04: F000:FF47
 	dw	0xff54, 0xf000			; 05: F000:FF54
-	dw	int_06, 0x0000			; 06: F000:FF47
-	dw	int_07, 0x0000			; 07: F000:FF47
+	dw	int_nn, 0x0000			; 06: F000:FF47
+	dw	int_nn, 0x0000			; 07: F000:FF47
 	dw	0xfea5, 0xf000			; 08: F000:FEA5
 	dw	0xe987, 0xf000			; 09: F000:E987
 	dw	0xe6dd, 0xf000			; 0A: F000:E6DD
@@ -834,63 +834,31 @@ inttab:
 	dw	0x0000, 0xf000			; 1F: F000:0000
 
 
-int_default:
-	iret
-
-
 ;-----------------------------------------------------------------------------
 
-int_00:
-	pceh	PCEH_INT, 0x00
+int_default:
+int_nn:
 	iret
 
-int_01:
-	pceh	PCEH_INT, 0x01
-	iret
-
-int_03:
-	pceh	PCEH_INT, 0x03
-	iret
-
-int_04:
-	pceh	PCEH_INT, 0x04
-	iret
-
-int_06:
-	pceh	PCEH_INT, 0x06
-	iret
-
-int_07:
-	pceh	PCEH_INT, 0x07
-	iret
+;-----------------------------------------------------------------------------
 
 int_13:
-	push	ax
-	pceh	PCEH_CHECK_INT, 0x13
-	or	ax, ax
-	jz	.skip
-	pop	ax
-
+	pceint	0x13, .skip
 	sti
-	pceh	PCEH_INT, 0x13
 	retf	2
-
 .skip:
-	pop	ax
-	jmp	0xf000:0xec59
-
-int_15:
-	cmp	ah, 3
-	jbe	.cassette
-	sti
-	pceh	PCEH_INT, 0x15
-	retf	2
-.cassette:
-	jmp	0xf000:0xf859			; bios int 15
-
+	jmp	0xf000:0xec59			; bios int 13
 
 ;-----------------------------------------------------------------------------
 
+int_15:
+	pceint	0x15, .skip
+	sti
+	retf	2
+.skip:
+	jmp	0xf000:0xf859			; bios int 15
+
+;-----------------------------------------------------------------------------
 
 int_19:
 	xor	ax, ax
@@ -913,9 +881,10 @@ int_19:
 	mov	word [4 * 0x1a + 0], int_1a
 	mov	word [4 * 0x1a + 2], cs
 
-	pceh	PCEH_GET_BOOT			; get boot drive in AL
-	mov	dl, al
+	pce	PCE_HOOK_GET_BOOT		; get boot drive in AL
+	jc	.fail
 
+	mov	dl, al
 	mov	ax, 0x0201
 	mov	bx, 0x7c00
 	mov	cx, 0x0001
@@ -938,21 +907,16 @@ int_19:
 ;-----------------------------------------------------------------------------
 
 int_1a:
-	cmp	ah, 2
-	jae	.hook
-
-	jmp	0xf000:0xfe6e
-
-.hook:
 	push	bp
 	mov	bp, sp
 	push	word [bp + 6]			; flags
 	popf
 	pop	bp
 
-	pceh	PCEH_INT, 0x1a
-
+	pceint	0x1a, .skip
 	retf	2
+.skip:
+	jmp	0xf000:0xfe6e			; bios int 1a
 
 
 ;-----------------------------------------------------------------------------

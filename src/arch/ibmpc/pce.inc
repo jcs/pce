@@ -107,5 +107,12 @@
 	db	0xd5, 0x00
 %endmacro
 
+%macro pceint 2
+	push	ax
+	mov	ax, PCE_HOOK_INT | (%1)
+	db	0xd5, 0x00
+	jmp	short %2
+%endmacro
+
 
 %endif
