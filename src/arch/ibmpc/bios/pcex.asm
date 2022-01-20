@@ -67,6 +67,8 @@ start:
 	mov	sp, 4096
 	mov	ds, ax
 
+	cld
+
 	pce	PCE_HOOK_CHECK
 	sub	ax, 0x0fce		; check if we are running under pce
 .stop:
@@ -85,7 +87,6 @@ start:
 	call	init_rom1
 	call	init_banner
 	call	init_mem
-	call	init_misc
 	call	init_keyboard
 	call	init_serport
 	call	init_parport
@@ -99,18 +100,9 @@ start:
 	pop	ds
 
 	cli
-
-	mov	di, 0x0050
-	mov	es, di
-	xor	di, di
-	xor	ax, ax
-	mov	cx, 0x8000 - 0x0500
-	rep	stosw
-
 	mov	ax, 0x0030
 	mov	ss, ax
 	mov	sp, 0x0100
-
 	sti
 
 	int	0x19
@@ -120,28 +112,18 @@ done:
 
 
 ;-----------------------------------------------------------------------------
-
+; Clear the first 32K of RAM
+;-----------------------------------------------------------------------------
 init_data:
-	push	ax
-	push	cx
-	push	di
-	push	es
-
-	cld
-
-	push	ds
-	pop	es
+	pop	bp
 
 	xor	di, di
+	mov	es, di
 	xor	ax, ax
-	mov	cx, 256 / 2
-	rep	stosw
+	mov	cx, 32768 / 2
+	rep	stosw			; clear the first 32K of RAM
 
-	pop	es
-	pop	di
-	pop	cx
-	pop	ax
-	ret
+	jmp	bp
 
 
 init_biosdata:
@@ -393,25 +375,6 @@ init_banner:
 
 	pop	si
 	pop	ax
-	ret
-
-
-init_misc:
-	xor	ax, ax
-
-	mov	[0x006c], ax
-	mov	[0x006e], ax
-	mov	[0x0070], al
-
-	mov	[0x0000], ax			; COM1
-	mov	[0x0002], ax
-	mov	[0x0004], ax
-	mov	[0x0006], ax
-	mov	[0x0008], ax			; LPT1
-	mov	[0x000a], ax
-	mov	[0x000c], ax
-	mov	[0x000e], ax
-
 	ret
 
 
