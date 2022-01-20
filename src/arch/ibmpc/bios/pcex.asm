@@ -126,21 +126,15 @@ init_data:
 	jmp	bp
 
 
+;-----------------------------------------------------------------------------
+; Set up some extra BIOS data
+;-----------------------------------------------------------------------------
 init_biosdata:
 	push	ax
-	push	ds
 
-	mov	ax, 0x0040
-	mov	ds, ax
+	mov	byte [0x0090], 0x94	; drive 0 media state
+	mov	byte [0x0091], 0x94	; drive 1 media state
 
-	pceh	PCEH_GET_HDCNT
-	mov	[0x0075], al
-
-	; keyboard status 1
-	; (non-functional on PC, but some programs need it)
-	;mov     [0x0096], byte 0x10
-
-	pop	ds
 	pop	ax
 	ret
 
