@@ -697,62 +697,24 @@ init_parport:
 	ret
 
 
-get_bcd:
-	push	dx
-	xor	dx, dx
-	mov	ah, al
-	and	ax, 0xf00f
-	shr	ah, 1
-	add	dl, ah
-	shr	ah, 1
-	shr	ah, 1
-	add	dl, ah
-	add	dl, al
-	xchg	ax, dx
-	pop	dx
-	ret
-
+;-----------------------------------------------------------------------------
+; Initialize BIOS time
+;-----------------------------------------------------------------------------
 init_time:
 	push	ax
 	push	dx
-	push	si
-	push	di
 
-	mov	ah, 2
-	int	0x1a
+	pce	PCE_HOOK_GET_TIME_BIOS
+	jnc	.ok
 
-						; 18 * seconds
-	mov	al, dh
-	call	get_bcd
-	mov	dx, 18
-	mul	dx
-	mov	si, ax
-	mov	di, dx
+	xor	ax, ax
+	xor	dx, dx
 
-						; 1092 * minutes
-	mov	al, cl
-	call	get_bcd
-	mov	dx, 1092
-	mul	dx
-	add	si, ax
-	adc	di, dx
-
-						; 65539 * hours
-	mov	al, ch
-	call	get_bcd
-	add	di, ax
-	mov	dx, ax
-	shl	ax, 1
-	add	ax, dx
-	add	si, ax
-	adc	di, 0
-
-	mov	[0x006c], si
-	mov	[0x006e], di
+.ok:
+	mov	[0x006c], ax
+	mov	[0x006e], dx
 	mov	[0x0070], byte 0
 
-	pop	di
-	pop	si
 	pop	dx
 	pop	ax
 	ret
