@@ -589,6 +589,9 @@ init_keyboard:
 	ret
 
 
+;-----------------------------------------------------------------------------
+; Initialize COM port addresses
+;-----------------------------------------------------------------------------
 init_serport:
 	push	ax
 	push	cx
@@ -596,34 +599,34 @@ init_serport:
 	push	bx
 	push	si
 
-						; get com info
-	pceh	PCEH_GET_COM
+	pce	PCE_HOOK_GET_COM		; get com ports
+	jnc	.ok
 
+	xor	ax, ax
+	xor	bx, bx
+	xor	cx, cx
+	xor	dx, dx
+
+.ok:
 	mov	[0x0000], ax
 	mov	[0x0002], bx
 	mov	[0x0004], cx
 	mov	[0x0006], dx
 
 	sub	ax, 1
-	cmc
-	mov	ax, 0
-	adc	ax, 0
-
+	mov	ax, 4
+	sbb	al, 0
 	sub	bx, 1
-	cmc
-	adc	ax, 0
-
+	sbb	al, 0
 	sub	cx, 1
-	cmc
-	adc	ax, 0
-
+	sbb	al, 0
 	sub	dx, 1
-	cmc
-	adc	ax, 0
+	sbb	al, 0
 
 	mov	si, msg_serial
 	call	prt_string
 	call	prt_uint16
+	call	prt_nl
 
 	mov	cl, 9
 	shl	ax, cl
@@ -633,8 +636,6 @@ init_serport:
 	or	dx, ax
 	mov	[0x0010], dx
 
-	call	prt_nl
-
 	pop	si
 	pop	bx
 	pop	dx
@@ -643,6 +644,9 @@ init_serport:
 	ret
 
 
+;-----------------------------------------------------------------------------
+; Initialize LPT port addresses
+;-----------------------------------------------------------------------------
 init_parport:
 	push	ax
 	push	cx
@@ -650,42 +654,40 @@ init_parport:
 	push	bx
 	push	si
 
-						; get lpt info
-	pceh	PCEH_GET_LPT
+	pce	PCE_HOOK_GET_LPT		; get lpt ports
+	jnc	.ok
 
+	xor	ax, ax
+	xor	bx, bx
+	xor	cx, cx
+	xor	dx, dx
+
+.ok:
 	mov	[0x0008], ax
 	mov	[0x000a], bx
 	mov	[0x000c], cx
 	mov	[0x000e], dx
 
 	sub	ax, 1
-	cmc
-	mov	ax, 0
-	adc	ax, 0
-
+	mov	ax, 4
+	sbb	al, 0
 	sub	bx, 1
-	cmc
-	adc	ax, 0
-
+	sbb	al, 0
 	sub	cx, 1
-	cmc
-	adc	ax, 0
-
+	sbb	al, 0
 	sub	dx, 1
-	cmc
-	adc	ax, 0
+	sbb	al, 0
 
 	mov	si, msg_parallel
 	call	prt_string
 	call	prt_uint16
+	call	prt_nl
 
 	mov	cl, 14
 	shl	ax, cl
 
 	and	byte [0x0011], 0x3f
 	or	word [0x0010], ax
-
-	call	prt_nl
 
 	pop	si
 	pop	bx
