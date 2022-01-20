@@ -65,13 +65,12 @@ start:
 	mov	ax, 0x0040
 	mov	ss, ax
 	mov	sp, 4096
+	mov	ds, ax
 
 	pce	PCE_HOOK_CHECK
 	sub	ax, 0x0fce		; check if we are running under pce
 .stop:
 	jne	.stop
-
-	call	set_bios_ds
 
 	call	init_data
 	call	init_int
@@ -789,13 +788,6 @@ init_time:
 	pop	dx
 	pop	ax
 	ret
-
-set_bios_ds:
-	mov	ds, [cs:.bios_ds]
-	ret
-
-.bios_ds:
-	dw	0x0040
 
 
 ; print string at CS:SI
