@@ -230,18 +230,34 @@ init_pit:
 
 
 ;-----------------------------------------------------------------------------
-; Initialize the video 8255 PPI
+; Initialize the 8255 PPI
 ;-----------------------------------------------------------------------------
 init_ppi:
 	push	ax
 	push	cx
+	push	es
 
 	mov	al, 0x99
 	out	0x63, al			; set up ppi ports
 
-	cmp	byte [cs:0xfffe], 0xfe		; check if pc/xt
+	pce	PCE_HOOK_GET_MODEL
+	jc	.nohook
+
+	test	al, 0x01			; check if pc
+	jnz	.pc
+	test	al, 0x02			; check if xt
+	jnz	.xt
+
+.nohook:
+	mov	ax, 0xf000
+	mov	es, ax
+	mov	al, [es:0xfffe]			; get bios model byte
+	cmp	al, 0xfe
+	je	.xt
+	cmp	al, 0xfb
 	je	.xt
 
+.pc:
 	mov	al, 0xfc
 	out	0x61, al
 
@@ -272,9 +288,10 @@ init_ppi:
 	or	al, ah
 	xor	ah, ah
 
-	mov	[0x0010], ax
+	mov	[0x0010], ax			; equipment word
 
 .done:
+	pop	es
 	pop	cx
 	pop	ax
 	ret
