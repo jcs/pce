@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/lib/load.c                                               *
  * Created:     2004-08-02 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2004-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2004-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -178,6 +178,9 @@ int pce_load_mem (memory_t *mem, const char *fname, const char *fmt, unsigned lo
 		else if (strcasecmp (ext, "bin") == 0) {
 			fmt = "binary";
 		}
+		else if (strcasecmp (ext, "rom") == 0) {
+			fmt = "binary";
+		}
 		else {
 			return (1);
 		}
@@ -216,7 +219,7 @@ int pce_load_mem_ini (memory_t *mem, ini_sct_t *ini)
 	sct = NULL;
 
 	while ((sct = ini_next_sct (ini, sct, "load")) != NULL) {
-		ini_get_string (sct, "format", &fmt, "binary");
+		ini_get_string (sct, "format", &fmt, "auto");
 		ini_get_string (sct, "file", &fname, NULL);
 
 		if (ini_get_uint32 (sct, "address", &addr, 0)) {
