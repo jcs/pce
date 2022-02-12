@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pti/space.c                                        *
  * Created:     2020-05-04 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2020-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -49,7 +49,7 @@ int pti_space_add_left (pti_img_t *img, unsigned long clk)
 		return (1);
 	}
 
-	i = img->pulse_cnt;
+	i = img->pulse_cnt++;
 
 	while (i > 0) {
 		img->pulse[i] = img->pulse[i - 1];
