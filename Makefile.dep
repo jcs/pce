@@ -2948,6 +2948,7 @@ src/lib/load.o: src/lib/load.c \
 	src/libini/libini.h
 
 src/lib/log.o: src/lib/log.c \
+	src/config.h \
 	src/lib/log.h
 
 src/lib/mhex.o: src/lib/mhex.c \
