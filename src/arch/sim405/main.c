@@ -106,7 +106,7 @@ void print_version (void)
 static
 void s405_log_banner (void)
 {
-	pce_log (MSG_MSG,
+	pce_log_inf (
 		"pce-sim405 version " PCE_VERSION_STR "\n"
 		"Copyright (C) 2004-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n"
 	);

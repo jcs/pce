@@ -102,7 +102,7 @@ void print_version (void)
 static
 void rc759_log_banner (void)
 {
-	pce_log (MSG_MSG,
+	pce_log_inf (
 		"pce-rc759 version " PCE_VERSION_STR "\n"
 		"Copyright (C) 2012-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n"
 	);

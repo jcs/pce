@@ -95,7 +95,7 @@ void print_version (void)
 static
 void sim_log_banner (void)
 {
-	pce_log (MSG_MSG,
+	pce_log_inf (
 		"pce-cpm80 version " PCE_VERSION_STR "\n"
 		"Copyright (C) 2012-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n"
 	);

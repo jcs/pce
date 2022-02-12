@@ -105,7 +105,7 @@ void print_version (void)
 static
 void v20_log_banner (void)
 {
-	pce_log (MSG_INF,
+	pce_log_inf (
 		"pce-vic20 version " PCE_VERSION_STR "\n"
 		"Copyright (C) 2020-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n"
 	);

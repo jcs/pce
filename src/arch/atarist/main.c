@@ -105,7 +105,7 @@ void print_version (void)
 static
 void st_log_banner (void)
 {
-	pce_log (MSG_INF,
+	pce_log_inf (
 		"pce-atarist version " PCE_VERSION_STR "\n"
 		"Copyright (C) 2011-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n"
 	);

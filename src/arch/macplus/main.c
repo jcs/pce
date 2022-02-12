@@ -111,7 +111,7 @@ void print_version (void)
 static
 void mac_log_banner (void)
 {
-	pce_log (MSG_MSG,
+	pce_log_inf (
 		"pce-macplus version " PCE_VERSION_STR "\n"
 		"Copyright (C) 2007-" PCE_YEAR " Hampa Hug <hampa@hampa.ch>\n"
 	);

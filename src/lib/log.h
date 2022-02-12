@@ -31,9 +31,8 @@
 #define PCE_LOG_MAX 16
 
 #define MSG_ERR 0
-#define MSG_MSG 1
-#define MSG_INF 2
-#define MSG_DEB 3
+#define MSG_INF 1
+#define MSG_DEB 2
 
 
 void pce_log_init (void);
