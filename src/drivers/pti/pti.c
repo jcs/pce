@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pti/pti.c                                        *
  * Created:     2020-04-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2020-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -359,7 +359,7 @@ void pti_img_get_index (const pti_img_t *img, unsigned long *idx, unsigned long 
 	*idx = i;
 }
 
-int pti_img_add_comment (pti_img_t *img, const unsigned char *buf, unsigned cnt)
+int pti_img_add_comment (pti_img_t *img, const void *buf, unsigned cnt)
 {
 	unsigned char *tmp;
 
@@ -377,7 +377,7 @@ int pti_img_add_comment (pti_img_t *img, const unsigned char *buf, unsigned cnt)
 	return (0);
 }
 
-int pti_img_set_comment (pti_img_t *img, const unsigned char *buf, unsigned cnt)
+int pti_img_set_comment (pti_img_t *img, const void *buf, unsigned cnt)
 {
 	free (img->comment);
 

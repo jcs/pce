@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pti/pti.h                                        *
  * Created:     2020-04-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2020-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -70,8 +70,8 @@ void pti_img_get_length (const pti_img_t *img, unsigned long *sec, unsigned long
 void pti_img_get_time (const pti_img_t *img, unsigned long idx, unsigned long *sec, unsigned long *clk);
 void pti_img_get_index (const pti_img_t *img, unsigned long *idx, unsigned long sec, unsigned long clk);
 
-int pti_img_add_comment (pti_img_t *img, const unsigned char *buf, unsigned cnt);
-int pti_img_set_comment (pti_img_t *img, const unsigned char *buf, unsigned cnt);
+int pti_img_add_comment (pti_img_t *img, const void *buf, unsigned cnt);
+int pti_img_set_comment (pti_img_t *img, const void *buf, unsigned cnt);
 
 
 #endif
