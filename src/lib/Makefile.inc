@@ -10,6 +10,7 @@ LIBPCE_BAS := \
 	cfg \
 	cmd \
 	console \
+	endian \
 	getopt \
 	ihex \
 	iniata \
@@ -48,6 +49,7 @@ $(rel)/brkpt.o:		$(rel)/brkpt.c
 $(rel)/cfg.o:		$(rel)/cfg.c
 $(rel)/cmd.o:		$(rel)/cmd.c
 $(rel)/console.o:	$(rel)/console.c
+$(rel)/endian.o:	$(rel)/endian.c
 $(rel)/getopt.o:	$(rel)/getopt.c
 $(rel)/ihex.o:		$(rel)/ihex.c
 $(rel)/iniata.o:	$(rel)/iniata.c
