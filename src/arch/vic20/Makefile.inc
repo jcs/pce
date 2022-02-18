@@ -51,8 +51,10 @@ PCE_VIC20_OBJ_EXT := \
 	src/drivers/options.o \
 	src/lib/brkpt.o \
 	src/lib/cfg.o \
+	src/lib/ciff.o \
 	src/lib/cmd.o \
 	src/lib/console.o \
+	src/lib/endian.o \
 	src/lib/getopt.o \
 	src/lib/iniram.o \
 	src/lib/initerm.o \

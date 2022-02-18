@@ -18,6 +18,8 @@ PTI_UTIL_MAN1 := $(rel)/pti.1
 PTI_UTIL_BIN := $(rel)/pti$(EXEEXT)
 
 PTI_UTIL_OBJ_EXT := \
+	src/lib/ciff.o \
+	src/lib/endian.o \
 	src/lib/getopt.o \
 	$(DRV_PTI_OBJ)
 

@@ -2759,9 +2759,11 @@ src/drivers/pti/pti-img-pcm.o: src/drivers/pti/pti-img-pcm.c \
 	src/drivers/pti/pti.h
 
 src/drivers/pti/pti-img-pti.o: src/drivers/pti/pti-img-pti.c \
+	src/config.h \
 	src/drivers/pti/pti-img-pti.h \
-	src/drivers/pti/pti-io.h \
-	src/drivers/pti/pti.h
+	src/drivers/pti/pti.h \
+	src/lib/ciff.h \
+	src/lib/endian.h
 
 src/drivers/pti/pti-img-tap.o: src/drivers/pti/pti-img-tap.c \
 	src/drivers/pti/pti-img-tap.h \

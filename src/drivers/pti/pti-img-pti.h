@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pti/pti-img-pti.h                                *
  * Created:     2020-04-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2020-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -23,6 +23,8 @@
 #ifndef PTI_IMG_PTI_H
 #define PTI_IMG_PTI_H 1
 
+
+#include <stdio.h>
 
 #include <drivers/pti/pti.h>
 
