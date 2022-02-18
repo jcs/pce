@@ -2580,10 +2580,12 @@ src/drivers/pfi/pfi-kryo.o: src/drivers/pfi/pfi-kryo.c \
 	src/drivers/pfi/track.h
 
 src/drivers/pfi/pfi-pfi.o: src/drivers/pfi/pfi-pfi.c \
-	src/drivers/pfi/pfi-io.h \
+	src/config.h \
 	src/drivers/pfi/pfi-pfi.h \
 	src/drivers/pfi/pfi.h \
-	src/drivers/pfi/track.h
+	src/drivers/pfi/track.h \
+	src/lib/ciff.h \
+	src/lib/endian.h
 
 src/drivers/pfi/pfi-scp.o: src/drivers/pfi/pfi-scp.c \
 	src/drivers/pfi/pfi-io.h \

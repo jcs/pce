@@ -23,6 +23,8 @@ PFI_UTIL_MAN1 := $(rel)/pfi.1
 PFI_UTIL_BIN := $(rel)/pfi$(EXEEXT)
 
 PFI_UTIL_OBJ_EXT := \
+	src/lib/ciff.o \
+	src/lib/endian.o \
 	src/lib/getopt.o \
 	$(DRV_PSI_OBJ) \
 	$(DRV_PRI_OBJ) \
