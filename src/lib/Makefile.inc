@@ -8,6 +8,7 @@ DIST += $(rel)/Makefile.inc $(rel)/stdint/stdint.h
 LIBPCE_BAS := \
 	brkpt \
 	cfg \
+	ciff \
 	cmd \
 	console \
 	endian \
@@ -47,6 +48,7 @@ DIST += $(LIBPCE_SRC) $(LIBPCE_HDR)
 
 $(rel)/brkpt.o:		$(rel)/brkpt.c
 $(rel)/cfg.o:		$(rel)/cfg.c
+$(rel)/ciff.o:		$(rel)/ciff.c
 $(rel)/cmd.o:		$(rel)/cmd.c
 $(rel)/console.o:	$(rel)/console.c
 $(rel)/endian.o:	$(rel)/endian.c

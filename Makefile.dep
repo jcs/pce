@@ -2871,6 +2871,11 @@ src/lib/cfg.o: src/lib/cfg.c \
 	src/lib/log.h \
 	src/libini/libini.h
 
+src/lib/ciff.o: src/lib/ciff.c \
+	src/config.h \
+	src/lib/ciff.h \
+	src/lib/endian.h
+
 src/lib/cmd.o: src/lib/cmd.c \
 	src/lib/cmd.h \
 	src/lib/console.h
