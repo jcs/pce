@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/chipset/e6845.c                                          *
  * Created:     2017-08-07 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2017 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2017-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -134,6 +134,17 @@ unsigned e6845_get_cursor_mask (e6845_t *crt, int blink)
 	return (~0U);
 }
 
+unsigned e6845_get_vtl (const e6845_t *crt)
+{
+	unsigned val;
+
+	val = (crt->reg[E6845_REG_ML] & 0x1f) + 1;
+	val *= (crt->reg[E6845_REG_VT] & 0x7f) + 1;
+	val += crt->reg[E6845_REG_VA] & 0x1f;
+
+	return (val);
+}
+
 unsigned e6845_get_vdl (const e6845_t *crt)
 {
 	unsigned val;
@@ -144,13 +155,12 @@ unsigned e6845_get_vdl (const e6845_t *crt)
 	return (val);
 }
 
-unsigned e6845_get_vtl (const e6845_t *crt)
+unsigned e6845_get_vsl (const e6845_t *crt)
 {
 	unsigned val;
 
 	val = (crt->reg[E6845_REG_ML] & 0x1f) + 1;
-	val *= (crt->reg[E6845_REG_VT] & 0x7f) + 1;
-	val += crt->reg[E6845_REG_VA] & 0x1f;
+	val *= crt->reg[E6845_REG_VS] & 0x7f;
 
 	return (val);
 }

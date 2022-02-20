@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/chipset/e6845.h                                          *
  * Created:     2017-08-07 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2017 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2017-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -99,8 +99,9 @@ void e6845_set_vsync_fct (e6845_t *crt, void *ext, void *fct);
 unsigned e6845_get_start_address (const e6845_t *crt);
 unsigned e6845_get_cursor_address (const e6845_t *crt);
 unsigned e6845_get_cursor_mask (e6845_t *crt, int blink);
-unsigned e6845_get_vdl (const e6845_t *crt);
 unsigned e6845_get_vtl (const e6845_t *crt);
+unsigned e6845_get_vdl (const e6845_t *crt);
+unsigned e6845_get_vsl (const e6845_t *crt);
 int e6845_get_hde (const e6845_t *crt);
 int e6845_get_vde (const e6845_t *crt);
 int e6845_get_de (const e6845_t *crt);
