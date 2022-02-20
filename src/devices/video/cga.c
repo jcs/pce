@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/devices/video/cga.c                                      *
  * Created:     2003-04-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -684,7 +684,8 @@ void cga_hsync (cga_t *cga)
 static
 void cga_vsync (cga_t *cga)
 {
-	video_t *vid;
+	unsigned vdl, vsl;
+	video_t  *vid;
 
 	vid = &cga->video;
 
@@ -702,7 +703,10 @@ void cga_vsync (cga_t *cga)
 		cga->mod_cnt -= 1;
 	}
 
-	vid->buf_next_h = e6845_get_vdl (&cga->crtc);
+	vdl = e6845_get_vdl (&cga->crtc);
+	vsl = e6845_get_vsl (&cga->crtc);
+
+	vid->buf_next_h = (vdl < vsl) ? vdl : vsl;
 
 	if (vid->buf_next_w == 0) {
 		vid->buf_next_w = 640;
