@@ -24,17 +24,33 @@
 #define PCE_MACPLUS_SCSI_H 1
 
 
+#include <limits.h>
+
 #include <drivers/block/block.h>
 
+enum {
+	MAC_SCSI_DEV_UNKNOWN,
+	MAC_SCSI_DEV_DISK,
+	MAC_SCSI_DEV_ETHERNET,
+};
 
 typedef struct {
 	int           valid;
+
+	int           type;
 
 	/* the PCE drive number */
 	unsigned      drive;
 
 	unsigned char vendor[8];
 	unsigned char product[16];
+	unsigned char revision[4];
+
+	int           tap_enabled;
+	unsigned char mac_addr[6];
+	char          tap_dev[PATH_MAX];
+	char          tap_cmd[PATH_MAX];
+	int           tap_fd;
 } mac_scsi_dev_t;
 
 
@@ -89,6 +105,7 @@ void mac_scsi_set_disks (mac_scsi_t *scsi, disks_t *dsks);
 void mac_scsi_set_drive (mac_scsi_t *scsi, unsigned id, unsigned drive);
 void mac_scsi_set_drive_vendor (mac_scsi_t *scsi, unsigned id, const char *vendor);
 void mac_scsi_set_drive_product (mac_scsi_t *scsi, unsigned id, const char *product);
+void mac_scsi_set_ethernet (mac_scsi_t *scsi, unsigned id, const char *tap_dev, const char *tap_cmd, const char *mac_addr);
 
 unsigned char mac_scsi_get_uint8 (void *ext, unsigned long addr);
 unsigned short mac_scsi_get_uint16 (void *ext, unsigned long addr);
@@ -98,5 +115,9 @@ void mac_scsi_set_uint16 (void *ext, unsigned long addr, unsigned short val);
 
 void mac_scsi_reset (mac_scsi_t *scsi);
 
+int mac_scsi_ethernet_tap_open (mac_scsi_t *scsi, mac_scsi_dev_t *dev);
+int mac_scsi_ethernet_data_avail (mac_scsi_dev_t *dev);
+size_t mac_scsi_ethernet_read (mac_scsi_dev_t *dev, unsigned char *buf);
+size_t mac_scsi_ethernet_write (mac_scsi_dev_t *dev, unsigned char *buf, size_t len);
 
 #endif

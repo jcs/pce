@@ -30,6 +30,8 @@
 
 #include <drivers/block/block.h>
 
+#include <lib/log.h>
+
 
 /* ICR 1 */
 #define E5380_ICR_RST  0x80
@@ -149,9 +151,43 @@ void mac_scsi_set_drive (mac_scsi_t *scsi, unsigned id, unsigned drive)
 
 	scsi->dev[id].valid = 1;
 	scsi->dev[id].drive = drive;
+	scsi->dev[id].type = MAC_SCSI_DEV_DISK;
 
 	memcpy (scsi->dev[id].vendor, "PCE     ", 8);
 	memcpy (scsi->dev[id].product, "PCEDISK         ", 16);
+}
+
+void mac_scsi_set_ethernet (mac_scsi_t *scsi, unsigned id, const char *tap_dev, const char *tap_cmd, const char *mac_addr)
+{
+	int mac_addr_ints[6];
+	int ret;
+
+	id &= 7;
+
+	scsi->dev[id].valid = 0;
+	scsi->dev[id].type = MAC_SCSI_DEV_ETHERNET;
+
+	memcpy (scsi->dev[id].vendor, "Dayna   ", 8);
+	memcpy (scsi->dev[id].product, "SCSI/Link       ", 16);
+	memcpy (scsi->dev[id].revision, "2.0f", 4);
+
+	strlcpy (scsi->dev[id].tap_dev, tap_dev, sizeof(scsi->dev[id].tap_dev));
+	strlcpy (scsi->dev[id].tap_cmd, tap_cmd, sizeof(scsi->dev[id].tap_cmd));
+
+	ret = sscanf(mac_addr, "%x:%x:%x:%x:%x:%x",
+		&mac_addr_ints[0], &mac_addr_ints[1],
+		&mac_addr_ints[2], &mac_addr_ints[3],
+		&mac_addr_ints[4], &mac_addr_ints[5]);
+	if (ret == 6) {
+		for (int i = 0; i <= 5; i++)
+			scsi->dev[id].mac_addr[i] = mac_addr_ints[i] & 0xff;
+	} else {
+		pce_log (MSG_ERR, "*** invalid MAC address (%s)\n", mac_addr);
+	}
+
+	if (mac_scsi_ethernet_tap_open (scsi, &scsi->dev[id]) == 0) {
+		scsi->dev[id].valid = 1;
+	}
 }
 
 void mac_scsi_set_drive_vendor (mac_scsi_t *scsi, unsigned id, const char *vendor)
@@ -463,35 +499,78 @@ void mac_scsi_cmd_format_unit (mac_scsi_t *scsi)
 static
 void mac_scsi_cmd_read (mac_scsi_t *scsi, unsigned long lba, unsigned long cnt)
 {
-	disk_t *dsk;
+	mac_scsi_dev_t *dev;
+	disk_t         *dsk;
+	int            psize;
 
-	dsk = mac_scsi_get_disk (scsi);
+	dev = mac_scsi_get_device (scsi);
 
-	if (dsk == NULL) {
+	if (dev == NULL) {
 		mac_scsi_set_phase_status (scsi, 0x02);
 		return;
 	}
+
+	switch (dev->type) {
+	case MAC_SCSI_DEV_DISK:
+		dsk = mac_scsi_get_disk (scsi);
+
+		if (dsk == NULL) {
+			mac_scsi_set_phase_status (scsi, 0x02);
+			return;
+		}
 
 #ifdef DEBUG_SCSI
-	mac_log_deb ("scsi: read %u blocks at %lu\n", cnt, lba);
+		mac_log_deb ("scsi: read %u blocks at %lu\n", cnt, lba);
 #endif
 
-	if (mac_scsi_set_buf_max (scsi, 512UL * cnt)) {
-		mac_log_deb ("scsi: too many blocks (%u)\n", cnt);
-		mac_scsi_set_phase_status (scsi, 0x02);
-		return;
+		if (mac_scsi_set_buf_max (scsi, 512UL * cnt)) {
+			mac_log_deb ("scsi: too many blocks (%u)\n", cnt);
+			mac_scsi_set_phase_status (scsi, 0x02);
+			return;
+		}
+
+		if (dsk_read_lba (dsk, scsi->buf, lba, cnt)) {
+			mac_log_deb ("scsi: read error at %lu + %lu\n", lba, cnt);
+			mac_scsi_set_phase_status (scsi, 0x02);
+			return;
+		}
+
+		scsi->buf_i = 0;
+		scsi->buf_n = 512 * cnt;
+
+		mac_scsi_set_phase_data_in (scsi);
+		break;
+	case MAC_SCSI_DEV_ETHERNET:
+		if (cnt == 1) {
+			mac_scsi_set_phase_status (scsi, 0x02);
+			return;
+		}
+
+		cnt = 1514 + 6;
+
+		if (mac_scsi_set_buf_max (scsi, cnt)) {
+			mac_scsi_set_phase_status (scsi, 0x02);
+			return;
+		}
+
+		memset (scsi->buf, 0, cnt);
+
+		psize = mac_scsi_ethernet_read (dev, scsi->buf + 6);
+		if (psize > 0) {
+			scsi->buf[0] = (psize >> 8) & 0xff;
+			scsi->buf[1] = psize & 0xff;
+
+			if (mac_scsi_ethernet_data_avail (dev)) {
+				scsi->buf[5] = 0x10;
+			}
+		}
+
+		scsi->buf_i = 0;
+		scsi->buf_n = psize + 6;
+
+		mac_scsi_set_phase_data_in (scsi);
+		break;
 	}
-
-	if (dsk_read_lba (dsk, scsi->buf, lba, cnt)) {
-		mac_log_deb ("scsi: read error at %lu + %lu\n", lba, cnt);
-		mac_scsi_set_phase_status (scsi, 0x02);
-		return;
-	}
-
-	scsi->buf_i = 0;
-	scsi->buf_n = 512 * cnt;
-
-	mac_scsi_set_phase_data_in (scsi);
 }
 
 static
@@ -536,31 +615,50 @@ void mac_scsi_cmd_read10 (mac_scsi_t *scsi)
 static
 void mac_scsi_cmd_write_finish (mac_scsi_t *scsi, unsigned long lba, unsigned long cnt)
 {
-	disk_t *dsk;
+	mac_scsi_dev_t *dev;
+	disk_t         *dsk;
 
-	dsk = mac_scsi_get_disk (scsi);
+	dev = mac_scsi_get_device (scsi);
 
-	if (dsk == NULL) {
+	if (dev == NULL) {
 		mac_scsi_set_phase_status (scsi, 0x02);
 		return;
 	}
 
-	if ((512 * cnt) != scsi->buf_i) {
-		mac_log_deb ("scsi: write size mismatch (%u / %u)\n",
-			512 * cnt, scsi->buf_i
-		);
-		mac_scsi_set_phase_status (scsi, 0x02);
-		return;
-	}
+	switch (dev->type) {
+	case MAC_SCSI_DEV_DISK:
+		dsk = mac_scsi_get_disk (scsi);
+
+		if (dsk == NULL) {
+			mac_scsi_set_phase_status (scsi, 0x02);
+			return;
+		}
+
+		if ((512 * cnt) != scsi->buf_i) {
+			mac_log_deb ("scsi: write size mismatch (%u / %u)\n",
+				512 * cnt, scsi->buf_i
+			);
+			mac_scsi_set_phase_status (scsi, 0x02);
+			return;
+		}
 
 #ifdef DEBUG_SCSI
-	mac_log_deb ("scsi: write %u blocks at %lu\n", cnt, lba);
+		mac_log_deb ("scsi: write %u blocks at %lu\n", cnt, lba);
 #endif
 
-	if (dsk_write_lba (dsk, scsi->buf, lba, cnt)) {
-		mac_log_deb ("scsi: write error\n");
-		mac_scsi_set_phase_status (scsi, 0x02);
-		return;
+		if (dsk_write_lba (dsk, scsi->buf, lba, cnt)) {
+			mac_log_deb ("scsi: write error\n");
+			mac_scsi_set_phase_status (scsi, 0x02);
+			return;
+		}
+		break;
+	case MAC_SCSI_DEV_ETHERNET:
+		if (scsi->cmd[5] == 0x80) {
+			mac_scsi_ethernet_write (dev, scsi->buf + 4, cnt);
+		} else {
+			mac_scsi_ethernet_write (dev, scsi->buf, cnt);
+		}
+		break;
 	}
 
 	scsi->buf_i = 0;
@@ -594,7 +692,16 @@ void mac_scsi_cmd_write6_finish (mac_scsi_t *scsi)
 static
 void mac_scsi_cmd_write6 (mac_scsi_t *scsi)
 {
-	unsigned cnt;
+	mac_scsi_dev_t *dev;
+	unsigned long  size;
+	unsigned       cnt;
+
+	dev = mac_scsi_get_device (scsi);
+
+	if (dev == NULL) {
+		mac_scsi_set_phase_status (scsi, 0x02);
+		return;
+	}
 
 	cnt = scsi->cmd[4];
 
@@ -602,14 +709,27 @@ void mac_scsi_cmd_write6 (mac_scsi_t *scsi)
 		cnt = 256;
 	}
 
-	if (mac_scsi_set_buf_max (scsi, 512UL * cnt)) {
+	switch (dev->type) {
+	case MAC_SCSI_DEV_DISK:
+		size = 512UL * cnt;
+		break;
+
+	case MAC_SCSI_DEV_ETHERNET:
+		size = scsi->cmd[4] + (scsi->cmd[3] << 8);
+		if (scsi->cmd[5] == 0x80) {
+			size += 8;
+		}
+		break;
+	}
+
+	if (mac_scsi_set_buf_max (scsi, size)) {
 		mac_log_deb ("scsi: write block count %u\n", cnt);
 		mac_scsi_set_phase_status (scsi, 0x02);
 		return;
 	}
 
 	scsi->buf_i = 0;
-	scsi->buf_n = 512 * cnt;
+	scsi->buf_n = size;
 
 	scsi->cmd_finish = mac_scsi_cmd_write6_finish;
 
@@ -658,30 +778,44 @@ void mac_scsi_cmd_write10 (mac_scsi_t *scsi)
 static
 void mac_scsi_cmd_verify10 (mac_scsi_t *scsi)
 {
-	unsigned long lba;
-	unsigned      cnt;
-	disk_t        *dsk;
+	mac_scsi_dev_t *dev;
+	unsigned long  lba;
+	unsigned       cnt;
+	disk_t         *dsk;
 
-	dsk = mac_scsi_get_disk (scsi);
+	dev = mac_scsi_get_device (scsi);
 
-	if (dsk == NULL) {
+	if (dev == NULL) {
 		mac_scsi_set_phase_status (scsi, 0x02);
 		return;
 	}
 
-	/* lun = (scsi->cmd[1] >> 5) & 0x07; */
+	switch (dev->type) {
+	case MAC_SCSI_DEV_DISK:
+		dsk = mac_scsi_get_disk (scsi);
 
-	lba = scsi->cmd[2];
-	lba = (lba << 8) | scsi->cmd[3];
-	lba = (lba << 8) | scsi->cmd[4];
-	lba = (lba << 8) | scsi->cmd[5];
+		if (dsk == NULL) {
+			mac_scsi_set_phase_status (scsi, 0x02);
+			return;
+		}
 
-	cnt = scsi->cmd[7];
-	cnt = (cnt << 8) | scsi->cmd[8];
+		/* lun = (scsi->cmd[1] >> 5) & 0x07; */
+
+		lba = scsi->cmd[2];
+		lba = (lba << 8) | scsi->cmd[3];
+		lba = (lba << 8) | scsi->cmd[4];
+		lba = (lba << 8) | scsi->cmd[5];
+
+		cnt = scsi->cmd[7];
+		cnt = (cnt << 8) | scsi->cmd[8];
 
 #ifdef DEBUG_SCSI
-	mac_log_deb ("scsi: verify %u blocks at %lu\n", cnt, lba);
+		mac_log_deb ("scsi: verify %u blocks at %lu\n", cnt, lba);
 #endif
+		break;
+	case MAC_SCSI_DEV_ETHERNET:
+		break;
+	}
 
 	scsi->buf_i = 0;
 	scsi->buf_n = 0;
@@ -701,6 +835,18 @@ void mac_scsi_cmd_inquiry (mac_scsi_t *scsi)
 	if (dev != NULL) {
 		memcpy (scsi->buf + 8, dev->vendor, 8);
 		memcpy (scsi->buf + 16, dev->product, 16);
+		memcpy (scsi->buf + 32, dev->revision, 4);
+
+		switch (dev->type) {
+		case MAC_SCSI_DEV_DISK:
+			scsi->buf[0] = 0x00; /* direct-access device */
+			break;
+
+		case MAC_SCSI_DEV_ETHERNET:
+			scsi->buf[0] = 0x03; /* processor device */
+			scsi->buf[2] = 0x01;
+			break;
+		}
 	}
 
 	scsi->buf[4] = 32;
@@ -723,54 +869,69 @@ void mac_scsi_cmd_mode_select (mac_scsi_t *scsi)
 static
 void mac_scsi_cmd_mode_sense (mac_scsi_t *scsi)
 {
-	disk_t *dsk;
+	mac_scsi_dev_t *dev;
+	disk_t         *dsk;
 
-	dsk = mac_scsi_get_disk (scsi);
+	dev = mac_scsi_get_device (scsi);
 
-	if (dsk == NULL) {
+	if (dev == NULL) {
 		mac_scsi_set_phase_status (scsi, 0x02);
 		return;
 	}
 
-	memset (scsi->buf, 0, 512);
+	switch (dev->type) {
+	case MAC_SCSI_DEV_DISK:
+		dsk = mac_scsi_get_disk (scsi);
 
-	scsi->buf_i = 0;
-	scsi->buf_n = 0;
+		if (dsk == NULL) {
+			mac_scsi_set_phase_status (scsi, 0x02);
+			return;
+		}
 
-	switch (scsi->cmd[2] & 0x3f) {
-	case 0x01: /* read-write error recovery page */
-		scsi->buf[0] = 0x01;
-		scsi->buf[1] = 10;
-		scsi->buf_n = 12;
+		memset (scsi->buf, 0, 512);
+
+		scsi->buf_i = 0;
+		scsi->buf_n = 0;
+
+		switch (scsi->cmd[2] & 0x3f) {
+		case 0x01: /* read-write error recovery page */
+			scsi->buf[0] = 0x01;
+			scsi->buf[1] = 10;
+			scsi->buf_n = 12;
+			break;
+
+		case 0x03: /* format device page */
+			scsi->buf[0] = 0x03;
+			scsi->buf[1] = 22;
+			scsi->buf_n = 24;
+			break;
+
+		case 0x04: /* rigid disk drive geometry page */
+			scsi->buf[0] = 0x04;
+			scsi->buf[1] = 22;
+			scsi->buf[2] = 0;
+			buf_set_uint16_be (scsi->buf, 3, dsk->c);
+			scsi->buf[5] = dsk->h;
+			buf_set_uint16_be (scsi->buf, 20, 3600);
+			scsi->buf_n = 32;
+			break;
+
+		case 0x30: /* vendor specific */
+			scsi->buf[0] = 0x30;
+			scsi->buf[1] = 33;
+			strcpy ((char *) scsi->buf + 14, "APPLE COMPUTER, INC");
+			scsi->buf_n = 34;
+			break;
+
+		default:
+			mac_log_deb ("scsi: mode sense: unknown mode page (%02X)\n",
+				scsi->cmd[2]
+			);
+			break;
+		}
 		break;
 
-	case 0x03: /* format device page */
-		scsi->buf[0] = 0x03;
-		scsi->buf[1] = 22;
-		scsi->buf_n = 24;
-		break;
-
-	case 0x04: /* rigid disk drive geometry page */
-		scsi->buf[0] = 0x04;
-		scsi->buf[1] = 22;
-		scsi->buf[2] = 0;
-		buf_set_uint16_be (scsi->buf, 3, dsk->c);
-		scsi->buf[5] = dsk->h;
-		buf_set_uint16_be (scsi->buf, 20, 3600);
-		scsi->buf_n = 32;
-		break;
-
-	case 0x30: /* vendor specific */
-		scsi->buf[0] = 0x30;
-		scsi->buf[1] = 33;
-		strcpy ((char *) scsi->buf + 14, "APPLE COMPUTER, INC");
-		scsi->buf_n = 34;
-		break;
-
-	default:
-		mac_log_deb ("scsi: mode sense: unknown mode page (%02X)\n",
-			scsi->cmd[2]
-		);
+	case MAC_SCSI_DEV_ETHERNET:
 		break;
 	}
 
@@ -810,19 +971,36 @@ void mac_scsi_cmd_start_stop (mac_scsi_t *scsi)
 static
 void mac_scsi_cmd_read_capacity (mac_scsi_t *scsi)
 {
-	unsigned long cnt;
-	disk_t        *dsk;
+	unsigned long  cnt;
+	mac_scsi_dev_t *dev;
+	disk_t         *dsk;
 
-	dsk = mac_scsi_get_disk (scsi);
+	dev = mac_scsi_get_device (scsi);
 
-	if (dsk == NULL) {
+	if (dev == NULL) {
 		mac_scsi_set_phase_status (scsi, 0x02);
 		return;
 	}
 
-	cnt = dsk_get_block_cnt (dsk);
-	buf_set_uint32_be (scsi->buf, 0, cnt - 1);
-	buf_set_uint32_be (scsi->buf, 4, 512);
+	switch (dev->type) {
+	case MAC_SCSI_DEV_DISK:
+		dsk = mac_scsi_get_disk (scsi);
+
+		if (dsk == NULL) {
+			mac_scsi_set_phase_status (scsi, 0x02);
+			return;
+		}
+
+		cnt = dsk_get_block_cnt (dsk);
+		buf_set_uint32_be (scsi->buf, 0, cnt - 1);
+		buf_set_uint32_be (scsi->buf, 4, 512);
+		break;
+
+	case MAC_SCSI_DEV_ETHERNET:
+		buf_set_uint32_be (scsi->buf, 0, 1);
+		buf_set_uint32_be (scsi->buf, 4, 512);
+		break;
+	}
 
 	scsi->buf_i = 0;
 	scsi->buf_n = 8;
@@ -839,6 +1017,95 @@ void mac_scsi_cmd_read_buffer (mac_scsi_t *scsi)
 	scsi->buf_n = 4;
 
 	mac_scsi_set_phase_data_in (scsi);
+}
+
+
+/* DaynaPort vendor commands */
+
+static
+void mac_scsi_cmd_read_stats (mac_scsi_t *scsi)
+{
+	mac_scsi_dev_t *dev;
+
+	dev = mac_scsi_get_device (scsi);
+
+	if (dev == NULL || dev->type != MAC_SCSI_DEV_ETHERNET) {
+		mac_scsi_set_phase_status (scsi, 0x02);
+		return;
+	}
+
+	memset (scsi->buf, 0, 18);
+
+	memcpy(scsi->buf, dev->mac_addr, 6);
+	/* three 32-bit counters expected to follow, just return zero for all */
+
+	scsi->buf_i = 0;
+	scsi->buf_n = 18;
+
+	mac_scsi_set_phase_data_in (scsi);
+}
+
+static
+void mac_scsi_cmd_set_interface_mode (mac_scsi_t *scsi)
+{
+	mac_scsi_dev_t *dev;
+	unsigned char  cmd;
+
+	dev = mac_scsi_get_device (scsi);
+
+	if (dev == NULL || dev->type != MAC_SCSI_DEV_ETHERNET) {
+		mac_scsi_set_phase_status (scsi, 0x02);
+		return;
+	}
+
+	cmd = scsi->cmd[5] & 0x80;
+
+	switch (cmd) {
+	case 0x40:
+		/* set MAC */
+		break;
+
+	case 0x80:
+		/* set mode */
+		break;
+
+	default:
+		mac_log_deb ("scsi: unknown interface mode command (%02X)\n", cmd);
+	}
+
+	mac_scsi_set_phase_status (scsi, 0x02);
+}
+
+static
+void mac_scsi_cmd_set_mcast_addr (mac_scsi_t *scsi)
+{
+	mac_scsi_dev_t *dev;
+
+	dev = mac_scsi_get_device (scsi);
+
+	if (dev == NULL || dev->type != MAC_SCSI_DEV_ETHERNET) {
+		mac_scsi_set_phase_status (scsi, 0x02);
+		return;
+	}
+
+	mac_scsi_set_phase_status (scsi, 0x02);
+}
+
+static
+void mac_scsi_cmd_enable_interface (mac_scsi_t *scsi)
+{
+	mac_scsi_dev_t *dev;
+
+	dev = mac_scsi_get_device (scsi);
+
+	if (dev == NULL || dev->type != MAC_SCSI_DEV_ETHERNET) {
+		mac_scsi_set_phase_status (scsi, 0x02);
+		return;
+	}
+
+	dev->tap_enabled = !!(scsi->cmd[5] & 0x80);
+
+	mac_scsi_set_phase_status (scsi, 0x02);
 }
 
 
@@ -872,8 +1139,24 @@ void mac_scsi_cmd_init (mac_scsi_t *scsi, unsigned char cmd)
 		mac_scsi_set_cmd (scsi, 6, mac_scsi_cmd_read6);
 		break;
 
+	case 0x09:
+		mac_scsi_set_cmd (scsi, 6, mac_scsi_cmd_read_stats);
+		break;
+
 	case 0x0a:
 		mac_scsi_set_cmd (scsi, 6, mac_scsi_cmd_write6);
+		break;
+
+	case 0x0c:
+		mac_scsi_set_cmd (scsi, 6, mac_scsi_cmd_set_interface_mode);
+		break;
+
+	case 0x0d:
+		mac_scsi_set_cmd (scsi, 6, mac_scsi_cmd_set_mcast_addr);
+		break;
+
+	case 0x0e:
+		mac_scsi_set_cmd (scsi, 6, mac_scsi_cmd_enable_interface);
 		break;
 
 	case 0x12:
@@ -1224,7 +1507,7 @@ void mac_scsi_set_mr2 (mac_scsi_t *scsi, unsigned char val)
 
 			scsi->icr &= ~E5380_ICR_BSY;
 
-			if (mac_scsi_get_disk (scsi) != NULL) {
+			if (mac_scsi_get_device (scsi) != NULL) {
 				mac_scsi_set_phase_cmd (scsi);
 				mac_scsi_set_int (scsi, 1);
 			}

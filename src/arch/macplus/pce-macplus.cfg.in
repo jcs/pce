@@ -284,6 +284,23 @@ scsi {
 		id    = 2
 		drive = 130
 	}
+
+	# DaynaPORT SCSI/Link device emulation on SCSI id 3.
+	# Requires read/write access on the "tap" device listed here.
+	#device {
+	#	id       = 3
+	#	ethernet = 1
+	#	tap      = "/dev/tap0"    # OpenBSD
+	#	tap      = "/dev/net/tun" # Linux
+	#	mac_addr = "00:80:19:c0:ff:ee"
+	#
+	#	# This command will be run after initializing the tap device
+	#	# and will have the tap device and MAC address passed as
+	#	# arguments.  It should probably assign an IP to this tap
+	#	# device if using NAT (required on WiFi), or setup bridging
+	#	# if using ethernet.
+	#	tap_cmd  = "sh /etc/pce/tap-setup.sh"
+	#}
 }
 
 

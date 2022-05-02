@@ -1081,8 +1081,8 @@ void mac_setup_scsi (macplus_t *sim, ini_sct_t *ini)
 	ini_sct_t     *sct, *sctdev;
 	mem_blk_t     *blk;
 	unsigned long addr, size;
-	unsigned      id, drive;
-	const char    *vendor, *product;
+	unsigned      id, drive, ethernet;
+	const char    *vendor, *product, *mac_addr, *tap_dev, *tap_cmd;
 
 	sct = ini_next_sct (ini, NULL, "scsi");
 
@@ -1119,17 +1119,35 @@ void mac_setup_scsi (macplus_t *sim, ini_sct_t *ini)
 	while (sctdev != NULL) {
 		ini_get_uint16 (sctdev, "id", &id, 0);
 		ini_get_uint16 (sctdev, "drive", &drive, 0);
-		ini_get_string (sctdev, "vendor", &vendor, "PCE");
-		ini_get_string (sctdev, "product", &product, "PCEDISK");
+		ini_get_uint16 (sctdev, "ethernet", &ethernet, 0);
 
-		pce_log_tag (MSG_INF,
-			"SCSI:", "id=%u drive=%u vendor=\"%s\" product=\"%s\"\n",
-			id, drive, vendor, product
-		);
+		if (drive) {
+			ini_get_string (sctdev, "vendor", &vendor, "PCE");
+			ini_get_string (sctdev, "product", &product, "PCEDISK");
 
-		mac_scsi_set_drive (&sim->scsi, id, drive);
-		mac_scsi_set_drive_vendor (&sim->scsi, id, vendor);
-		mac_scsi_set_drive_product (&sim->scsi, id, product);
+			pce_log_tag (MSG_INF,
+				"SCSI:",
+				"id=%u drive=%u vendor=\"%s\" product=\"%s\"\n",
+				id, drive, vendor, product
+			);
+
+			mac_scsi_set_drive (&sim->scsi, id, drive);
+			mac_scsi_set_drive_vendor (&sim->scsi, id, vendor);
+			mac_scsi_set_drive_product (&sim->scsi, id, product);
+		}
+		else if (ethernet) {
+			ini_get_string (sctdev, "tap", &tap_dev, "/dev/tap0");
+			ini_get_string (sctdev, "tap_cmd", &tap_cmd, "");
+			ini_get_string (sctdev, "mac_addr", &mac_addr, "00:80:19:c0:ff:ee");
+
+			pce_log_tag (MSG_INF,
+				"SCSI:",
+				"id=%u ethernet=%u tap=%s cmd=%s mac_addr=%s\n",
+				id, ethernet, tap_dev, tap_cmd, mac_addr
+			);
+
+			mac_scsi_set_ethernet (&sim->scsi, id, tap_dev, tap_cmd, mac_addr);
+		}
 
 		sctdev = ini_next_sct (sct, sctdev, "device");
 	}
