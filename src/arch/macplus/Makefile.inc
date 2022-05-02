@@ -51,6 +51,7 @@ PCE_MACPLUS_BAS := \
 	msg \
 	rtc \
 	scsi \
+	scsi_tap \
 	serial \
 	sony \
 	sound \
@@ -125,6 +126,7 @@ $(rel)/mem.o:		$(rel)/mem.c
 $(rel)/msg.o:		$(rel)/msg.c
 $(rel)/rtc.o:		$(rel)/rtc.c
 $(rel)/scsi.o:		$(rel)/scsi.c
+$(rel)/scsi_tap.o:	$(rel)/scsi_tap.c
 $(rel)/serial.o:	$(rel)/serial.c
 $(rel)/sony.o:		$(rel)/sony.c
 $(rel)/sound.o:		$(rel)/sound.c
