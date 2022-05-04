@@ -48,6 +48,7 @@ typedef struct {
 
 	unsigned char data;
 	unsigned long timeout;
+	unsigned long last_data_set;
 
 	int           send_byte;
 
