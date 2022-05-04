@@ -26,6 +26,7 @@
 #include <stdlib.h>
 
 #include <lib/log.h>
+#include <lib/sysdep.h>
 
 #include <drivers/video/keys.h>
 
@@ -386,6 +387,7 @@ static
 void mac_kbd_set_data_out (mac_kbd_t *kbd, unsigned char val)
 {
 	if (kbd->set_data != NULL) {
+		pce_get_interval_us (&kbd->last_data_set);
 		kbd->set_data (kbd->set_data_ext, val);
 	}
 }
@@ -468,7 +470,7 @@ void mac_kbd_set_key (mac_kbd_t *kbd, unsigned event, pce_key_t key)
 void mac_kbd_set_uint8 (mac_kbd_t *kbd, unsigned char val)
 {
 	switch (val) {
-	case 0x10: /* inquiry */
+	case 0x10: /* inquiry, must be acked within 0.5 seconds */
 		kbd->timeout = MAC_CPU_CLOCK / 4;
 		kbd->send_byte = 1;
 		break;
@@ -503,6 +505,7 @@ void mac_kbd_set_data (mac_kbd_t *kbd, unsigned char val)
 void mac_kbd_clock (mac_kbd_t *kbd, unsigned cnt)
 {
 	unsigned char val;
+	unsigned long now_us;
 
 	if (kbd->data == 0) {
 		return;
@@ -511,6 +514,10 @@ void mac_kbd_clock (mac_kbd_t *kbd, unsigned cnt)
 	if (kbd->send_byte == 0) {
 		return;
 	}
+
+	pce_get_interval_us (&now_us);
+	if (now_us - kbd->last_data_set < 1000)
+		return;
 
 	if (kbd->buf_n > 0) {
 		val = kbd->buf[kbd->buf_i];
