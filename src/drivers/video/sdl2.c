@@ -26,6 +26,12 @@
 #include <stdlib.h>
 
 #include <SDL.h>
+#include <SDL_syswm.h>
+
+#ifndef PCE_HOST_WINDOWS
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#endif
 
 #include <drivers/video/terminal.h>
 #include <drivers/video/keys.h>
@@ -261,6 +267,12 @@ void sdl2_set_fullscreen (sdl2_t *sdl, int val)
 static
 int sdl2_set_window_size (sdl2_t *sdl, unsigned w, unsigned h)
 {
+#ifndef PCE_HOST_WINDOWS
+	XSizeHints    hints;
+	SDL_SysWMinfo info;
+	long          r;
+#endif
+
 	if ((w == 0) || (h == 0)) {
 		return (1);
 	}
@@ -268,6 +280,22 @@ int sdl2_set_window_size (sdl2_t *sdl, unsigned w, unsigned h)
 	if ((sdl->wdw_w == w) && (sdl->wdw_h == h)) {
 		return (0);
 	}
+
+#ifndef PCE_HOST_WINDOWS
+	if (sdl->autosize == 2) {
+		SDL_VERSION(&info.version);
+		if (SDL_GetWindowWMInfo(sdl->window, &info) &&
+		    info.subsystem == SDL_SYSWM_X11 &&
+		    XGetWMSizeHints(info.info.x11.display, info.info.x11.window, &hints, &r, XA_WM_SIZE_HINTS) == 0) {
+			hints.flags = PMinSize | PMaxSize | PAspect;
+			hints.max_width = w;
+			hints.min_width = w;
+			hints.max_height = h;
+			hints.min_height = h;
+			XSetWMNormalHints (info.info.x11.display, info.info.x11.window, &hints);
+		}
+	}
+#endif
 
 	SDL_SetWindowSize (sdl->window, w, h);
 
@@ -523,7 +551,8 @@ void sdl2_event_window (sdl2_t *sdl, SDL_WindowEvent *evt)
 	case SDL_WINDOWEVENT_RESIZED:
 		sdl->wdw_w = evt->data1;
 		sdl->wdw_h = evt->data2;
-		sdl->autosize = 0;
+		if (sdl->autosize != 2)
+			sdl->autosize = 0;
 		sdl->update = 1;
 		break;
 
@@ -805,7 +834,7 @@ void sdl2_init (sdl2_t *sdl, ini_sct_t *sct)
 	ini_get_bool (sct, "report_keys", &rep, 0);
 	sdl->report_keys = (rep != 0);
 
-	sdl->autosize = 1;
+	ini_get_uint16 (sct, "autosize", &sdl->autosize, 1);
 
 	sdl->grave_down = 0;
 	sdl->ignore_keys = 0;
