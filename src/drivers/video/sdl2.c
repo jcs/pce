@@ -411,7 +411,7 @@ void sdl2_event_keydown (sdl2_t *sdl, SDL_Scancode key, SDL_Keymod mod)
 {
 	pce_key_t pcekey;
 
-	if (sdl->ignore_keys) {
+	if (sdl->ignore_keys || !sdl->grab) {
 		return;
 	}
 
