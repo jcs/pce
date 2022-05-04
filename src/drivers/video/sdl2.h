@@ -64,6 +64,7 @@ typedef struct {
 	char          autosize;
 	char          grave_down;
 	char          ignore_keys;
+	const char    *scale_quality;
 
 	unsigned      keymap_cnt;
 	sdl2_keymap_t *keymap;
