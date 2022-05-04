@@ -712,6 +712,7 @@ int sdl2_open (sdl2_t *sdl, unsigned w, unsigned h)
 
 	SDL_EventState (SDL_MOUSEMOTION, SDL_ENABLE);
 
+	SDL_SetHint (SDL_HINT_RENDER_SCALE_QUALITY, sdl->scale_quality);
 	SDL_SetHint (SDL_HINT_GRAB_KEYBOARD, "1");
 	SDL_SetHint (SDL_HINT_MOUSE_RELATIVE_MODE_WARP, "1");
 
@@ -800,6 +801,8 @@ void sdl2_init (sdl2_t *sdl, ini_sct_t *sct)
 
 	ini_get_bool (sct, "fullscreen", &fs, 0);
 	sdl->fullscreen = (fs != 0);
+
+	ini_get_string (sct, "scale_quality", &sdl->scale_quality, "linear");
 
 	sdl->grab = 0;
 

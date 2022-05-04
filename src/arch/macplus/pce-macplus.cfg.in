@@ -107,6 +107,10 @@ terminal {
 	# Start in fullscreen mode.
 	fullscreen = 0
 
+	# SDL rendering scale quality hint. Valid values are "nearest"
+	# (pixelated) or "linear" (smooth).
+	#scale_quality = "linear"
+
 	# The mouse speed. The host mouse speed is multiplied by
 	# (mouse_mul_x / mouse_div_x) and (mouse_mul_y / mouse_div_y)
 	mouse_mul_x = 1
