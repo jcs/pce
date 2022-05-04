@@ -145,6 +145,7 @@ void mac_rtc_init (mac_rtc_t *rtc)
 	rtc->sigval = 0;
 
 	rtc->realtime = 0;
+	rtc->gmtoff = 0;
 	rtc->clkcnt = 0;
 
 	rtc->reg_wp = 0;
@@ -239,6 +240,8 @@ unsigned long mac_rtc_get_current_time (mac_rtc_t *rtc)
 
 	mt = (unsigned long) ut;
 
+	mt += rtc->gmtoff;
+
 	/* 1970-01-01 00:00:00 */
 	mt += 2082844800;
 
@@ -290,6 +293,16 @@ void mac_rtc_set_time_str (mac_rtc_t *rtc, const char *str)
 
 		mac_rtc_set_time (rtc, time, 0);
 	}
+}
+
+void mac_rtc_set_time_gmtoff (mac_rtc_t *rtc)
+{
+	struct tm *tm;
+	time_t    ut;
+
+	ut = time (NULL);
+	tm = localtime (&ut);
+	rtc->gmtoff = tm->tm_gmtoff;
 }
 
 static
