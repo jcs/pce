@@ -61,10 +61,10 @@ typedef struct {
 	char          fullscreen;
 	char          grab;
 	char          report_keys;
-	char          autosize;
 	char          grave_down;
 	char          ignore_keys;
 	const char    *scale_quality;
+	char          autosize;
 
 	unsigned      keymap_cnt;
 	sdl2_keymap_t *keymap;
