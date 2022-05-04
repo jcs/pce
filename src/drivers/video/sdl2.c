@@ -598,7 +598,9 @@ void sdl2_event_window (sdl2_t *sdl, SDL_WindowEvent *evt)
 		break;
 
 	default:
+#ifdef DEBUG_SDL2
 		fprintf (stderr, "sdl2: window event %u\n", evt->event);
+#endif
 		break;
 	}
 }
@@ -646,7 +648,9 @@ void sdl2_check (sdl2_t *sdl)
 			break;
 
 		default:
+#ifdef DEBUG_SDL2
 			fprintf (stderr, "sdl2: event %u\n", evt.type);
+#endif
 			break;
 		}
 	}
