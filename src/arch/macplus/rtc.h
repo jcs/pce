@@ -42,6 +42,7 @@ typedef struct {
 	unsigned char sigval;
 
 	int           realtime;
+	long          gmtoff;
 
 	unsigned long clkcnt;
 
@@ -71,6 +72,7 @@ int mac_rtc_save_file (mac_rtc_t *rtc, const char *fname);
 void mac_rtc_set_time (mac_rtc_t *rtc, unsigned long time, int utc);
 void mac_rtc_set_time_now (mac_rtc_t *rtc);
 void mac_rtc_set_time_str (mac_rtc_t *rtc, const char *str);
+void mac_rtc_set_time_gmtoff (mac_rtc_t *rtc);
 
 void mac_rtc_set_uint8 (mac_rtc_t *rtc, unsigned char val);
 

@@ -189,6 +189,9 @@ rtc {
 	# not set, the real time clock is set to the current time.
 	#start = "1984-01-24 00:00:00"
 
+	# Offset the RTC by the local timezone instead of using UTC.
+	#localtime = 0
+
 	# Set the startup disk to the ROM disk. This only works with
 	# the Macintosh Classic ROM.
 	romdisk = 0
