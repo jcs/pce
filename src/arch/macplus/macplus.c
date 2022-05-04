@@ -845,11 +845,12 @@ void mac_setup_rtc (macplus_t *sim, ini_sct_t *ini)
 	ini_sct_t     *sct;
 	const char    *fname;
 	const char    *start;
-	int           realtime, romdisk, atalk;
+	int           localtime, realtime, romdisk, atalk;
 
 	sct = ini_next_sct (ini, NULL, "rtc");
 
 	ini_get_string (sct, "file", &fname, "pram.dat");
+	ini_get_bool (sct, "localtime", &localtime, 0);
 	ini_get_bool (sct, "realtime", &realtime, 1);
 	ini_get_bool (sct, "romdisk", &romdisk, 0);
 	ini_get_string (sct, "start", &start, NULL);
@@ -859,8 +860,8 @@ void mac_setup_rtc (macplus_t *sim, ini_sct_t *ini)
 	}
 
 	pce_log_tag (MSG_INF, "RTC:",
-		"file=%s realtime=%d start=%s romdisk=%d atalk=%d\n",
-		fname, realtime,
+		"file=%s localtime=%d realtime=%d start=%s romdisk=%d atalk=%d\n",
+		fname, localtime, realtime,
 		(start != NULL) ? start : "<now>",
 		romdisk, atalk
 	);
@@ -871,6 +872,10 @@ void mac_setup_rtc (macplus_t *sim, ini_sct_t *ini)
 
 	mac_rtc_set_data_fct (&sim->rtc, sim, mac_set_rtc_data);
 	mac_rtc_set_osi_fct (&sim->rtc, sim, mac_interrupt_osi);
+
+	if (localtime) {
+		mac_rtc_set_time_gmtoff (&sim->rtc);
+	}
 
 	mac_rtc_set_realtime (&sim->rtc, realtime);
 
