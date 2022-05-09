@@ -75,6 +75,7 @@
 #undef PCE_HOST_WINDOWS
 #undef PCE_HOST_SUNOS
 #undef PCE_HOST_NETBSD
+#undef PCE_HOST_MACOS
 
 #undef PCE_HOST_IA32
 #undef PCE_HOST_PPC
