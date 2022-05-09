@@ -707,6 +707,7 @@ CC
 PCE_HOST_SPARC
 PCE_HOST_PPC
 PCE_HOST_IA32
+PCE_HOST_MACOS
 PCE_HOST_NETBSD
 PCE_HOST_SUNOS
 PCE_HOST_WINDOWS
@@ -2687,6 +2688,7 @@ PCE_HOST_LINUX=0
 PCE_HOST_WINDOWS=0
 PCE_HOST_SUNOS=0
 PCE_HOST_NETBSD=0
+PCE_HOST_MACOS=0
 case "$host_os" in
 [Ll]inux*)
 	PCE_HOST_LINUX=1
@@ -2716,11 +2718,19 @@ netbsd*)
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: NetBSD" >&5
 printf "%s\n" "NetBSD" >&6; }
 	;;
+darwin*)
+	PCE_HOST_MACOS=1
+	printf "%s\n" "#define PCE_HOST_MACOS 1" >>confdefs.h
+
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: macOS" >&5
+printf "%s\n" "macOS" >&6; }
+	;;
 *)
 	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: unknown ($host_os)" >&5
 printf "%s\n" "unknown ($host_os)" >&6; }
 	;;
 esac
+
 
 
 
