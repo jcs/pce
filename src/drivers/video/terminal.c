@@ -34,7 +34,12 @@
 #define TRM_ESC_OK   2
 #define TRM_ESC_ALT  4
 #define TRM_ESC_CTRL 8
+#define TRM_ESC_SUPER 16
+#if defined(PCE_HOST_MACOS)
+#define TRM_ESC_KEYS (TRM_ESC_SUPER | TRM_ESC_CTRL)
+#else
 #define TRM_ESC_KEYS (TRM_ESC_ALT | TRM_ESC_CTRL)
+#endif
 
 
 void trm_init (terminal_t *trm, void *ext)
@@ -594,14 +599,17 @@ void trm_set_key (terminal_t *trm, unsigned event, pce_key_t key)
 			return;
 		}
 
-		if (key == PCE_KEY_LALT) {
+		if (key == PCE_KEY_LALT || key == PCE_KEY_RALT) {
 			trm->escape |= TRM_ESC_ALT;
 		}
-		else if (key == PCE_KEY_LCTRL) {
+		else if (key == PCE_KEY_LSUPER || key == PCE_KEY_RSUPER) {
+			trm->escape |= TRM_ESC_SUPER;
+		}
+		else if (key == PCE_KEY_LCTRL || key == PCE_KEY_RCTRL) {
 			trm->escape |= TRM_ESC_CTRL;
 		}
 		else if (key == PCE_KEY_PAUSE) {
-			if ((trm->escape & (TRM_ESC_ALT | TRM_ESC_CTRL)) == 0) {
+			if ((trm->escape & TRM_ESC_KEYS) == 0) {
 				trm_set_msg_trm (trm, "term.release", "");
 				trm_set_msg_trm (trm, "term.fullscreen", "0");
 				trm_set_msg_emu (trm, "emu.exit", "1");
@@ -623,10 +631,13 @@ void trm_set_key (terminal_t *trm, unsigned event, pce_key_t key)
 			return;
 		}
 
-		if (key == PCE_KEY_LALT) {
+		if (key == PCE_KEY_LALT || key == PCE_KEY_RALT) {
 			trm->escape &= ~TRM_ESC_ALT;
 		}
-		else if (key == PCE_KEY_LCTRL) {
+		else if (key == PCE_KEY_LSUPER || key == PCE_KEY_RSUPER) {
+			trm->escape &= ~TRM_ESC_SUPER;
+		}
+		else if (key == PCE_KEY_LCTRL || key == PCE_KEY_RCTRL) {
 			trm->escape &= ~TRM_ESC_CTRL;
 		}
 		else if (key == PCE_KEY_PAUSE) {
