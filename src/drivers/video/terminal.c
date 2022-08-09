@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include <drivers/video/terminal.h>
+#include <lib/sysdep.h>
 
 
 #define TRM_ESC_ESC  1
@@ -400,8 +401,14 @@ void trm_set_lines (terminal_t *trm, const void *buf, unsigned y, unsigned cnt)
 
 void trm_update (terminal_t *trm)
 {
+	unsigned long now;
+
 	if ((trm->update_w == 0) || (trm->update_h == 0)) {
-		return;
+		pce_get_interval_us(&now);
+		if (now - trm->last_forced_update < 750000)
+			return;
+
+		trm->last_forced_update = now;
 	}
 
 	if (trm->update != NULL) {

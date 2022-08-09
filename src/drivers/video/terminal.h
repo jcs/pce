@@ -93,6 +93,8 @@ typedef struct {
 
 	/* picture index for screenshots */
 	unsigned      pict_index;
+
+	unsigned long last_forced_update;
 } terminal_t;
 
 
