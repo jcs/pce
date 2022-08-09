@@ -611,15 +611,18 @@ void sdl2_event_window (sdl2_t *sdl, SDL_WindowEvent *evt)
 static
 void sdl2_check (sdl2_t *sdl)
 {
+	static SDL_Event cur_keydown_evt = { 0 };
 	SDL_Event evt;
 
 	while (SDL_PollEvent (&evt)) {
 		switch (evt.type) {
 		case SDL_KEYDOWN:
+			cur_keydown_evt = evt;
 			sdl2_event_keydown (sdl, evt.key.keysym.scancode, evt.key.keysym.mod);
 			break;
 
 		case SDL_KEYUP:
+			memset(&cur_keydown_evt, 0, sizeof(cur_keydown_evt));
 			sdl2_event_keyup (sdl, evt.key.keysym.scancode, evt.key.keysym.mod);
 			break;
 
@@ -644,6 +647,8 @@ void sdl2_check (sdl2_t *sdl)
 			break;
 
 		case SDL_QUIT:
+			if (cur_keydown_evt.key.keysym.sym && sdl->grab)
+				break;
 			sdl2_grab_mouse (sdl, 0);
 			trm_set_msg_emu (&sdl->trm, "emu.exit", "1");
 			break;
