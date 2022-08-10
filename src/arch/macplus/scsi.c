@@ -654,6 +654,7 @@ void mac_scsi_cmd_write_finish (mac_scsi_t *scsi, unsigned long lba, unsigned lo
 		break;
 	case MAC_SCSI_DEV_ETHERNET:
 		if (scsi->cmd[5] == 0x80) {
+			cnt = (scsi->buf[0] << 8) | scsi->buf[1];
 			mac_scsi_ethernet_write (dev, scsi->buf + 4, cnt);
 		} else {
 			mac_scsi_ethernet_write (dev, scsi->buf, cnt);
