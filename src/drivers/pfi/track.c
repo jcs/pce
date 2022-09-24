@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pfi/track.c                                      *
  * Created:     2012-01-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -387,6 +387,10 @@ pfi_trk_t *pfi_trk_scale (pfi_trk_t *trk, unsigned long mul, unsigned long div)
 		t = m * val + r;
 		v = t / d;
 		r = t % d;
+
+		if (v == 0) {
+			continue;
+		}
 
 		if (pfi_trk_add_pulse (ret, v)) {
 			break;
