@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/encode.c                                       *
  * Created:     2014-01-03 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2014-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2014-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -38,7 +38,7 @@ int pfi_encode_track (pfi_trk_t *dtrk, pri_trk_t *strk, unsigned c, unsigned h)
 {
 	unsigned long       i, j, n;
 	unsigned long       dclk, sclk;
-	unsigned long       val, rem, cnt, tmp;
+	unsigned long       dval, sval, total;
 	unsigned long       s1, s2;
 	const unsigned char *s;
 
@@ -48,6 +48,11 @@ int pfi_encode_track (pfi_trk_t *dtrk, pri_trk_t *strk, unsigned c, unsigned h)
 	sclk = strk->clock;
 	dclk = dtrk->clock;
 
+	sval = 0;
+	dval = 0;
+
+	total = 0;
+
 	s1 = (unsigned long) (par_slack1 * strk->clock + 0.5);
 	s2 = (unsigned long) (par_slack2 * strk->clock + 0.5);
 
@@ -56,31 +61,24 @@ int pfi_encode_track (pfi_trk_t *dtrk, pri_trk_t *strk, unsigned c, unsigned h)
 	n += s1 + s2;
 	s = strk->data;
 
-	cnt = 0;
-	val = 0;
-	rem = 0;
-
 	for (i = 0; i < n; i++) {
-		val += 1;
+		sval += dclk;
+		dval += sval / sclk;
+		sval %= sclk;
 
 		if (s[j >> 3] & (0x80 >> (j & 7))) {
-			val = dclk * val + rem;
-			rem = val % sclk;
-			val = val / sclk;
-
-			if (pfi_trk_add_pulse (dtrk, val)) {
+			if (pfi_trk_add_pulse (dtrk, dval)) {
 				return (1);
 			}
 
-			cnt += val;
-			val = 0;
+			total += dval;
+			dval = 0;
 		}
 
 		j += 1;
 
 		if (j >= strk->size) {
-			tmp = (dclk * val + rem) / sclk;
-			pfi_trk_add_index (dtrk, cnt + tmp);
+			pfi_trk_add_index (dtrk, total + dval);
 			j = 0;
 		}
 	}
