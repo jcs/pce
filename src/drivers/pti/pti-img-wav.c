@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pti/pti-img-wav.c                                *
  * Created:     2020-04-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2020-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -668,10 +668,12 @@ int wav_save_pulse_sine (wav_save_t *wav, unsigned long clk, long smp)
 {
 	unsigned long i;
 	unsigned long clock, srate;
-	double        val;
+	double        val, fct;
 
 	clock = wav->img->clock;
 	srate = wav->par->srate;
+
+	fct = M_PI / (double) clk;
 
 	for (i = 0; i < clk; i++) {
 		wav->rem += srate;
@@ -679,7 +681,7 @@ int wav_save_pulse_sine (wav_save_t *wav, unsigned long clk, long smp)
 		while (wav->rem >= clock) {
 			wav->rem -= clock;
 
-			val = smp * sin ((M_PI * i) / (double) clk);
+			val = smp * sin (i * fct);
 
 			if (wav->iir_cnt > 0) {
 				val = wav_iir (wav->iir, wav->iir_cnt, val);
