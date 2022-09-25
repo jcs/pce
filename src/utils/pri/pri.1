@@ -1,4 +1,4 @@
-.TH PRI 1 "2019-11-30" "HH" "pce"
+.TH PRI 1 "2022-09-25" "HH" "pce"
 \
 .SH NAME
 pri \- convert and modify PCE raw image files
@@ -196,14 +196,26 @@ Duplicate all tracks. This is the reverse of double-step.
 .B info
 Print information about the current image (same as \fB-f\fR).
 .TP
-.B "mac-align"
-This a synonym for \fBmac-align-sector\fR.
+.BI "mac-align " "mode"
+Align all selected tracks on Macintosh GCR tracks relative to the index.
+Possible values for \fImode\fR are:
+.RS
 .TP
-.B "mac-align-sector"
-Align the lowest numbered sector with the index.
+.B gap
+Align the start of the longest gap between sectors with the index.
 .TP
-.B "mac-align-sync"
-Align the longest sync sequence with the index.
+.B gap-end
+Align the end of the longest gap between sectors with the index.
+.TP
+.B index
+Align the first sector on a track with the index.
+.TP
+.B sector, sector-end
+Align the end of the sector before the lowest numbered sector with the index.
+.TP
+.B sector-id
+Align the start of the lowest numbered sector with the index.
+.RE
 .TP
 .BI "mfm-align-am " "what pos"
 Rotate the track such that the first address mark of type \fIwhat\fR on

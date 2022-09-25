@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/main.h                                         *
  * Created:     2012-01-31 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -99,6 +99,9 @@ int pri_half_step (pri_img_t *img);
 int pri_new (pri_img_t *img);
 
 int pri_half_rate (pri_img_t *img);
+int pri_mac_gcr_align (pri_img_t *img, const char *mode);
+int pri_mac_gcr_align_gap (pri_img_t *img);
+int pri_mac_gcr_align_index (pri_img_t *img);
 int pri_mac_gcr_align_sync (pri_img_t *img);
 int pri_mac_gcr_align_sector (pri_img_t *img);
 int pri_mfm_align_am (pri_img_t *img, const char *what, const char *idx, const char *pos);
