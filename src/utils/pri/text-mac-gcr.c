@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text-mac-gcr.c                                 *
  * Created:     2017-10-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2017-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2017-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -823,7 +823,21 @@ int mac_enc_fill (pri_text_t *ctx)
 }
 
 static
-int mac_enc_eot (pri_text_t *ctx)
+int mac_enc_eots (pri_text_t *ctx)
+{
+	unsigned long max;
+
+	max = pri_get_mac_gcr_track_length (ctx->c);
+
+	if (mac_enc_fill_sync (ctx, max)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
+int mac_enc_eotg (pri_text_t *ctx)
 {
 	unsigned long max;
 
@@ -1049,8 +1063,14 @@ int txt_encode_pri0_mac (pri_text_t *ctx)
 	else if (txt_match (ctx, "CHECK", 1)) {
 		return (mac_enc_check (ctx));
 	}
+	else if (txt_match (ctx, "EOTG", 1)) {
+		return (mac_enc_eotg (ctx));
+	}
+	else if (txt_match (ctx, "EOTS", 1)) {
+		return (mac_enc_eots (ctx));
+	}
 	else if (txt_match (ctx, "EOT", 1)) {
-		return (mac_enc_eot (ctx));
+		return (mac_enc_eotg (ctx));
 	}
 	else if (txt_match (ctx, "FILL", 1)) {
 		return (mac_enc_fill (ctx));
