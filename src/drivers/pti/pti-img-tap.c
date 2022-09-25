@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pti/pti-img-tap.c                                *
  * Created:     2020-04-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2020-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -30,7 +30,9 @@
 #include "pti-img-tap.h"
 
 
-static const char    tap_magic[] = "C64-TAPE-RAW";
+static const char    tap_magic1[] = "C64-TAPE-RAW";
+static const char    tap_magic2[] = "C16-TAPE-RAW";
+
 static unsigned long tap_default_clock = 985248;
 
 
@@ -45,6 +47,7 @@ static
 int tap_load_img (FILE *fp, pti_img_t *img, unsigned long clock)
 {
 	int           c;
+	int           level;
 	unsigned      vers;
 	unsigned long size;
 	unsigned long clk;
@@ -59,17 +62,21 @@ int tap_load_img (FILE *fp, pti_img_t *img, unsigned long clock)
 		return (1);
 	}
 
-	if (memcmp (buf, tap_magic, 12) != 0) {
-		return (1);
+	if (memcmp (buf, tap_magic1, 12) != 0) {
+		if (memcmp (buf, tap_magic2, 12) != 0) {
+			return (1);
+		}
 	}
 
 	vers = buf[12];
 
-	if ((vers != 0) && (vers != 1)) {
+	if ((vers != 0) && (vers != 1) && (vers != 2)) {
 		return (1);
 	}
 
 	pti_img_set_clock (img, clock);
+
+	level = -1;
 
 	size = pti_get_uint32_le (buf, 16);
 
@@ -104,11 +111,22 @@ int tap_load_img (FILE *fp, pti_img_t *img, unsigned long clock)
 			clk = 8 * c;
 		}
 
-		pti_pulse_set (pbuf + 0, clk / 2, -1);
-		pti_pulse_set (pbuf + 1, clk - (clk / 2), 1);
+		if ((vers == 0) || (vers == 1)) {
+			pti_pulse_set (pbuf + 0, clk / 2, -1);
+			pti_pulse_set (pbuf + 1, clk - (clk / 2), 1);
 
-		if (pti_img_add_pulses (img, pbuf, 2)) {
-			return (1);
+			if (pti_img_add_pulses (img, pbuf, 2)) {
+				return (1);
+			}
+		}
+		else {
+			pti_pulse_set (pbuf, clk, level);
+
+			if (pti_img_add_pulses (img, pbuf, 1)) {
+				return (1);
+			}
+
+			level = -level;
 		}
 	}
 
@@ -200,7 +218,7 @@ int tap_save_header (FILE *fp, unsigned long size)
 {
 	unsigned char buf[20];
 
-	memcpy (buf, tap_magic, 12);
+	memcpy (buf, tap_magic1, 12);
 
 	buf[12] = 1;
 	buf[13] = 0;
@@ -240,8 +258,10 @@ int pti_probe_tap_fp (FILE *fp)
 		return (0);
 	}
 
-	if (memcmp (buf, tap_magic, 12) != 0) {
-		return (0);
+	if (memcmp (buf, tap_magic1, 12) != 0) {
+		if (memcmp (buf, tap_magic2, 12) != 0) {
+			return (0);
+		}
 	}
 
 	return (1);
