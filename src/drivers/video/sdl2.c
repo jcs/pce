@@ -710,7 +710,6 @@ int sdl2_open (sdl2_t *sdl, unsigned w, unsigned h)
 
 	SDL_EventState (SDL_MOUSEMOTION, SDL_ENABLE);
 
-	SDL_SetHint (SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 	SDL_SetHint (SDL_HINT_GRAB_KEYBOARD, "1");
 	SDL_SetHint (SDL_HINT_MOUSE_RELATIVE_MODE_WARP, "1");
 
@@ -771,7 +770,8 @@ int sdl2_close (sdl2_t *sdl)
 static
 void sdl2_init (sdl2_t *sdl, ini_sct_t *sct)
 {
-	int fs, rep;
+	int        fs, rep;
+	const char *str;
 
 	trm_init (&sdl->trm, sdl);
 
@@ -803,6 +803,10 @@ void sdl2_init (sdl2_t *sdl, ini_sct_t *sct)
 
 	ini_get_bool (sct, "report_keys", &rep, 0);
 	sdl->report_keys = (rep != 0);
+
+	if (ini_get_string (sct, "scale_quality", &str, NULL) == 0) {
+		SDL_SetHint (SDL_HINT_RENDER_SCALE_QUALITY, str);
+	}
 
 	sdl->autosize = 1;
 
