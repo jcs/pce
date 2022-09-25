@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/cmd_68k.c                                   *
  * Created:     2007-04-15 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -50,7 +50,7 @@ mon_cmd_t par_cmd[] = {
 	{ "r", "reg [val]", "get or set a register" },
 	{ "s", "[what]", "print status (cpu|disks|mem|scc|via)" },
 	{ "t", "[cnt]", "execute cnt instructions [1]" },
-	{ "u", "[[-]addr [cnt]]", "disassemble" }
+	{ "u", "[gas] [[-]addr [cnt]]", "disassemble" }
 };
 
 unsigned par_cmd_cnt = sizeof (par_cmd) / sizeof (par_cmd[0]);
@@ -939,6 +939,76 @@ void mac_cmd_u_to (cmd_t *cmd, macplus_t *sim, unsigned long addr)
 }
 
 /*
+ * u gas - disassemble for gas
+ */
+static
+void mac_cmd_u_gas (cmd_t *cmd, macplus_t *sim)
+{
+	unsigned      i;
+	unsigned long addr1, addr2;
+	const char    *ins;
+	e68_dasm_t    op;
+
+	addr1 = 0;
+	addr2 = 0;
+
+	if (cmd_match_uint32 (cmd, &addr1)) {
+		addr2 = addr1;
+		cmd_match_uint32 (cmd, &addr2);
+	}
+
+	if (!cmd_match_end (cmd)) {
+		return;
+	}
+
+	pce_printf ("\t.text\n");
+
+	while (addr1 < addr2) {
+		e68_dasm_mem (sim->cpu, &op, addr1);
+
+		pce_printf ("\tdc.w\t0x%04x", (unsigned) op.ir[0]);
+
+		for (i = 1; i < op.irn; i++) {
+			pce_printf (", 0x%04x", (unsigned) op.ir[i]);
+		}
+
+		for (i = op.irn; i < 4; i++) {
+			pce_printf ("\t");
+		}
+
+		pce_printf ("\t| %06lX  ", op.pc);
+
+		ins = mac_get_trap_name (op.ir[0]);
+
+		if (ins == NULL) {
+			ins = op.op;
+		}
+
+		pce_printf ((op.argn > 0) ? "%-8s" : "%s", ins);
+
+		if (op.argn >= 1) {
+			pce_printf ("%s", op.arg1);
+		}
+
+		if (op.argn >= 2) {
+			pce_printf (", %s", op.arg2);
+		}
+
+		if (op.argn >= 3) {
+			pce_printf (", %s", op.arg3);
+		}
+
+		pce_printf ("\n");
+
+		if (op.flags & E68_DFLAG_RTS) {
+			pce_printf ("\n");
+		}
+
+		addr1 += 2 * op.irn;
+	}
+}
+
+/*
  * u - disassemble
  */
 static
@@ -950,6 +1020,11 @@ void mac_cmd_u (cmd_t *cmd, macplus_t *sim)
 	static unsigned long saddr = 0;
 	e68_dasm_t           op;
 	char                 str[256];
+
+	if (cmd_match (cmd, "gas")) {
+		mac_cmd_u_gas (cmd, sim);
+		return;
+	}
 
 	if (first) {
 		first = 0;
