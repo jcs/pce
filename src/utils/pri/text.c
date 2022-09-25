@@ -542,8 +542,6 @@ int txt_match_hex_digit (pri_text_t *ctx, unsigned *val)
 {
 	int c;
 
-	txt_match_space (ctx);
-
 	c = txt_getc (ctx, 0);
 
 	if ((c >= '0') && (c <= '9')) {
@@ -915,6 +913,7 @@ int txt_enc_weak_run (pri_text_t *ctx)
 static
 int txt_enc_weak (pri_text_t *ctx)
 {
+	int           ok;
 	unsigned      dig, cnt;
 	unsigned long pos, val;
 
@@ -922,17 +921,17 @@ int txt_enc_weak (pri_text_t *ctx)
 		return (txt_enc_weak_run (ctx));
 	}
 
+	txt_match_space (ctx);
+
 	pos = txt_get_position (ctx);
 	val = 0;
 	cnt = 0;
+	ok = 0;
 
-	while (txt_match_eol (ctx) == 0) {
-		if (txt_match_hex_digit (ctx, &dig) == 0) {
-			break;
-		}
-
+	while (txt_match_hex_digit (ctx, &dig)) {
 		val |= (unsigned long) (dig & 0x0f) << (28 - cnt);
 		cnt += 4;
+		ok = 1;
 
 		if (cnt >= 32) {
 			if (pri_trk_evt_add (ctx->trk, PRI_EVENT_WEAK, pos, val) == NULL) {
@@ -951,7 +950,7 @@ int txt_enc_weak (pri_text_t *ctx)
 		}
 	}
 
-	return (0);
+	return (ok == 0);
 }
 
 static
