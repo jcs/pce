@@ -37,6 +37,12 @@ else
 DIST += $(rel)/tun.c $(rel)/tun.h
 endif
 
+ifeq "$(PCE_ENABLE_VMNET)" "1"
+LIBPCE_BAS += vmnet
+else
+DIST += $(rel)/vmnet.m $(rel)/vmnet.h
+endif
+
 LIBPCE_SRC := $(foreach f,$(LIBPCE_BAS),$(rel)/$(f).c)
 LIBPCE_OBJ := $(foreach f,$(LIBPCE_BAS),$(rel)/$(f).o)
 LIBPCE_HDR := $(foreach f,$(LIBPCE_BAS),$(rel)/$(f).h)

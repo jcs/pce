@@ -1087,7 +1087,7 @@ void mac_setup_scsi (macplus_t *sim, ini_sct_t *ini)
 	mem_blk_t     *blk;
 	unsigned long addr, size;
 	unsigned      id, drive, ethernet;
-	const char    *vendor, *product, *mac_addr, *tap_dev, *tap_cmd;
+	const char    *vendor, *product, *mac_addr, *tap_dev, *tap_cmd, *bridge_if;
 
 	sct = ini_next_sct (ini, NULL, "scsi");
 
@@ -1144,14 +1144,20 @@ void mac_setup_scsi (macplus_t *sim, ini_sct_t *ini)
 			ini_get_string (sctdev, "tap", &tap_dev, "/dev/tap0");
 			ini_get_string (sctdev, "tap_cmd", &tap_cmd, "");
 			ini_get_string (sctdev, "mac_addr", &mac_addr, "00:80:19:c0:ff:ee");
+			ini_get_string (sctdev, "bridge_if", &bridge_if, "");
 
 			pce_log_tag (MSG_INF,
 				"SCSI:",
+#if PCE_ENABLE_VMNET
+				"id=%u ethernet=%u bridge=%s mac_addr=%s\n",
+				id, ethernet, bridge_if, mac_addr
+#else
 				"id=%u ethernet=%u tap=%s cmd=%s mac_addr=%s\n",
 				id, ethernet, tap_dev, tap_cmd, mac_addr
+#endif
 			);
 
-			mac_scsi_set_ethernet (&sim->scsi, id, tap_dev, tap_cmd, mac_addr);
+			mac_scsi_set_ethernet (&sim->scsi, id, tap_dev, tap_cmd, mac_addr, bridge_if);
 		}
 
 		sctdev = ini_next_sct (sct, sctdev, "device");
@@ -1309,7 +1315,7 @@ void mac_setup_video (macplus_t *sim, ini_sct_t *ini)
 	if (sim->trm != NULL) {
 		mac_video_set_terminal (sim->video, sim->trm);
 
-		trm_open (sim->trm, 512, 342);
+		trm_open (sim->trm, w, h);
 	}
 
 	mac_video_set_color (sim->video, col0, col1);

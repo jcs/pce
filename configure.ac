@@ -202,7 +202,8 @@ AC_CHECK_HEADERS( \
 	sys/time.h \
 	sys/types.h \
 	termios.h \
-	unistd.h
+	unistd.h \
+	vmnet/vmnet.h
 )
 
 AC_CHECK_HEADER(stdint.h,
@@ -664,6 +665,33 @@ AC_ARG_ENABLE(tun,
 AC_SUBST(PCE_ENABLE_TUN)
 if test "x$PCE_ENABLE_TUN" = "x1" ; then
 	AC_DEFINE(PCE_ENABLE_TUN)
+fi
+
+
+AC_MSG_CHECKING([whether to enable vmnet])
+AC_ARG_ENABLE(vmnet,
+  [AS_HELP_STRING([--enable-vmnet], [Enable vmnet networking [guessed]])],
+  [
+	if test "x$enableval" = "xyes" ; then
+		PCE_ENABLE_VMNET=1
+		AC_MSG_RESULT([yes])
+	else
+		PCE_ENABLE_VMNET=0
+		AC_MSG_RESULT([no])
+ 	fi
+  ],[
+	PCE_ENABLE_VMNET=1
+	test "x$ac_cv_header_vmnet_vmnet_h" = "xyes" || PCE_ENABLE_VMNET=0
+	if test "x$PCE_ENABLE_VMNET" = "x1" ; then
+		AC_MSG_RESULT([yes (guess)])
+	else
+		AC_MSG_RESULT([no (guess)])
+	fi
+  ]
+)
+AC_SUBST(PCE_ENABLE_VMNET)
+if test "x$PCE_ENABLE_VMNET" = "x1" ; then
+	AC_DEFINE(PCE_ENABLE_VMNET)
 fi
 
 
@@ -1136,6 +1164,12 @@ if test "x$PCE_ENABLE_TUN" = "x1" ; then
 	option1="$option1 tun"
 else
 	option2="$option2 tun"
+fi
+
+if test "x$PCE_ENABLE_VMNET" = "x1" ; then
+	option1="$option1 vmnet"
+else
+	option2="$option2 vmnet"
 fi
 
 

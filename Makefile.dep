@@ -3223,6 +3223,10 @@ src/lib/tun.o: src/lib/tun.c \
 	src/config.h \
 	src/lib/tun.h
 
+src/lib/vmnet.o: src/lib/vmnet.m \
+	src/config.h \
+	src/lib/vmnet.h
+
 src/libini/expr.o: src/libini/expr.c \
 	src/config.h \
 	src/libini/libini.h \
