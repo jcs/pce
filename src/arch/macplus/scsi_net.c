@@ -3,7 +3,7 @@
  *****************************************************************************/
 
 /*****************************************************************************
- * File name:   src/arch/macplus/scsi_tap.c                                  *
+ * File name:   src/arch/macplus/scsi_net.c                                  *
  * Created:     2022-05-01 by joshua stein <jcs@jcs.org>                     *
  * Copyright:   (C) 2022 joshua stein <jcs@jcs.org>                          *
  *****************************************************************************/
@@ -31,8 +31,16 @@
 #include <poll.h>
 #include <sys/fcntl.h>
 #include <sys/types.h>
-int mac_scsi_ethernet_tap_open (mac_scsi_t *scsi, mac_scsi_dev_t *dev)
+
+int mac_scsi_ethernet_open (mac_scsi_t *scsi, mac_scsi_dev_t *dev)
 {
+#if PCE_ENABLE_VMNET
+	dev->vmnet = pce_vmnet_start (dev->bridge_if);
+	if (dev->vmnet == NULL) {
+		pce_log (MSG_ERR, "*** failed creating vmnet interface\n");
+		return - 1;
+	}
+#else
 	char tap_cmd_sh[1024];
 
 	dev->tap_fd = -1;
@@ -58,6 +66,7 @@ int mac_scsi_ethernet_tap_open (mac_scsi_t *scsi, mac_scsi_dev_t *dev)
 			pce_log (MSG_ERR, "*** tap command failed (%s)\n", strerror(errno));
 		}
 	}
+#endif
 
 	return 0;
 }
@@ -66,6 +75,11 @@ int mac_scsi_ethernet_data_avail (mac_scsi_dev_t *dev)
 {
 	struct pollfd fds;
 
+#if PCE_ENABLE_VMNET
+	if (dev->vmnet == NULL)
+		return 0;
+	return (dev->vmnet->packets_available > 0 ? 1 : 0);
+#else
 	fds.fd = dev->tap_fd;
 	fds.events = POLLIN | POLLERR;
 	if (poll (&fds, 1, 0) < 1) {
@@ -76,10 +90,22 @@ int mac_scsi_ethernet_data_avail (mac_scsi_dev_t *dev)
 	}
 
 	return 0;
+#endif
 }
 
 size_t mac_scsi_ethernet_read (mac_scsi_dev_t *dev, unsigned char *buf)
 {
+#if PCE_ENABLE_VMNET
+	size_t ret;
+
+	if (dev->vmnet == NULL)
+		return 0;
+
+	ret = pce_vmnet_read(dev->vmnet, buf, 1514);
+	if (ret == 0)
+		dev->vmnet->packets_available = 0;
+	return ret;
+#else
 	if (dev->tap_fd < 0) {
 		return 0;
 	}
@@ -89,13 +115,23 @@ size_t mac_scsi_ethernet_read (mac_scsi_dev_t *dev, unsigned char *buf)
 	}
 
 	return read (dev->tap_fd, buf, 1514);
+#endif
 }
 
 size_t mac_scsi_ethernet_write (mac_scsi_dev_t *dev, unsigned char *buf, size_t len)
 {
+#if PCE_ENABLE_VMNET
+	size_t ret;
+
+	if (dev->vmnet == NULL)
+		return 0;
+
+	return (pce_vmnet_write(dev->vmnet, buf, len) == 0 ? len : 0);
+#else
 	if (dev->tap_fd < 0) {
 		return 0;
 	}
 
 	return write (dev->tap_fd, buf, len);
+#endif
 }

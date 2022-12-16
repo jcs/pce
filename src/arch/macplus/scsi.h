@@ -28,6 +28,10 @@
 
 #include <drivers/block/block.h>
 
+#if PCE_ENABLE_VMNET
+#include <lib/vmnet.h>
+#endif
+
 enum {
 	MAC_SCSI_DEV_UNKNOWN,
 	MAC_SCSI_DEV_DISK,
@@ -51,6 +55,10 @@ typedef struct {
 	char          tap_dev[PATH_MAX];
 	char          tap_cmd[PATH_MAX];
 	int           tap_fd;
+#if PCE_ENABLE_VMNET
+	char          bridge_if[20];
+	struct pce_vmnet_interface *vmnet;
+#endif
 } mac_scsi_dev_t;
 
 
@@ -105,7 +113,7 @@ void mac_scsi_set_disks (mac_scsi_t *scsi, disks_t *dsks);
 void mac_scsi_set_drive (mac_scsi_t *scsi, unsigned id, unsigned drive);
 void mac_scsi_set_drive_vendor (mac_scsi_t *scsi, unsigned id, const char *vendor);
 void mac_scsi_set_drive_product (mac_scsi_t *scsi, unsigned id, const char *product);
-void mac_scsi_set_ethernet (mac_scsi_t *scsi, unsigned id, const char *tap_dev, const char *tap_cmd, const char *mac_addr);
+void mac_scsi_set_ethernet (mac_scsi_t *scsi, unsigned id, const char *tap_dev, const char *tap_cmd, const char *mac_addr, const char *bridge_if);
 
 unsigned char mac_scsi_get_uint8 (void *ext, unsigned long addr);
 unsigned short mac_scsi_get_uint16 (void *ext, unsigned long addr);
@@ -115,7 +123,7 @@ void mac_scsi_set_uint16 (void *ext, unsigned long addr, unsigned short val);
 
 void mac_scsi_reset (mac_scsi_t *scsi);
 
-int mac_scsi_ethernet_tap_open (mac_scsi_t *scsi, mac_scsi_dev_t *dev);
+int mac_scsi_ethernet_open (mac_scsi_t *scsi, mac_scsi_dev_t *dev);
 int mac_scsi_ethernet_data_avail (mac_scsi_dev_t *dev);
 size_t mac_scsi_ethernet_read (mac_scsi_dev_t *dev, unsigned char *buf);
 size_t mac_scsi_ethernet_write (mac_scsi_dev_t *dev, unsigned char *buf, size_t len);

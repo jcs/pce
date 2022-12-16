@@ -660,6 +660,7 @@ PCE_ENABLE_CHAR_SLIP
 PCE_ENABLE_CHAR_PTY
 PCE_ENABLE_CHAR_PPP
 PCE_ENABLE_CHAR_POSIX
+PCE_ENABLE_VMNET
 PCE_ENABLE_TUN
 PCE_BUILD_SPECTRUM
 PCE_BUILD_VIC20
@@ -782,6 +783,7 @@ enable_simarm
 enable_vic20
 enable_spectrum
 enable_tun
+enable_vmnet
 enable_char_posix
 enable_char_ppp
 enable_char_pty
@@ -1440,6 +1442,7 @@ Optional Features:
   --enable-vic20          Enable the VIC20 emulator [yes]
   --enable-spectrum       Enable the ZX Spectrum emulator [yes]
   --enable-tun            Enable tun networking [guessed]
+  --enable-vmnet          Enable vmnet networking [guessed]
   --enable-char-posix     Enable the posix file character driver [guessed]
   --enable-char-ppp       Enable the PPP character driver [guessed]
   --enable-char-pty       Enable the pty character driver [guessed]
@@ -4309,6 +4312,12 @@ then :
   printf "%s\n" "#define HAVE_UNISTD_H 1" >>confdefs.h
 
 fi
+ac_fn_c_check_header_compile "$LINENO" "vmnet/vmnet.h" "ac_cv_header_vmnet_vmnet_h" "$ac_includes_default"
+if test "x$ac_cv_header_vmnet_vmnet_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_VMNET_VMNET_H 1" >>confdefs.h
+
+fi
 
 
 ac_fn_c_check_header_compile "$LINENO" "stdint.h" "ac_cv_header_stdint_h" "$ac_includes_default"
@@ -5625,6 +5634,44 @@ if test "x$PCE_ENABLE_TUN" = "x1" ; then
 fi
 
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether to enable vmnet" >&5
+printf %s "checking whether to enable vmnet... " >&6; }
+# Check whether --enable-vmnet was given.
+if test ${enable_vmnet+y}
+then :
+  enableval=$enable_vmnet;
+	if test "x$enableval" = "xyes" ; then
+		PCE_ENABLE_VMNET=1
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+	else
+		PCE_ENABLE_VMNET=0
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+ 	fi
+
+else $as_nop
+
+	PCE_ENABLE_VMNET=1
+	test "x$ac_cv_header_vmnet_vmnet_h" = "xyes" || PCE_ENABLE_VMNET=0
+	if test "x$PCE_ENABLE_VMNET" = "x1" ; then
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes (guess)" >&5
+printf "%s\n" "yes (guess)" >&6; }
+	else
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no (guess)" >&5
+printf "%s\n" "no (guess)" >&6; }
+	fi
+
+
+fi
+
+
+if test "x$PCE_ENABLE_VMNET" = "x1" ; then
+	printf "%s\n" "#define PCE_ENABLE_VMNET 1" >>confdefs.h
+
+fi
+
+
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether to enable the posix file character driver" >&5
 printf %s "checking whether to enable the posix file character driver... " >&6; }
 # Check whether --enable-char-posix was given.
@@ -6318,6 +6365,12 @@ if test "x$PCE_ENABLE_TUN" = "x1" ; then
 	option1="$option1 tun"
 else
 	option2="$option2 tun"
+fi
+
+if test "x$PCE_ENABLE_VMNET" = "x1" ; then
+	option1="$option1 vmnet"
+else
+	option2="$option2 vmnet"
 fi
 
 

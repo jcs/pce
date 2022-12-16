@@ -157,7 +157,7 @@ void mac_scsi_set_drive (mac_scsi_t *scsi, unsigned id, unsigned drive)
 	memcpy (scsi->dev[id].product, "PCEDISK         ", 16);
 }
 
-void mac_scsi_set_ethernet (mac_scsi_t *scsi, unsigned id, const char *tap_dev, const char *tap_cmd, const char *mac_addr)
+void mac_scsi_set_ethernet (mac_scsi_t *scsi, unsigned id, const char *tap_dev, const char *tap_cmd, const char *mac_addr, const char *bridge_if)
 {
 	int mac_addr_ints[6];
 	int ret;
@@ -173,6 +173,7 @@ void mac_scsi_set_ethernet (mac_scsi_t *scsi, unsigned id, const char *tap_dev, 
 
 	strlcpy (scsi->dev[id].tap_dev, tap_dev, sizeof(scsi->dev[id].tap_dev));
 	strlcpy (scsi->dev[id].tap_cmd, tap_cmd, sizeof(scsi->dev[id].tap_cmd));
+	strlcpy (scsi->dev[id].bridge_if, bridge_if, sizeof(scsi->dev[id].bridge_if));
 
 	ret = sscanf(mac_addr, "%x:%x:%x:%x:%x:%x",
 		&mac_addr_ints[0], &mac_addr_ints[1],
@@ -185,7 +186,7 @@ void mac_scsi_set_ethernet (mac_scsi_t *scsi, unsigned id, const char *tap_dev, 
 		pce_log (MSG_ERR, "*** invalid MAC address (%s)\n", mac_addr);
 	}
 
-	if (mac_scsi_ethernet_tap_open (scsi, &scsi->dev[id]) == 0) {
+	if (mac_scsi_ethernet_open (scsi, &scsi->dev[id]) == 0) {
 		scsi->dev[id].valid = 1;
 	}
 }
@@ -1063,18 +1064,24 @@ void mac_scsi_cmd_set_interface_mode (mac_scsi_t *scsi)
 
 	switch (cmd) {
 	case 0x40:
-		/* set MAC */
+		/* set MAC (noop) */
+		scsi->buf_i = 0;
+		scsi->buf_n = 6;
+
+		scsi->cmd_finish = mac_scsi_cmd_write6_finish;
+
+		mac_scsi_set_phase_data_out (scsi);
 		break;
 
 	case 0x80:
-		/* set mode */
+		/* set mode (noop) */
+		mac_scsi_set_phase_status (scsi, 0x02);
 		break;
 
 	default:
 		mac_log_deb ("scsi: unknown interface mode command (%02X)\n", cmd);
+		mac_scsi_set_phase_status (scsi, 0x02);
 	}
-
-	mac_scsi_set_phase_status (scsi, 0x02);
 }
 
 static
@@ -1089,7 +1096,12 @@ void mac_scsi_cmd_set_mcast_addr (mac_scsi_t *scsi)
 		return;
 	}
 
-	mac_scsi_set_phase_status (scsi, 0x02);
+	scsi->buf_i = 0;
+	scsi->buf_n = scsi->cmd[4];
+
+	scsi->cmd_finish = mac_scsi_cmd_write6_finish;
+
+	mac_scsi_set_phase_data_out (scsi);
 }
 
 static
