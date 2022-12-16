@@ -51,7 +51,7 @@ PCE_MACPLUS_BAS := \
 	msg \
 	rtc \
 	scsi \
-	scsi_tap \
+	scsi_net \
 	serial \
 	sony \
 	sound \
@@ -101,6 +101,11 @@ ifeq "$(PCE_ENABLE_TUN)" "1"
 PCE_MACPLUS_OBJ_EXT += src/lib/tun.o
 endif
 
+ifeq "$(PCE_ENABLE_VMNET)" "1"
+PCE_MACPLUS_OBJ_EXT += src/lib/vmnet.o
+PCE_MACPLUS_LIBS += -lobjc -framework vmnet
+endif
+
 ifeq "$(PCE_BUILD_MACPLUS)" "1"
 BIN  += $(PCE_MACPLUS_BIN)
 ETC  += $(PCE_MACPLUS_ETC)
@@ -126,7 +131,7 @@ $(rel)/mem.o:		$(rel)/mem.c
 $(rel)/msg.o:		$(rel)/msg.c
 $(rel)/rtc.o:		$(rel)/rtc.c
 $(rel)/scsi.o:		$(rel)/scsi.c
-$(rel)/scsi_tap.o:	$(rel)/scsi_tap.c
+$(rel)/scsi_net.o:	$(rel)/scsi_net.c
 $(rel)/serial.o:	$(rel)/serial.c
 $(rel)/sony.o:		$(rel)/sony.c
 $(rel)/sound.o:		$(rel)/sound.c
