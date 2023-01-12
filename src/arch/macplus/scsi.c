@@ -171,9 +171,11 @@ void mac_scsi_set_ethernet (mac_scsi_t *scsi, unsigned id, const char *tap_dev, 
 	memcpy (scsi->dev[id].product, "SCSI/Link       ", 16);
 	memcpy (scsi->dev[id].revision, "2.0f", 4);
 
-	strlcpy (scsi->dev[id].tap_dev, tap_dev, sizeof(scsi->dev[id].tap_dev));
-	strlcpy (scsi->dev[id].tap_cmd, tap_cmd, sizeof(scsi->dev[id].tap_cmd));
-	strlcpy (scsi->dev[id].bridge_if, bridge_if, sizeof(scsi->dev[id].bridge_if));
+	strncpy (scsi->dev[id].tap_dev, tap_dev, sizeof(scsi->dev[id].tap_dev));
+	strncpy (scsi->dev[id].tap_cmd, tap_cmd, sizeof(scsi->dev[id].tap_cmd));
+#if PCE_ENABLE_VMNET
+	strncpy (scsi->dev[id].bridge_if, bridge_if, sizeof(scsi->dev[id].bridge_if));
+#endif
 
 	ret = sscanf(mac_addr, "%x:%x:%x:%x:%x:%x",
 		&mac_addr_ints[0], &mac_addr_ints[1],
