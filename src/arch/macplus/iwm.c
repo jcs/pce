@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/iwm.c                                       *
  * Created:     2007-11-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -71,6 +71,7 @@ int iwm_drv_init (mac_iwm_drive_t *drv, unsigned drive)
 	drv->img_del = 0;
 
 	drv->auto_rotate = 0;
+	drv->use_pwm = 1;
 
 	drv->cylinders = MAC_IWM_CYLINDERS;
 	drv->heads = 1;
@@ -436,7 +437,7 @@ int iwm_drv_get_tacho (mac_iwm_drive_t *drv)
 	int           val;
 	unsigned long pwm;
 
-	if (drv->heads == 1) {
+	if (drv->use_pwm) {
 		pwm = 65536 - drv->pwm_val;
 
 		val = ((((120 * pwm) / 32768) * drv->pwm_pos) / drv->pwm_len) & 1;
@@ -643,6 +644,13 @@ void mac_iwm_set_motor_fct (mac_iwm_t *iwm, void *ext, void *fct)
 {
 	iwm->set_motor_ext = ext;
 	iwm->set_motor = fct;
+}
+
+void mac_iwm_enable_pwm (mac_iwm_t *iwm, unsigned drive, int val)
+{
+	if (drive < MAC_IWM_DRIVES) {
+		iwm->drv[drive].use_pwm = (val != 0);
+	}
 }
 
 int mac_iwm_set_heads (mac_iwm_t *iwm, unsigned drive, unsigned heads)

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/iwm.h                                       *
  * Created:     2007-11-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -43,6 +43,7 @@ typedef struct {
 	char            img_del;
 
 	char            auto_rotate;
+	char            use_pwm;
 
 	unsigned        cylinders;
 	unsigned        heads;
@@ -121,6 +122,7 @@ void mac_iwm_free (mac_iwm_t *iwm);
 
 void mac_iwm_set_motor_fct (mac_iwm_t *iwm, void *ext, void *fct);
 
+void mac_iwm_enable_pwm (mac_iwm_t *iwm, unsigned drive, int val);
 int mac_iwm_set_heads (mac_iwm_t *iwm, unsigned drive, unsigned heads);
 void mac_iwm_set_disks (mac_iwm_t *iwm, disks_t *dsks);
 void mac_iwm_set_disk_id (mac_iwm_t *iwm, unsigned drive, unsigned id);
