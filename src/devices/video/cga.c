@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/devices/video/cga.c                                      *
  * Created:     2003-04-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -1275,17 +1275,18 @@ void cga_del (cga_t *cga)
 video_t *cga_new_ini (ini_sct_t *sct)
 {
 	unsigned long io, addr;
-	unsigned      blink, font;
+	unsigned      blink, font, status;
 	cga_t         *cga;
 
 	ini_get_uint32 (sct, "io", &io, 0x3d0);
 	ini_get_uint32 (sct, "address", &addr, 0xb8000);
 	ini_get_uint16 (sct, "blink", &blink, 16);
 	ini_get_uint16 (sct, "font", &font, 0);
+	ini_get_uint16 (sct, "status", &status, 0xff);
 
 	pce_log_tag (MSG_INF,
-		"VIDEO:", "CGA io=0x%04lx addr=0x%05lx font=%u blink=%u\n",
-		io, addr, font, blink
+		"VIDEO:", "CGA io=0x%04lx addr=0x%05lx font=%u blink=%u status=0x%02x\n",
+		io, addr, font, blink, status
 	);
 
 	if ((cga = cga_new (io, addr)) == NULL) {
@@ -1294,6 +1295,8 @@ video_t *cga_new_ini (ini_sct_t *sct)
 
 	cga_set_blink_rate (cga, blink, 1);
 	cga_set_font (cga, font);
+
+	cga->reg[CGA_STATUS] = status;
 
 	return (&cga->video);
 }
