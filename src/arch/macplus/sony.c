@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/sony.c                                      *
  * Created:     2007-11-15 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -1066,11 +1066,15 @@ void mac_sony_ctl_format (mac_sony_t *sony)
 		blk = dsk_get_block_cnt (dsk);
 
 		if (dsk_get_type (dsk) == PCE_DISK_PSI) {
-			if ((format == 0) || (format == 1)) {
+			if (format == 1) {
 				blk = 800;
 			}
-			else {
+			else if (format == 2) {
 				blk = 1600;
+			}
+
+			if (blk == 0) {
+				blk = 800;
 			}
 		}
 	}
