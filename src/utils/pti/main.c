@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pti/main.c                                         *
  * Created:     2020-04-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2020-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -480,15 +480,6 @@ int pti_set_parameter (const char *name, const char *val)
 		}
 
 		pti_wav_set_lowpass_order (order);
-	}
-	else if (strcmp (name, "wav-sine") == 0) {
-		int sine;
-
-		if (pti_parse_bool (val, &sine)) {
-			return (1);
-		}
-
-		pti_wav_set_sine_wave (sine);
 	}
 	else if (strcmp (name, "wav-srate") == 0) {
 		unsigned long srate;
