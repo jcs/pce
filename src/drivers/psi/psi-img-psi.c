@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/psi/psi-img-psi.c                                *
  * Created:     2013-05-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -379,6 +379,7 @@ int psi_load_macg (FILE *fp, psi_img_t *img, psi_sct_t *sct, unsigned long size,
 static
 int psi_load_offs (FILE *fp, psi_img_t *img, psi_sct_t *sct, unsigned long size, unsigned long crc)
 {
+	unsigned long pos;
 	unsigned char buf[4];
 
 	if ((sct == NULL) || (size < 4)) {
@@ -389,7 +390,13 @@ int psi_load_offs (FILE *fp, psi_img_t *img, psi_sct_t *sct, unsigned long size,
 		return (1);
 	}
 
-	psi_sct_set_position (sct, psi_get_uint32_be (buf, 0));
+	pos = psi_get_uint32_be (buf, 0);
+
+	if (pos == 0xffffffff) {
+		pos = -1;
+	}
+
+	psi_sct_set_position (sct, pos);
 
 	if (psi_skip_chunk (fp, size - 4, crc)) {
 		return (1);
@@ -981,7 +988,7 @@ int psi_save_offs (FILE *fp, const psi_sct_t *sct)
 
 	pos = psi_sct_get_position (sct);
 
-	if (pos == 0xffffffff) {
+	if (!psi_sct_have_position (sct)) {
 		return (0);
 	}
 

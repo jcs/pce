@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pri/pri-enc-fm.c                                 *
  * Created:     2014-12-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2014 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2014-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -419,7 +419,7 @@ void fm_encode_sector (fm_code_t *fm, psi_sct_t *sct, unsigned gap3)
 	unsigned long pos;
 	unsigned char buf[8];
 
-	if ((sct->position != 0xffffffff) && (sct->position >= (16 * 8))) {
+	if (psi_sct_have_position (sct) && (sct->position >= (16 * 8))) {
 		pos = 2 * (sct->position - 16 * 8);
 
 		if (pos >= fm->last_gap3_start) {

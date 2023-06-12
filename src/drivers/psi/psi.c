@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/psi/psi.c                                        *
  * Created:     2010-08-13 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -66,7 +66,7 @@ psi_sct_t *psi_sct_new (unsigned c, unsigned h, unsigned s, unsigned n)
 
 	sct->tag_cnt = 0;
 
-	sct->position = 0xffffffff;
+	sct->position = -1;
 	sct->read_time = 0;
 
 	sct->have_mfm_size = 0;
@@ -316,6 +316,11 @@ void psi_sct_set_encoding (psi_sct_t *sct, unsigned enc)
 		sct->encoding = enc;
 		sct = sct->next;
 	}
+}
+
+int psi_sct_have_position (const psi_sct_t *sct)
+{
+	return (sct->position != (unsigned long) -1);
 }
 
 void psi_sct_set_position (psi_sct_t *sct, unsigned long val)

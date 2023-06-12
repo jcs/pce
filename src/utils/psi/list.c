@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/psi/list.c                                         *
  * Created:     2013-06-09 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -186,7 +186,7 @@ int psi_list_sectors_cb (psi_img_t *img, psi_trk_t *trk,
 				}
 			}
 
-			if (sct->position != 0xffffffff) {
+			if (psi_sct_have_position (sct)) {
 				flags |= 0x80000000;
 			}
 
@@ -230,7 +230,7 @@ int psi_list_sectors_cb (psi_img_t *img, psi_trk_t *trk,
 				fprintf (stdout, " MFM-SIZE=%02X", mfm_size);
 			}
 
-			if (sct->position != 0xffffffff) {
+			if (psi_sct_have_position (sct)) {
 				fprintf (stdout, " POS=%-5lu", sct->position);
 			}
 

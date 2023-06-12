@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/psi/psi.h                                        *
  * Created:     2010-08-13 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -123,6 +123,7 @@ void psi_sct_set_flags (psi_sct_t *sct, unsigned long flags, int set);
 
 void psi_sct_set_encoding (psi_sct_t *sct, unsigned enc);
 
+int psi_sct_have_position (const psi_sct_t *sct);
 void psi_sct_set_position (psi_sct_t *sct, unsigned long val);
 unsigned long psi_sct_get_position (const psi_sct_t *sct);
 

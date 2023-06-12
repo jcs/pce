@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pri/pri-enc-mfm.c                                *
  * Created:     2012-02-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -697,7 +697,7 @@ void mfm_encode_sector (mfm_code_t *mfm, psi_sct_t *sct, unsigned gap3, int nopo
 	unsigned char buf[8];
 	int           clock;
 
-	if ((sct->position != 0xffffffff) && (sct->position >= (16 * 8)) && (nopos == 0)) {
+	if (psi_sct_have_position (sct) && (sct->position >= (16 * 8)) && (nopos == 0)) {
 		pos = 2 * (sct->position - 16 * 8);
 
 		if (pos > mfm->last_gap3_start) {

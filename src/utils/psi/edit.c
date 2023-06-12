@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/psi/edit.c                                         *
  * Created:     2013-06-09 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -160,7 +160,7 @@ static
 int psi_edit_position_cb (psi_img_t *img, psi_sct_t *sct,
 	unsigned c, unsigned h, unsigned s, unsigned a, void *p)
 {
-	sct->position = (*(unsigned long *) p) & 0xffffffff;
+	sct->position = (*(unsigned long *) p);
 	par_cnt += 1;
 	return (0);
 }
