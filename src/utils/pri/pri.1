@@ -1,4 +1,4 @@
-.TH PRI 1 "2022-09-25" "HH" "pce"
+.TH PRI 1 "2023-07-03" "HH" "pce"
 \
 .SH NAME
 pri \- convert and modify PCE raw image files
@@ -197,7 +197,7 @@ Duplicate all tracks. This is the reverse of double-step.
 Print information about the current image (same as \fB-f\fR).
 .TP
 .BI "mac-align " "mode"
-Align all selected tracks on Macintosh GCR tracks relative to the index.
+Align all selected tracks on Macintosh GCR disks relative to the index.
 Possible values for \fImode\fR are:
 .RS
 .TP
@@ -208,7 +208,7 @@ Align the start of the longest gap between sectors with the index.
 Align the end of the longest gap between sectors with the index.
 .TP
 .B index
-Align the first sector on a track with the index.
+Align the start of the first sector on a track with the index.
 .TP
 .B sector, sector-end
 Align the end of the sector before the lowest numbered sector with the index.
@@ -309,6 +309,13 @@ it is assumed to be in kbits per seconds.
 .BI "-s, --set " "parameter value"
 Set a parameter value. Recognized parameters are:
 .RS
+.TP
+.BI "mac-align " mode
+When decoding Macintosh GCR tracks to text, align them using \fImode\fR. The
+rotation required for the alignment is recorded in the text output and undone
+when the text is re-encoded, so this alignment is purely for readability.
+See the \fB-p mac-align\fR operation for a description of the possible values
+for \fImode\fR.
 .TP
 .BI "mfm-auto-gap3 " boolean
 Automatically set the GAP3 length. The default is true.

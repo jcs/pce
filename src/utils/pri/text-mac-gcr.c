@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text-mac-gcr.c                                 *
  * Created:     2017-10-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2017-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2017-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -30,6 +30,7 @@
 #include <drivers/pri/pri-enc-gcr.h>
 
 #include "main.h"
+#include "pri-mac-gcr.h"
 #include "text.h"
 
 
@@ -193,7 +194,6 @@ int mac_decode_sync (pri_text_t *ctx)
 			mac_put_nl (ctx, 0);
 			fprintf (ctx->fp, "SYNC %u\n", sync_cnt);
 		}
-
 	} while ((group_cnt > 0) || (sync_cnt > 0));
 
 	return (0);
@@ -452,6 +452,43 @@ int mac_decode_data (pri_text_t *ctx)
 	return (0);
 }
 
+static
+int mac_dec_rotate (pri_text_t *ctx, unsigned long *idx)
+{
+	unsigned long pos;
+	long          rot;
+	pri_trk_t     *trk;
+
+	pri_mac_align_pos (ctx->trk, ctx->mac_align, &pos);
+
+	if (pos == 0) {
+		return (0);
+	}
+
+	if ((trk = pri_trk_clone (ctx->trk)) == NULL) {
+		return (1);
+	}
+
+	ctx->trk = trk;
+	ctx->free_track = 1;
+
+	rot = trk->size - pos;
+
+	if (rot > (trk->size / 2)) {
+		rot -= (long) trk->size;
+	}
+
+	fprintf (ctx->fp, "ROTATE %ld\n\n", rot);
+
+	pri_trk_rotate (trk, pos);
+
+	if (idx != NULL) {
+		*idx = (trk->size - pos) % trk->size;
+	}
+
+	return (0);
+}
+
 int txt_mac_dec_track (pri_text_t *ctx)
 {
 	unsigned long bit;
@@ -467,6 +504,12 @@ int txt_mac_dec_track (pri_text_t *ctx)
 
 	ctx->column = 0;
 	ctx->need_nl = 0;
+
+	if (ctx->mac_align != PRI_MAC_ALIGN_NONE) {
+		if (mac_dec_rotate (ctx, NULL)) {
+			return (1);
+		}
+	}
 
 	pri_trk_set_pos (ctx->trk, 0);
 

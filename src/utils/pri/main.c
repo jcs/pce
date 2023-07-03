@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/main.c                                         *
  * Created:     2012-01-31 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -65,6 +65,7 @@ pri_enc_fm_t  par_enc_fm;
 pri_dec_mfm_t par_dec_mfm;
 pri_enc_mfm_t par_enc_mfm;
 
+unsigned      par_mac_align = 0;
 char          par_mac_no_slip = 0;
 char          par_text_align = 1;
 
@@ -187,7 +188,7 @@ void print_help (void)
 	fputs (
 		"\n"
 		"parameters are:\n"
-		"  mac-no-slip,\n"
+		"  mac-align, mac-no-slip,\n"
 		"  mfm-auto-gap3, mfm-clock, mfm-iam, mfm-gap1, mfm-gap3, mfm-gap4a,\n"
 		"  mfm-min-size, mfm-nopos, mfm-track-size\n"
 		"  fm-auto-gap3, fm-clock, fm-iam, fm-gap1, fm-gap3, fm-gap4a,\n"
@@ -774,6 +775,12 @@ int pri_set_parameter (const char *name, const char *val)
 	}
 	else if (strcmp (name, "fm-track-size") == 0) {
 		par_enc_fm.track_size = strtoul (val, NULL, 0);
+	}
+	else if (strcmp (name, "mac-align") == 0) {
+		if (pri_mac_align_mode (val, &par_mac_align)) {
+			fprintf (stderr, "%s: unknown mode (%s)\n", arg0, val);
+			return (1);
+		}
 	}
 	else if (strcmp (name, "text-align") == 0) {
 		par_text_align = (strtoul (val, NULL, 0) != 0);
