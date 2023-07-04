@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text-raw.c                                     *
  * Created:     2017-10-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2017-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2017-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -27,6 +27,8 @@
 #include <string.h>
 
 #include <drivers/pri/pri.h>
+
+#include <lib/text.h>
 
 #include "main.h"
 #include "text.h"
@@ -44,15 +46,15 @@ void raw_dec_byte (pri_text_t *ctx)
 
 	if (ctx->column > 0) {
 		if (ctx->column >= 16) {
-			fputc ('\n', ctx->fp);
+			fputc ('\n', ctx->txt.fp);
 			ctx->column = 0;
 		}
 		else {
-			fputc (' ', ctx->fp);
+			fputc (' ', ctx->txt.fp);
 		}
 	}
 
-	fprintf (ctx->fp, "%02X", val);
+	fprintf (ctx->txt.fp, "%02X", val);
 
 	ctx->column += 1;
 }
@@ -73,9 +75,9 @@ int txt_raw_dec_track (pri_text_t *ctx)
 	unsigned long bit;
 	unsigned long type, val;
 
-	fprintf (ctx->fp, "TRACK %lu %lu\n\n", ctx->c, ctx->h);
-	fprintf (ctx->fp, "MODE RAW\n");
-	fprintf (ctx->fp, "RATE %lu\n\n", pri_trk_get_clock (ctx->trk));
+	fprintf (ctx->txt.fp, "TRACK %lu %lu\n\n", ctx->c, ctx->h);
+	fprintf (ctx->txt.fp, "MODE RAW\n");
+	fprintf (ctx->txt.fp, "RATE %lu\n\n", pri_trk_get_clock (ctx->trk));
 
 	ctx->shift_cnt = 0;
 	ctx->last_val = 0;
@@ -104,7 +106,7 @@ int txt_raw_dec_track (pri_text_t *ctx)
 	raw_dec_flush (ctx);
 
 	if (ctx->column > 0) {
-		fputc ('\n', ctx->fp);
+		fputc ('\n', ctx->txt.fp);
 	}
 
 	return (0);
@@ -115,8 +117,8 @@ int raw_enc_bit (pri_text_t *ctx)
 {
 	unsigned long val;
 
-	while (txt_match_eol (ctx) == 0) {
-		if (txt_match_uint (ctx, 16, &val) == 0) {
+	while (txt_match_eol (&ctx->txt) == 0) {
+		if (txt_match_uint (&ctx->txt, 16, &val) == 0) {
 			return (1);
 		}
 
@@ -138,11 +140,11 @@ int raw_enc_fill (pri_text_t *ctx)
 	unsigned long max;
 	unsigned long val;
 
-	if (txt_match_uint (ctx, 10, &max) == 0) {
+	if (txt_match_uint (&ctx->txt, 10, &max) == 0) {
 		return (1);
 	}
 
-	if (txt_match_uint (ctx, 16, &val) == 0) {
+	if (txt_match_uint (&ctx->txt, 16, &val) == 0) {
 		return (1);
 	}
 
@@ -173,11 +175,11 @@ int raw_enc_rep (pri_text_t *ctx)
 	unsigned long cnt;
 	unsigned long val;
 
-	if (txt_match_uint (ctx, 10, &cnt) == 0) {
+	if (txt_match_uint (&ctx->txt, 10, &cnt) == 0) {
 		return (1);
 	}
 
-	if (txt_match_uint (ctx, 16, &val) == 0) {
+	if (txt_match_uint (&ctx->txt, 16, &val) == 0) {
 		return (1);
 	}
 
@@ -196,16 +198,16 @@ int txt_encode_pri0_raw (pri_text_t *ctx)
 {
 	unsigned long val;
 
-	if (txt_match (ctx, "BIT", 1)) {
+	if (txt_match (&ctx->txt, "BIT", 1)) {
 		return (raw_enc_bit (ctx));
 	}
-	else if (txt_match (ctx, "FILL", 1)) {
+	else if (txt_match (&ctx->txt, "FILL", 1)) {
 		return (raw_enc_fill (ctx));
 	}
-	else if (txt_match (ctx, "REP", 1)) {
+	else if (txt_match (&ctx->txt, "REP", 1)) {
 		return (raw_enc_rep (ctx));
 	}
-	else if (txt_match_uint (ctx, 16, &val)) {
+	else if (txt_match_uint (&ctx->txt, 16, &val)) {
 		return (raw_enc_hex (ctx, val));
 	}
 

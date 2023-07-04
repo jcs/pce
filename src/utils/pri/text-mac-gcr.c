@@ -29,6 +29,8 @@
 #include <drivers/pri/pri.h>
 #include <drivers/pri/pri-enc-gcr.h>
 
+#include <lib/text.h>
+
 #include "main.h"
 #include "pri-mac-gcr.h"
 #include "text.h"
@@ -93,7 +95,7 @@ static
 void mac_put_nl (pri_text_t *ctx, int force)
 {
 	if ((ctx->column > 0) || force) {
-		fputc ('\n', ctx->fp);
+		fputc ('\n', ctx->txt.fp);
 	}
 
 	ctx->column = 0;
@@ -104,15 +106,15 @@ void mac_put_byte (pri_text_t *ctx, unsigned val)
 {
 	if (ctx->column > 0) {
 		if (ctx->column >= 16) {
-			fputc ('\n', ctx->fp);
+			fputc ('\n', ctx->txt.fp);
 			ctx->column = 0;
 		}
 		else {
-			fputc (' ', ctx->fp);
+			fputc (' ', ctx->txt.fp);
 		}
 	}
 
-	fprintf (ctx->fp, "%02X", val & 0xff);
+	fprintf (ctx->txt.fp, "%02X", val & 0xff);
 
 	ctx->column += 1;
 }
@@ -180,7 +182,7 @@ int mac_decode_sync (pri_text_t *ctx)
 		if (group_cnt > 0) {
 			mac_flush (ctx);
 			mac_put_nl (ctx, 0);
-			fprintf (ctx->fp, "SYNC GROUP %u\n", group_cnt);
+			fprintf (ctx->txt.fp, "SYNC GROUP %u\n", group_cnt);
 		}
 
 		mac_dec_events (ctx);
@@ -192,7 +194,7 @@ int mac_decode_sync (pri_text_t *ctx)
 		if (sync_cnt > 0) {
 			mac_flush (ctx);
 			mac_put_nl (ctx, 0);
-			fprintf (ctx->fp, "SYNC %u\n", sync_cnt);
+			fprintf (ctx->txt.fp, "SYNC %u\n", sync_cnt);
 		}
 	} while ((group_cnt > 0) || (sync_cnt > 0));
 
@@ -227,7 +229,7 @@ int mac_decode_id (pri_text_t *ctx)
 	c = (dec[0] & 0x3f) | ((dec[2] & 0x1f) << 6);
 	h = (dec[2] >> 5) & 1;
 
-	fprintf (ctx->fp,
+	fprintf (ctx->txt.fp,
 		"  %02X %02X %02X %02X %02X  %02X %02X %02X"
 		"\t# SECT %02X %02X %02X %02X\n",
 		buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7],
@@ -311,25 +313,27 @@ int mac_decode_data_nibbles (pri_text_t *ctx)
 		return (1);
 	}
 
-	fprintf (ctx->fp, " %02X\n", s);
-	fprintf (ctx->fp, "#CHECK START\n");
+	fprintf (ctx->txt.fp, " %02X\n", s);
+	fprintf (ctx->txt.fp, "#CHECK START\n");
 
 	for (i = 0; i < 699; i++) {
 		j = i & 15;
 
 		if (j > 0) {
-			fputc (' ', ctx->fp);
+			fputc (' ', ctx->txt.fp);
 		}
 
-		fprintf (ctx->fp, "%02X", buf[i]);
+		fprintf (ctx->txt.fp, "%02X", buf[i]);
 
 		if (j == 15) {
-			fputc ('\n', ctx->fp);
+			fputc ('\n', ctx->txt.fp);
 		}
 	}
 
-	fprintf (ctx->fp, "\n#CHECK END\n");
-	fprintf (ctx->fp, "%02X %02X %02X %02X\n", chk[0], chk[1], chk[2], chk[3]);
+	fprintf (ctx->txt.fp, "\n#CHECK END\n");
+	fprintf (ctx->txt.fp, "%02X %02X %02X %02X\n",
+		chk[0], chk[1], chk[2], chk[3]
+	);
 
 	ctx->column = 0;
 
@@ -401,37 +405,39 @@ int mac_decode_data_check (pri_text_t *ctx)
 
 	pri_mac_gcr_checksum (buf, buf, 0);
 
-	fprintf (ctx->fp, " %02X\n", s);
-	fprintf (ctx->fp, "CHECK START\n");
-	fprintf (ctx->fp, "%02X", buf[0]);
+	fprintf (ctx->txt.fp, " %02X\n", s);
+	fprintf (ctx->txt.fp, "CHECK START\n");
+	fprintf (ctx->txt.fp, "%02X", buf[0]);
 
 	for (i = 1; i < 12; i++) {
-		fprintf (ctx->fp, " %02X", buf[i]);
+		fprintf (ctx->txt.fp, " %02X", buf[i]);
 	}
 
-	fputc ('\n', ctx->fp);
+	fputc ('\n', ctx->txt.fp);
 
 	if (mac_check_data (buf + 12, 512)) {
-		fprintf (ctx->fp, "REP 512 %02X\n", buf[12]);
+		fprintf (ctx->txt.fp, "REP 512 %02X\n", buf[12]);
 	}
 	else {
 		for (i = 0; i < 512; i++) {
 			j = i & 15;
 
 			if (j > 0) {
-				fputc (' ', ctx->fp);
+				fputc (' ', ctx->txt.fp);
 			}
 
-			fprintf (ctx->fp, "%02X", buf[i + 12]);
+			fprintf (ctx->txt.fp, "%02X", buf[i + 12]);
 
 			if (j == 15) {
-				fputc ('\n', ctx->fp);
+				fputc ('\n', ctx->txt.fp);
 			}
 		}
 	}
 
-	fprintf (ctx->fp, "CHECK END\n");
-	fprintf (ctx->fp, "%02X %02X %02X %02X\n", chk[0], chk[1], chk[2], chk[3]);
+	fprintf (ctx->txt.fp, "CHECK END\n");
+	fprintf (ctx->txt.fp, "%02X %02X %02X %02X\n",
+		chk[0], chk[1], chk[2], chk[3]
+	);
 
 	ctx->column = 0;
 
@@ -478,7 +484,7 @@ int mac_dec_rotate (pri_text_t *ctx, unsigned long *idx)
 		rot -= (long) trk->size;
 	}
 
-	fprintf (ctx->fp, "ROTATE %ld\n\n", rot);
+	fprintf (ctx->txt.fp, "ROTATE %ld\n\n", rot);
 
 	pri_trk_rotate (trk, pos);
 
@@ -494,9 +500,9 @@ int txt_mac_dec_track (pri_text_t *ctx)
 	unsigned long bit;
 	unsigned char buf[3];
 
-	fprintf (ctx->fp, "\nTRACK %lu %lu\n\n", ctx->c, ctx->h);
-	fprintf (ctx->fp, "MODE MAC-GCR\n");
-	fprintf (ctx->fp, "RATE %lu\n\n", pri_trk_get_clock (ctx->trk));
+	fprintf (ctx->txt.fp, "\nTRACK %lu %lu\n\n", ctx->c, ctx->h);
+	fprintf (ctx->txt.fp, "MODE MAC-GCR\n");
+	fprintf (ctx->txt.fp, "RATE %lu\n\n", pri_trk_get_clock (ctx->trk));
 
 	ctx->shift = 0;
 	ctx->shift_cnt = 0;
@@ -630,8 +636,8 @@ int mac_enc_bit (pri_text_t *ctx)
 {
 	unsigned long val;
 
-	while (txt_match_eol (ctx) == 0) {
-		if (txt_match_uint (ctx, 16, &val) == 0) {
+	while (txt_match_eol (&ctx->txt) == 0) {
+		if (txt_match_uint (&ctx->txt, 16, &val) == 0) {
 			return (1);
 		}
 
@@ -740,15 +746,15 @@ int mac_enc_check_stop (pri_text_t *ctx, int sum)
 static
 int mac_enc_check (pri_text_t *ctx)
 {
-	if (txt_match (ctx, "START", 1)) {
+	if (txt_match (&ctx->txt, "START", 1)) {
 		return (mac_enc_check_start (ctx));
 	}
 
-	if (txt_match (ctx, "END", 1)) {
+	if (txt_match (&ctx->txt, "END", 1)) {
 		return (mac_enc_check_stop (ctx, 0));
 	}
 
-	if (txt_match (ctx, "SUM", 1)) {
+	if (txt_match (&ctx->txt, "SUM", 1)) {
 		return (mac_enc_check_stop (ctx, 3));
 	}
 
@@ -833,17 +839,17 @@ int mac_enc_fill (pri_text_t *ctx)
 {
 	unsigned long max, val;
 
-	if (txt_match (ctx, "TRACK", 1)) {
+	if (txt_match (&ctx->txt, "TRACK", 1)) {
 		max = pri_get_mac_gcr_track_length (ctx->c);
 	}
 	else {
-		if (txt_match_uint (ctx, 10, &max) == 0) {
+		if (txt_match_uint (&ctx->txt, 10, &max) == 0) {
 			return (1);
 		}
 	}
 
-	if (txt_match (ctx, "SYNC", 1)) {
-		if (txt_match (ctx, "GROUP", 1)) {
+	if (txt_match (&ctx->txt, "SYNC", 1)) {
+		if (txt_match (&ctx->txt, "GROUP", 1)) {
 			return (mac_enc_fill_sync_group (ctx, max));
 		}
 
@@ -854,7 +860,7 @@ int mac_enc_fill (pri_text_t *ctx)
 		return (0);
 	}
 
-	if (txt_match_uint (ctx, 16, &val) == 0) {
+	if (txt_match_uint (&ctx->txt, 16, &val) == 0) {
 		return (1);
 	}
 
@@ -898,8 +904,8 @@ int mac_enc_hex (pri_text_t *ctx, unsigned val, unsigned cnt)
 {
 	unsigned long bits;
 
-	if (txt_match (ctx, "/", 1)) {
-		if (txt_match_uint (ctx, 10, &bits) == 0) {
+	if (txt_match (&ctx->txt, "/", 1)) {
+		if (txt_match_uint (&ctx->txt, 10, &bits) == 0) {
 			return (1);
 		}
 
@@ -958,11 +964,11 @@ int mac_enc_rep (pri_text_t *ctx)
 	unsigned long cnt;
 	unsigned long val;
 
-	if (txt_match_uint (ctx, 10, &cnt) == 0) {
+	if (txt_match_uint (&ctx->txt, 10, &cnt) == 0) {
 		return (1);
 	}
 
-	if (txt_match_uint (ctx, 16, &val)) {
+	if (txt_match_uint (&ctx->txt, 16, &val)) {
 		return (mac_enc_hex (ctx, val, cnt));
 	}
 
@@ -991,12 +997,12 @@ int mac_enc_sect (pri_text_t *ctx)
 	unsigned char buf[4];
 	unsigned char enc[5];
 
-	if (txt_match (ctx, "END", 1)) {
+	if (txt_match (&ctx->txt, "END", 1)) {
 		return (mac_enc_sect_end (ctx));
 	}
 
 	for (i = 0; i < 4; i++) {
-		if (txt_match_uint (ctx, 16, &val) == 0) {
+		if (txt_match_uint (&ctx->txt, 16, &val) == 0) {
 			return (1);
 		}
 
@@ -1053,7 +1059,7 @@ int mac_enc_sync_group (pri_text_t *ctx)
 {
 	unsigned long cnt;
 
-	if (txt_match_uint (ctx, 10, &cnt) == 0) {
+	if (txt_match_uint (&ctx->txt, 10, &cnt) == 0) {
 		return (1);
 	}
 
@@ -1077,11 +1083,11 @@ int mac_enc_sync (pri_text_t *ctx)
 {
 	unsigned long cnt;
 
-	if (txt_match (ctx, "GROUP", 1)) {
+	if (txt_match (&ctx->txt, "GROUP", 1)) {
 		return (mac_enc_sync_group (ctx));
 	}
 
-	if (txt_match_uint (ctx, 10, &cnt) == 0) {
+	if (txt_match_uint (&ctx->txt, 10, &cnt) == 0) {
 		return (1);
 	}
 
@@ -1100,40 +1106,40 @@ int txt_encode_pri0_mac (pri_text_t *ctx)
 {
 	unsigned long val;
 
-	if (txt_match (ctx, "BIT", 1)) {
+	if (txt_match (&ctx->txt, "BIT", 1)) {
 		return (mac_enc_bit (ctx));
 	}
-	else if (txt_match (ctx, "CHECK", 1)) {
+	else if (txt_match (&ctx->txt, "CHECK", 1)) {
 		return (mac_enc_check (ctx));
 	}
-	else if (txt_match (ctx, "EOTG", 1)) {
+	else if (txt_match (&ctx->txt, "EOTG", 1)) {
 		return (mac_enc_eotg (ctx));
 	}
-	else if (txt_match (ctx, "EOTS", 1)) {
+	else if (txt_match (&ctx->txt, "EOTS", 1)) {
 		return (mac_enc_eots (ctx));
 	}
-	else if (txt_match (ctx, "EOT", 1)) {
+	else if (txt_match (&ctx->txt, "EOT", 1)) {
 		return (mac_enc_eotg (ctx));
 	}
-	else if (txt_match (ctx, "FILL", 1)) {
+	else if (txt_match (&ctx->txt, "FILL", 1)) {
 		return (mac_enc_fill (ctx));
 	}
-	else if (txt_match (ctx, "REP", 1)) {
+	else if (txt_match (&ctx->txt, "REP", 1)) {
 		return (mac_enc_rep (ctx));
 	}
-	else if (txt_match (ctx, "SECT", 1)) {
+	else if (txt_match (&ctx->txt, "SECT", 1)) {
 		return (mac_enc_sect (ctx));
 	}
-	else if (txt_match (ctx, "SYNC", 1)) {
+	else if (txt_match (&ctx->txt, "SYNC", 1)) {
 		return (mac_enc_sync (ctx));
 	}
-	else if (txt_match (ctx, "<", 1)) {
+	else if (txt_match (&ctx->txt, "<", 1)) {
 		return (mac_enc_nibble_start (ctx));
 	}
-	else if (txt_match (ctx, ">", 1)) {
+	else if (txt_match (&ctx->txt, ">", 1)) {
 		return (mac_enc_nibble_stop (ctx));
 	}
-	else if (txt_match_uint (ctx, 16, &val)) {
+	else if (txt_match_uint (&ctx->txt, 16, &val)) {
 		return (mac_enc_hex (ctx, val, 1));
 	}
 

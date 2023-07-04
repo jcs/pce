@@ -27,18 +27,11 @@
 #include <string.h>
 
 #include <drivers/pri/pri.h>
+#include <lib/text.h>
 
 #include "main.h"
 #include "text.h"
 
-
-static
-void txt_init (pri_text_t *ctx, FILE *fp)
-{
-	memset (ctx, 0, sizeof (pri_text_t));
-
-	ctx->fp = fp;
-}
 
 void txt_save_pos (const pri_text_t *ctx, pri_text_pos_t *pos)
 {
@@ -134,16 +127,16 @@ void txt_dec_bits (pri_text_t *ctx, unsigned cnt)
 	ctx->shift_cnt -= cnt;
 
 	if (ctx->column > 0) {
-		fputc ('\n', ctx->fp);
+		fputc ('\n', ctx->txt.fp);
 	}
 
-	fprintf (ctx->fp, "RAW");
+	fprintf (ctx->txt.fp, "RAW");
 
 	for (i = 0; i < cnt; i++) {
-		fprintf (ctx->fp, " %lu", (val >> (cnt - i - 1)) & 1);
+		fprintf (ctx->txt.fp, " %lu", (val >> (cnt - i - 1)) & 1);
 	}
 
-	fprintf (ctx->fp, "\n");
+	fprintf (ctx->txt.fp, "\n");
 
 	ctx->column = 0;
 
@@ -153,13 +146,13 @@ void txt_dec_bits (pri_text_t *ctx, unsigned cnt)
 void txt_dec_event (pri_text_t *ctx, unsigned long type, unsigned long val)
 {
 	if (ctx->column > 0) {
-		fputc ('\n', ctx->fp);
+		fputc ('\n', ctx->txt.fp);
 		ctx->column = 0;
 		ctx->need_nl = 0;
 	}
 
 	if (type == PRI_EVENT_WEAK) {
-		fprintf (ctx->fp, "WEAK %08lX\n", val);
+		fprintf (ctx->txt.fp, "WEAK %08lX\n", val);
 	}
 	else if (type == PRI_EVENT_CLOCK) {
 		unsigned long long tmp;
@@ -167,17 +160,17 @@ void txt_dec_event (pri_text_t *ctx, unsigned long type, unsigned long val)
 		tmp = pri_trk_get_clock (ctx->trk);
 		tmp = (tmp * val + 32768) / 65536;
 
-		fprintf (ctx->fp, "CLOCK %lu\n", (unsigned long) tmp);
+		fprintf (ctx->txt.fp, "CLOCK %lu\n", (unsigned long) tmp);
 	}
 	else {
-		fprintf (ctx->fp, "EVENT %08lX %08lX\n", type, val);
+		fprintf (ctx->txt.fp, "EVENT %08lX %08lX\n", type, val);
 	}
 }
 
 static
 void txt_dec_init (pri_text_t *ctx, FILE *fp, pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned long h)
 {
-	txt_init (ctx, fp);
+	txt_init (&ctx->txt, fp);
 
 	ctx->img = img;
 	ctx->trk = trk;
@@ -196,6 +189,8 @@ void txt_dec_free (pri_text_t *ctx)
 		pri_trk_del (ctx->trk);
 		ctx->trk = NULL;
 	}
+
+	txt_free (&ctx->txt);
 }
 
 static
@@ -307,38 +302,6 @@ int pri_decode_text (pri_img_t *img, const char *fname, unsigned enc)
 }
 
 
-static
-int txt_getc (pri_text_t *ctx, unsigned idx)
-{
-	int      c;
-	unsigned i;
-
-	for (i = ctx->cnt; i <= idx; i++) {
-		if ((c = fgetc (ctx->fp)) == EOF) {
-			return (EOF);
-		}
-
-		ctx->buf[ctx->cnt++] = c;
-	}
-
-	return (ctx->buf[idx]);
-}
-
-int txt_error (pri_text_t *ctx, const char *str)
-{
-	int c;
-
-	if (str == NULL) {
-		str = "unknown";
-	}
-
-	c = txt_getc (ctx, 0);
-
-	fprintf (stderr, "pri-text:%u: error (%s), next = %02X\n", ctx->line + 1, str, c);
-
-	return (1);
-}
-
 unsigned long txt_get_position (pri_text_t *ctx)
 {
 	unsigned long val;
@@ -348,279 +311,6 @@ unsigned long txt_get_position (pri_text_t *ctx)
 	ctx->offset = 0;
 
 	return (val);
-}
-
-static
-void txt_skip (pri_text_t *ctx, unsigned cnt)
-{
-	unsigned i;
-
-	if (cnt >= ctx->cnt) {
-		ctx->cnt = 0;
-	}
-	else {
-		for (i = cnt; i < ctx->cnt; i++) {
-			ctx->buf[i - cnt] = ctx->buf[i];
-		}
-
-		ctx->cnt -= cnt;
-	}
-}
-
-static
-void txt_match_space (pri_text_t *ctx)
-{
-	int c, line;
-
-	line = 0;
-
-	while (1) {
-		c = txt_getc (ctx, 0);
-
-		if (c == EOF) {
-			return;
-		}
-
-		if ((c == 0x0d) || (c == 0x0a)) {
-			line = 0;
-			ctx->line += 1;
-		}
-		else if (line) {
-			;
-		}
-		else if ((c == '\t') || (c == ' ')) {
-			;
-		}
-		else if (c == '#') {
-			line = 1;
-		}
-		else {
-			return;
-		}
-
-		txt_skip (ctx, 1);
-	}
-}
-
-int txt_match_eol (pri_text_t *ctx)
-{
-	int c, line;
-
-	line = 0;
-
-	while (1) {
-		c = txt_getc (ctx, 0);
-
-		if (c == EOF) {
-			return (1);
-		}
-
-		if ((c == 0x0d) || (c == 0x0a)) {
-			ctx->line += 1;
-			txt_skip (ctx, 1);
-
-			return (1);
-		}
-		else if (line) {
-			;
-		}
-		else if ((c == '\t') || (c == ' ')) {
-			;
-		}
-		else if (c == '#') {
-			line = 1;
-		}
-		else {
-			return (0);
-		}
-
-		txt_skip (ctx, 1);
-	}
-}
-
-int txt_match (pri_text_t *ctx, const char *str, int skip)
-{
-	int      c;
-	unsigned i, n;
-
-	txt_match_space (ctx);
-
-	n = 0;
-
-	while (str[n] != 0) {
-		if (n >= ctx->cnt) {
-			if ((c = fgetc (ctx->fp)) == EOF) {
-				return (0);
-			}
-
-			ctx->buf[ctx->cnt++] = c;
-		}
-
-		if (ctx->buf[n] != str[n]) {
-			return (0);
-		}
-
-		n += 1;
-	}
-
-	if (skip) {
-		for (i = n; i < ctx->cnt; i++) {
-			ctx->buf[i - n] = ctx->buf[i];
-		}
-
-		ctx->cnt -= n;
-	}
-
-	return (1);
-}
-
-int txt_match_string (pri_text_t *ctx, char *str, unsigned max)
-{
-	int      c, esc;
-	unsigned idx;
-
-	txt_match_space (ctx);
-
-	if ((c = txt_getc (ctx, 0)) != '"') {
-		return (0);
-	}
-
-	txt_skip (ctx, 1);
-
-	idx = 0;
-	esc = 0;
-
-	while (1) {
-		if (idx >= max) {
-			return (0);
-		}
-
-		if ((c = txt_getc (ctx, 0)) == EOF) {
-			return (0);
-		}
-
-		txt_skip (ctx, 1);
-
-		esc = 0;
-
-		if (c == '\\') {
-			esc = 1;
-
-			if ((c = txt_getc (ctx, 0)) == EOF) {
-				return (0);
-			}
-
-			txt_skip (ctx, 1);
-		}
-
-		if (esc) {
-			if (c == 'n') {
-				c = 0x0a;
-			}
-			else if (c == 't') {
-				c = 0x09;
-			}
-		}
-		else {
-			if (c == '"') {
-				break;
-			}
-		}
-
-		str[idx++] = c;
-	}
-
-	if (idx >= max) {
-		return (0);
-	}
-
-	str[idx] = 0;
-
-	return (1);
-}
-
-int txt_match_hex_digit (pri_text_t *ctx, unsigned *val)
-{
-	int c;
-
-	c = txt_getc (ctx, 0);
-
-	if ((c >= '0') && (c <= '9')) {
-		*val = c - '0';
-	}
-	else if ((c >= 'A') && (c <= 'F')) {
-		*val = c - 'A' + 10;
-	}
-	else if ((c >= 'a') && (c <= 'f')) {
-		*val = c - 'a' + 10;
-	}
-	else {
-		return (0);
-	}
-
-	txt_skip (ctx, 1);
-
-	return (1);
-}
-
-int txt_match_uint (pri_text_t *ctx, unsigned base, unsigned long *val)
-{
-	unsigned i, dig;
-	int      c, s, ok;
-
-	txt_match_space (ctx);
-
-	i = 0;
-	s = 0;
-	ok = 0;
-
-	c = txt_getc (ctx, i);
-
-	if ((c == '-') || (c == '+')) {
-		s = (c == '-');
-
-		c = txt_getc (ctx, ++i);
-	}
-
-	*val = 0;
-
-	while (1) {
-		if ((c >= '0') && (c <= '9')) {
-			dig = c - '0';
-		}
-		else if ((c >= 'a') && (c <= 'z')) {
-			dig = c - 'a' + 10;
-		}
-		else if ((c >= 'A') && (c <= 'Z')) {
-			dig = c - 'A' + 10;
-		}
-		else {
-			break;
-		}
-
-		if (dig >= base) {
-			return (0);
-		}
-
-		*val = base * *val + dig;
-		ok = 1;
-
-		c = txt_getc (ctx, ++i);
-	}
-
-	if (ok == 0) {
-		return (0);
-	}
-
-	if (s) {
-		*val = ~*val + 1;
-	}
-
-	*val &= 0xffffffff;
-
-	txt_skip (ctx, i);
-
-	return (1);
 }
 
 int txt_enc_bits_raw (pri_text_t *ctx, unsigned long val, unsigned cnt)
@@ -648,7 +338,7 @@ int txt_enc_clock (pri_text_t *ctx)
 {
 	unsigned long pos, val, old;
 
-	if (txt_match_uint (ctx, 10, &val) == 0) {
+	if (txt_match_uint (&ctx->txt, 10, &val) == 0) {
 		return (1);
 	}
 
@@ -669,15 +359,15 @@ int txt_enc_clock (pri_text_t *ctx)
 static
 int txt_enc_comm (pri_text_t *ctx)
 {
-	unsigned      cnt;
-	char          str[256];
+	unsigned cnt;
+	char     str[256];
 
-	if (txt_match (ctx, "RESET", 1)) {
+	if (txt_match (&ctx->txt, "RESET", 1)) {
 		pri_img_set_comment (ctx->img, NULL, 0);
 		return (0);
 	}
 
-	if (txt_match_string (ctx, str, 256) == 0) {
+	if (txt_match_string (&ctx->txt, str, 256) == 0) {
 		return (1);
 	}
 
@@ -705,22 +395,22 @@ int txt_enc_index (pri_text_t *ctx)
 static
 int txt_enc_mode (pri_text_t *ctx)
 {
-	if (txt_match (ctx, "RAW", 1)) {
+	if (txt_match (&ctx->txt, "RAW", 1)) {
 		ctx->encoding = PRI_TEXT_RAW;
 	}
-	else if (txt_match (ctx, "IBM-MFM", 1)) {
+	else if (txt_match (&ctx->txt, "IBM-MFM", 1)) {
 		ctx->encoding = PRI_TEXT_MFM;
 	}
-	else if (txt_match (ctx, "IBM-FM", 1)) {
+	else if (txt_match (&ctx->txt, "IBM-FM", 1)) {
 		ctx->encoding = PRI_TEXT_FM;
 	}
-	else if (txt_match (ctx, "MAC-GCR", 1)) {
+	else if (txt_match (&ctx->txt, "MAC-GCR", 1)) {
 		ctx->encoding = PRI_TEXT_MAC;
 	}
-	else if (txt_match (ctx, "MFM", 1)) {
+	else if (txt_match (&ctx->txt, "MFM", 1)) {
 		ctx->encoding = PRI_TEXT_MFM;
 	}
-	else if (txt_match (ctx, "FM", 1)) {
+	else if (txt_match (&ctx->txt, "FM", 1)) {
 		ctx->encoding = PRI_TEXT_FM;
 	}
 	else {
@@ -736,7 +426,7 @@ int txt_enc_offset (pri_text_t *ctx)
 {
 	unsigned long val;
 
-	if (txt_match_uint (ctx, 10, &val) == 0) {
+	if (txt_match_uint (&ctx->txt, 10, &val) == 0) {
 		return (1);
 	}
 
@@ -754,7 +444,7 @@ int txt_enc_rate (pri_text_t *ctx)
 		return (1);
 	}
 
-	if (txt_match_uint (ctx, 10, &clock) == 0) {
+	if (txt_match_uint (&ctx->txt, 10, &clock) == 0) {
 		return (1);
 	}
 
@@ -768,8 +458,8 @@ int txt_enc_raw (pri_text_t *ctx)
 {
 	unsigned long val;
 
-	while (txt_match_eol (ctx) == 0) {
-		if (txt_match_uint (ctx, 16, &val) == 0) {
+	while (txt_match_eol (&ctx->txt) == 0) {
+		if (txt_match_uint (&ctx->txt, 16, &val) == 0) {
 			return (1);
 		}
 
@@ -790,7 +480,7 @@ int txt_enc_rotate (pri_text_t *ctx)
 {
 	unsigned long val;
 
-	if (txt_match_uint (ctx, 10, &val) == 0) {
+	if (txt_match_uint (&ctx->txt, 10, &val) == 0) {
 		return (1);
 	}
 
@@ -836,16 +526,16 @@ int txt_enc_track (pri_text_t *ctx)
 {
 	unsigned long c, h;
 
-	if (txt_match_uint (ctx, 10, &c) == 0) {
+	if (txt_match_uint (&ctx->txt, 10, &c) == 0) {
 		return (1);
 	}
 
-	if (txt_match_uint (ctx, 10, &h) == 0) {
+	if (txt_match_uint (&ctx->txt, 10, &h) == 0) {
 		return (1);
 	}
 
 	if ((c > 255) || (h > 255)) {
-		txt_error (ctx, "c/h too large");
+		txt_error (&ctx->txt, "c/h too large");
 		return (1);
 	}
 
@@ -884,7 +574,7 @@ int txt_enc_weak_run (pri_text_t *ctx)
 {
 	unsigned long pos, cnt, val;
 
-	if (txt_match_uint (ctx, 10, &cnt) == 0) {
+	if (txt_match_uint (&ctx->txt, 10, &cnt) == 0) {
 		return (1);
 	}
 
@@ -918,18 +608,18 @@ int txt_enc_weak (pri_text_t *ctx)
 	unsigned      dig, cnt;
 	unsigned long pos, val;
 
-	if (txt_match (ctx, "RUN", 1)) {
+	if (txt_match (&ctx->txt, "RUN", 1)) {
 		return (txt_enc_weak_run (ctx));
 	}
 
-	txt_match_space (ctx);
+	txt_match_space (&ctx->txt);
 
 	pos = txt_get_position (ctx);
 	val = 0;
 	cnt = 0;
 	ok = 0;
 
-	while (txt_match_hex_digit (ctx, &dig)) {
+	while (txt_match_hex_digit (&ctx->txt, &dig)) {
 		val |= (unsigned long) (dig & 0x0f) << (28 - cnt);
 		cnt += 4;
 		ok = 1;
@@ -1009,51 +699,51 @@ int txt_encode_pri0 (pri_text_t *ctx)
 			continue;
 		}
 
-		if (txt_match (ctx, "CLOCK", 1)) {
+		if (txt_match (&ctx->txt, "CLOCK", 1)) {
 			if (txt_enc_clock (ctx)) {
-				txt_error (ctx, "clock");
+				txt_error (&ctx->txt, "clock");
 				return (1);
 			}
 		}
-		else if (txt_match (ctx, "COMM", 1)) {
+		else if (txt_match (&ctx->txt, "COMM", 1)) {
 			if (txt_enc_comm (ctx)) {
 				return (1);
 			}
 		}
-		else if (txt_match (ctx, "INDEX", 1)) {
+		else if (txt_match (&ctx->txt, "INDEX", 1)) {
 			if (txt_enc_index (ctx)) {
 				return (1);
 			}
 		}
-		else if (txt_match (ctx, "MODE", 1)) {
+		else if (txt_match (&ctx->txt, "MODE", 1)) {
 			if (txt_enc_mode (ctx)) {
 				return (1);
 			}
 		}
-		else if (txt_match (ctx, "OFFSET", 1)) {
+		else if (txt_match (&ctx->txt, "OFFSET", 1)) {
 			if (txt_enc_offset (ctx)) {
 				return (1);
 			}
 		}
-		else if (txt_match (ctx, "PRI", 0)) {
+		else if (txt_match (&ctx->txt, "PRI", 0)) {
 			break;
 		}
-		else if (txt_match (ctx, "RATE", 1)) {
+		else if (txt_match (&ctx->txt, "RATE", 1)) {
 			if (txt_enc_rate (ctx)) {
 				return (1);
 			}
 		}
-		else if (txt_match (ctx, "RAW", 1)) {
+		else if (txt_match (&ctx->txt, "RAW", 1)) {
 			if (txt_enc_raw (ctx)) {
 				return (1);
 			}
 		}
-		else if (txt_match (ctx, "ROTATE", 1)) {
+		else if (txt_match (&ctx->txt, "ROTATE", 1)) {
 			if (txt_enc_rotate (ctx)) {
 				return (1);
 			}
 		}
-		else if (txt_match (ctx, "TRACK", 1)) {
+		else if (txt_match (&ctx->txt, "TRACK", 1)) {
 			if (txt_enc_track_finish (ctx)) {
 				return (1);
 			}
@@ -1062,12 +752,12 @@ int txt_encode_pri0 (pri_text_t *ctx)
 				return (1);
 			}
 		}
-		else if (txt_match (ctx, "WEAK", 1) || txt_match (ctx, "FUZZY", 1)) {
+		else if (txt_match (&ctx->txt, "WEAK", 1) || txt_match (&ctx->txt, "FUZZY", 1)) {
 			if (txt_enc_weak (ctx)) {
 				return (1);
 			}
 		}
-		else if (feof (ctx->fp)) {
+		else if (feof (ctx->txt.fp)) {
 			break;
 		}
 		else {
@@ -1098,28 +788,29 @@ int txt_encode (pri_text_t *ctx)
 	ctx->encoding = PRI_TEXT_RAW;
 	ctx->index_position = 0;
 	ctx->rotate = 0;
+	ctx->offset = 0;
 	ctx->crc = 0xffff;
 
 	ctx->mac_check_active = 0;
 	ctx->mac_gap_size = 6;
 
 	while (1) {
-		if (txt_match (ctx, "PRI", 1)) {
-			if (txt_match_uint (ctx, 10, &val) == 0) {
+		if (txt_match (&ctx->txt, "PRI", 1)) {
+			if (txt_match_uint (&ctx->txt, 10, &val) == 0) {
 				return (1);
 			}
 
 			if (val == 0) {
 				if (txt_encode_pri0 (ctx)) {
-					return (txt_error (ctx, "PRI"));
+					return (txt_error (&ctx->txt, "PRI"));
 				}
 			}
 			else {
-				return (txt_error (ctx, "bad pri version"));
+				return (txt_error (&ctx->txt, "bad pri version"));
 			}
 		}
-		else if (feof (ctx->fp) == 0) {
-			return (txt_error (ctx, "no pri header"));
+		else if (feof (ctx->txt.fp) == 0) {
+			return (txt_error (&ctx->txt, "no pri header"));
 		}
 		else {
 			break;
@@ -1138,17 +829,20 @@ int pri_encode_text (pri_img_t *img, const char *fname)
 	int        r;
 	pri_text_t ctx;
 
-	if ((ctx.fp = fopen (fname, "r")) == NULL) {
+	memset (&ctx, 0, sizeof (ctx));
+
+	if ((ctx.txt.fp = fopen (fname, "r")) == NULL) {
 		return (1);
 	}
 
-	txt_init (&ctx, ctx.fp);
+	txt_init (&ctx.txt, ctx.txt.fp);
 
 	ctx.img = img;
 
 	r = txt_encode (&ctx);
 
-	fclose (ctx.fp);
+	txt_free (&ctx.txt);
+	fclose (ctx.txt.fp);
 
 	return (r);
 }

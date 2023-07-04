@@ -29,6 +29,7 @@
 #include <stdio.h>
 
 #include <drivers/pri/pri.h>
+#include <lib/text.h>
 
 
 typedef struct {
@@ -39,11 +40,7 @@ typedef struct {
 
 
 typedef struct {
-	FILE           *fp;
-
-	unsigned       cnt;
-	char           buf[256];
-	unsigned       line;
+	pce_text_t     txt;
 
 	pri_img_t      *img;
 	pri_trk_t      *trk;
@@ -91,13 +88,6 @@ int txt_dec_match (pri_text_t *ctx, const void *buf, unsigned cnt);
 
 void txt_dec_bits (pri_text_t *ctx, unsigned cnt);
 void txt_dec_event (pri_text_t *ctx, unsigned long type, unsigned long val);
-
-int txt_error (pri_text_t *ctx, const char *str);
-
-int txt_match_eol (pri_text_t *ctx);
-int txt_match (pri_text_t *ctx, const char *str, int skip);
-int txt_match_string (pri_text_t *ctx, char *str, unsigned max);
-int txt_match_uint (pri_text_t *ctx, unsigned base, unsigned long *val);
 
 int txt_enc_bits_raw (pri_text_t *ctx, unsigned long val, unsigned cnt);
 

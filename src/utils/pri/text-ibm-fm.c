@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text-ibm-fm.c                                  *
  * Created:     2017-10-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2017-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2017-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include <drivers/pri/pri.h>
+#include <lib/text.h>
 
 #include "main.h"
 #include "text.h"
@@ -83,30 +84,30 @@ void fm_dec_byte (pri_text_t *ctx)
 
 	if (clk != 0xff) {
 		if (ctx->column > 0) {
-			fputc ('\n', ctx->fp);
+			fputc ('\n', ctx->txt.fp);
 		}
 
-		fprintf (ctx->fp, "%02X/%02X\n", val, clk);
+		fprintf (ctx->txt.fp, "%02X/%02X\n", val, clk);
 
 		ctx->column = 0;
 	}
 	else {
 		if (ctx->column > 0) {
 			if (ctx->column >= 16) {
-				fputc ('\n', ctx->fp);
+				fputc ('\n', ctx->txt.fp);
 				ctx->column = 0;
 			}
 			else {
-				fputc (' ', ctx->fp);
+				fputc (' ', ctx->txt.fp);
 			}
 		}
 
-		fprintf (ctx->fp, "%02X", val);
+		fprintf (ctx->txt.fp, "%02X", val);
 
 		ctx->column += 1;
 
 		if (ctx->need_nl) {
-			fputc ('\n', ctx->fp);
+			fputc ('\n', ctx->txt.fp);
 			ctx->column = 0;
 		}
 	}
@@ -129,9 +130,9 @@ int txt_fm_dec_track (pri_text_t *ctx)
 	unsigned long bit;
 	unsigned long type, val;
 
-	fprintf (ctx->fp, "\nTRACK %lu %lu\n\n", ctx->c, ctx->h);
-	fprintf (ctx->fp, "MODE IBM-FM\n");
-	fprintf (ctx->fp, "RATE %lu\n\n", pri_trk_get_clock (ctx->trk));
+	fprintf (ctx->txt.fp, "\nTRACK %lu %lu\n\n", ctx->c, ctx->h);
+	fprintf (ctx->txt.fp, "MODE IBM-FM\n");
+	fprintf (ctx->txt.fp, "RATE %lu\n\n", pri_trk_get_clock (ctx->trk));
 
 	ctx->shift_cnt = 0;
 	ctx->last_val = 0;
@@ -171,7 +172,7 @@ int txt_fm_dec_track (pri_text_t *ctx)
 	fm_dec_flush (ctx);
 
 	if (ctx->column > 0) {
-		fputc ('\n', ctx->fp);
+		fputc ('\n', ctx->txt.fp);
 	}
 
 	return (0);
@@ -240,7 +241,7 @@ int fm_enc_am (pri_text_t *ctx)
 {
 	unsigned long val;
 
-	if (txt_match_uint (ctx, 16, &val) == 0) {
+	if (txt_match_uint (&ctx->txt, 16, &val) == 0) {
 		return (1);
 	}
 
@@ -258,8 +259,8 @@ int fm_enc_bit (pri_text_t *ctx)
 {
 	unsigned long val;
 
-	while (txt_match_eol (ctx) == 0) {
-		if (txt_match_uint (ctx, 16, &val) == 0) {
+	while (txt_match_eol (&ctx->txt) == 0) {
+		if (txt_match_uint (&ctx->txt, 16, &val) == 0) {
 			return (1);
 		}
 
@@ -306,15 +307,15 @@ int fm_enc_check_stop (pri_text_t *ctx, int sum)
 static
 int fm_enc_check (pri_text_t *ctx)
 {
-	if (txt_match (ctx, "START", 1)) {
+	if (txt_match (&ctx->txt, "START", 1)) {
 		return (fm_enc_check_start (ctx));
 	}
 
-	if (txt_match (ctx, "END", 1)) {
+	if (txt_match (&ctx->txt, "END", 1)) {
 		return (fm_enc_check_stop (ctx, 0));
 	}
 
-	if (txt_match (ctx, "SUM", 1)) {
+	if (txt_match (&ctx->txt, "SUM", 1)) {
 		return (fm_enc_check_stop (ctx, 1));
 	}
 
@@ -362,10 +363,10 @@ int fm_enc_fill (pri_text_t *ctx)
 	unsigned long max;
 	unsigned long val[2];
 
-	if (txt_match (ctx, "TRACK", 1)) {
+	if (txt_match (&ctx->txt, "TRACK", 1)) {
 		max = 50000;
 	}
-	else if (txt_match_uint (ctx, 10, &max)) {
+	else if (txt_match_uint (&ctx->txt, 10, &max)) {
 		if (max <= 5000) {
 			max *= 16;
 		}
@@ -374,12 +375,12 @@ int fm_enc_fill (pri_text_t *ctx)
 		return (1);
 	}
 
-	if (txt_match_uint (ctx, 16, val) == 0) {
+	if (txt_match_uint (&ctx->txt, 16, val) == 0) {
 		return (1);
 	}
 
-	if (txt_match (ctx, "/", 1)) {
-		if (txt_match_uint (ctx, 16, val + 1) == 0) {
+	if (txt_match (&ctx->txt, "/", 1)) {
+		if (txt_match_uint (&ctx->txt, 16, val + 1) == 0) {
 			return (1);
 		}
 	}
@@ -406,7 +407,7 @@ int fm_enc_gap (pri_text_t *ctx)
 {
 	unsigned long cnt;
 
-	if (txt_match_uint (ctx, 10, &cnt) == 0) {
+	if (txt_match_uint (&ctx->txt, 10, &cnt) == 0) {
 		return (1);
 	}
 
@@ -425,8 +426,8 @@ int fm_enc_hex (pri_text_t *ctx, unsigned val)
 
 	clk = 0xff;
 
-	if (txt_match (ctx, "/", 1)) {
-		if (txt_match_uint (ctx, 16, &tmp) == 0) {
+	if (txt_match (&ctx->txt, "/", 1)) {
+		if (txt_match_uint (&ctx->txt, 16, &tmp) == 0) {
 			return (1);
 		}
 
@@ -445,11 +446,11 @@ int fm_enc_iam (pri_text_t *ctx)
 {
 	unsigned long gap4a, gap1;
 
-	if (txt_match_uint (ctx, 10, &gap4a) == 0) {
+	if (txt_match_uint (&ctx->txt, 10, &gap4a) == 0) {
 		return (1);
 	}
 
-	if (txt_match_uint (ctx, 10, &gap1) == 0) {
+	if (txt_match_uint (&ctx->txt, 10, &gap1) == 0) {
 		return (1);
 	}
 
@@ -492,16 +493,16 @@ int fm_enc_rep (pri_text_t *ctx)
 	unsigned long cnt;
 	unsigned long val[2];
 
-	if (txt_match_uint (ctx, 10, &cnt) == 0) {
+	if (txt_match_uint (&ctx->txt, 10, &cnt) == 0) {
 		return (1);
 	}
 
-	if (txt_match_uint (ctx, 16, val) == 0) {
+	if (txt_match_uint (&ctx->txt, 16, val) == 0) {
 		return (1);
 	}
 
-	if (txt_match (ctx, "/", 1)) {
-		if (txt_match_uint (ctx, 16, val + 1) == 0) {
+	if (txt_match (&ctx->txt, "/", 1)) {
+		if (txt_match_uint (&ctx->txt, 16, val + 1) == 0) {
 			return (1);
 		}
 	}
@@ -529,7 +530,7 @@ int fm_enc_sect (pri_text_t *ctx)
 	unsigned char id[4];
 
 	for (i = 0; i < 4; i++) {
-		if (txt_match_uint (ctx, 16, &val) == 0) {
+		if (txt_match_uint (&ctx->txt, 16, &val) == 0) {
 			return (1);
 		}
 
@@ -588,46 +589,46 @@ int txt_encode_pri0_fm (pri_text_t *ctx)
 {
 	unsigned long val;
 
-	if (txt_match (ctx, "AM", 1)) {
+	if (txt_match (&ctx->txt, "AM", 1)) {
 		return (fm_enc_am (ctx));
 	}
-	else if (txt_match (ctx, "BIT", 1)) {
+	else if (txt_match (&ctx->txt, "BIT", 1)) {
 		return (fm_enc_bit (ctx));
 	}
-	else if (txt_match (ctx, "CHECK", 1)) {
+	else if (txt_match (&ctx->txt, "CHECK", 1)) {
 		return (fm_enc_check (ctx));
 	}
-	else if (txt_match (ctx, "CRC", 1)) {
+	else if (txt_match (&ctx->txt, "CRC", 1)) {
 		return (fm_enc_check_stop (ctx, 1));
 	}
-	else if (txt_match (ctx, "DAM", 1)) {
+	else if (txt_match (&ctx->txt, "DAM", 1)) {
 		return (fm_enc_dam (ctx));
 	}
-	else if (txt_match (ctx, "EOT", 1)) {
+	else if (txt_match (&ctx->txt, "EOT", 1)) {
 		return (fm_enc_eot (ctx));
 	}
-	else if (txt_match (ctx, "FILL", 1)) {
+	else if (txt_match (&ctx->txt, "FILL", 1)) {
 		return (fm_enc_fill (ctx));
 	}
-	else if (txt_match (ctx, "GAP", 1)) {
+	else if (txt_match (&ctx->txt, "GAP", 1)) {
 		return (fm_enc_gap (ctx));
 	}
-	else if (txt_match (ctx, "IAM", 1)) {
+	else if (txt_match (&ctx->txt, "IAM", 1)) {
 		return (fm_enc_iam (ctx));
 	}
-	else if (txt_match (ctx, "IDAM", 1)) {
+	else if (txt_match (&ctx->txt, "IDAM", 1)) {
 		return (fm_enc_idam (ctx));
 	}
-	else if (txt_match (ctx, "REP", 1)) {
+	else if (txt_match (&ctx->txt, "REP", 1)) {
 		return (fm_enc_rep (ctx));
 	}
-	else if (txt_match (ctx, "SECT", 1)) {
+	else if (txt_match (&ctx->txt, "SECT", 1)) {
 		return (fm_enc_sect (ctx));
 	}
-	else if (txt_match (ctx, "SYNC", 1)) {
+	else if (txt_match (&ctx->txt, "SYNC", 1)) {
 		return (txt_fm_enc_sync (ctx));
 	}
-	else if (txt_match_uint (ctx, 16, &val)) {
+	else if (txt_match_uint (&ctx->txt, 16, &val)) {
 		return (fm_enc_hex (ctx, val));
 	}
 

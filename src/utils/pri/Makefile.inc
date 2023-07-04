@@ -35,6 +35,7 @@ PRI_BIN := $(rel)/pri$(EXEEXT)
 PRI_OBJ_EXT := \
 	src/lib/getopt.o \
 	src/lib/sysdep.o \
+	src/lib/text.o \
 	$(DRV_PSI_OBJ) \
 	$(DRV_PRI_OBJ)
 
