@@ -112,7 +112,7 @@ EOT := FILL TRACK SYNC GROUP
 FILL TRACK <val>
 FILL <size> SYNC
 FILL <size> SYNC GROUP
-FILL <size> <val>
+FILL <size> <val>[/<bitcnt>]
 
 REP <cnt> <val>
 

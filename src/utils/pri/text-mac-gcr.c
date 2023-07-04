@@ -837,7 +837,7 @@ int mac_enc_fill_sync_group (pri_text_t *ctx, unsigned long max)
 static
 int mac_enc_fill (pri_text_t *ctx)
 {
-	unsigned long max, val;
+	unsigned long max, val, bits;
 
 	if (txt_match (&ctx->txt, "TRACK", 1)) {
 		max = pri_get_mac_gcr_track_length (ctx->c);
@@ -864,7 +864,16 @@ int mac_enc_fill (pri_text_t *ctx)
 		return (1);
 	}
 
-	if (mac_enc_fill_pattern (ctx, max, val, 8)) {
+	if (txt_match (&ctx->txt, "/", 1)) {
+		if (txt_match_uint (&ctx->txt, 10, &bits) == 0) {
+			return (1);
+		}
+	}
+	else {
+		bits = 8;
+	}
+
+	if (mac_enc_fill_pattern (ctx, max, val, bits)) {
 		return (1);
 	}
 
