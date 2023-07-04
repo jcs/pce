@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/text.c                                         *
  * Created:     2012-01-20 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,19 +15,29 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
 
 #include "main.h"
 
-#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
+#include <lib/text.h>
+
 #include <drivers/pfi/pfi.h>
+
+
+typedef struct {
+	pce_text_t    txt;
+	pfi_img_t     *img;
+	pfi_trk_t     *trk;
+	unsigned long version;
+	unsigned long pos;
+	char          add;
+} pfi_text_t;
 
 
 static
@@ -119,283 +129,220 @@ int pfi_decode_text (pfi_img_t *img, const char *fname)
 
 
 static
-int txt_skip_line (FILE *fp)
+int txt_enc_clock (pfi_text_t *ctx)
 {
-	int c;
+	unsigned long val;
 
-	while (1) {
-		c = fgetc (fp);
-
-		if (c == EOF) {
-			return (0);
-		}
-
-		if ((c == 0x0a) || (c == 0x0d)) {
-			return (0);
-		}
-	}
-}
-
-static
-int txt_skip_space (FILE *fp)
-{
-	int c;
-
-	while (1) {
-		c = fgetc (fp);
-
-		if ((c == ' ') || (c == '\t')) {
-			;
-		}
-		else {
-			return (c);
-		}
-	}
-}
-
-static
-int txt_parse_ident (FILE *fp, char *str, unsigned max, int first)
-{
-	int      c;
-	unsigned i;
-
-	i = 0;
-	str[i++] = first;
-
-	while (i < max) {
-		c = fgetc (fp);
-
-		if (c == EOF) {
-			break;
-		}
-		else if ((c >= 'a') && (c <= 'z')) {
-			str[i++] = c;
-		}
-		else if ((c >= 'A') && (c <= 'Z')) {
-			str[i++] = c;
-		}
-		else {
-			break;
-		}
-	}
-
-	if (i >= max) {
+	if (txt_match_uint (&ctx->txt, 10, &val) == 0) {
 		return (1);
 	}
 
-	str[i] = 0;
+	if (ctx->trk != NULL) {
+		pfi_trk_set_clock (ctx->trk, val);
+	}
 
 	return (0);
 }
 
 static
-int txt_parse_hex (FILE *fp, unsigned long *val)
+int txt_enc_index (pfi_text_t *ctx)
 {
-	int      c, r;
-	unsigned d;
+	unsigned long val;
 
-	r = 1;
-	*val = 0;
-
-	while (1) {
-		if ((c = fgetc (fp)) == EOF) {
-			return (r);
-		}
-
-		if ((c >= '0') && (c <= '9')) {
-			d = c - '0';
-		}
-		else if ((c >= 'A') && (c <= 'F')) {
-			d = c - 'A' + 10;
-		}
-		else if ((c >= 'a') && (c <= 'f')) {
-			d = c - 'a' + 10;
-		}
-		else {
-			ungetc (c, fp);
-			return (r);
-		}
-
-		*val = 16 * *val + d;
-		r = 0;
+	if (txt_match_uint (&ctx->txt, 10, &val) == 0) {
+		return (1);
 	}
+
+	if (ctx->trk == NULL) {
+		return (1);
+	}
+
+	if (pfi_trk_add_index (ctx->trk, ctx->pos + val)) {
+		return (1);
+	}
+
+	return (0);
 }
 
 static
-int txt_parse_ulong (FILE *fp, unsigned long *val, int first)
+int txt_enc_text (pfi_text_t *ctx)
 {
-	int c;
+	unsigned      cnt;
+	char          str[256];
 
-	if (first == 0) {
-		c = txt_skip_space (fp);
+	if (txt_match (&ctx->txt, "INIT", 1)) {
+		pfi_img_set_comment (ctx->img, NULL, 0);
+		return (0);
+	}
 
-		if ((c < '0') || (c > '9')) {
+	if (txt_match_string (&ctx->txt, str, 256) == 0) {
+		return (1);
+	}
+
+	cnt = strlen (str);
+
+	if (cnt < 256) {
+		str[cnt++] = 0x0a;
+	}
+
+	if (pfi_img_add_comment (ctx->img, (unsigned char *) str, cnt)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
+int txt_enc_track (pfi_text_t *ctx)
+{
+	unsigned long c, h;
+
+	if (txt_match_uint (&ctx->txt, 10, &c) == 0) {
+		return (1);
+	}
+
+	if (txt_match_uint (&ctx->txt, 10, &h) == 0) {
+		return (1);
+	}
+
+	pfi_img_del_track (ctx->img, c, h);
+
+	if ((ctx->trk = pfi_img_get_track (ctx->img, c, h, 1)) == NULL) {
+		return (1);
+	}
+
+	ctx->pos = 0;
+
+	return (0);
+}
+
+static
+int txt_enc_pulse (pfi_text_t *ctx, unsigned base)
+{
+	unsigned long val;
+
+	if (txt_match_uint (&ctx->txt, base, &val) == 0) {
+		return (1);
+	}
+
+	if (ctx->trk == NULL) {
+		return (1);
+	}
+
+	if (ctx->add) {
+		if (pfi_trk_inc_pulse (ctx->trk, val)) {
 			return (1);
 		}
-
-		first = c;
+	}
+	else {
+		if (pfi_trk_add_pulse (ctx->trk, val)) {
+			return (1);
+		}
 	}
 
-	*val = first - '0';
-
-	c = fgetc (fp);
-
-	if ((c == 'x') || (c == 'X')) {
-		return (txt_parse_hex (fp, val));
-	}
-
-	while ((c >= '0') && (c <= '9')) {
-		*val = 10 * *val + (c - '0');
-
-		c = fgetc (fp);
-	}
-
-	ungetc (c, fp);
+	ctx->add = 0;
+	ctx->pos += val;
 
 	return (0);
 }
 
 static
-int pfi_encode_text_fp (pfi_img_t *img, FILE *fp)
+int txt_encode (pfi_text_t *ctx)
 {
-	int           c;
-	int           add;
-	unsigned long tc, th, val, pos;
-	char          str[256];
-	pfi_trk_t     *trk;
+	pce_text_t *txt;
 
-	add = 0;
+	ctx->trk = NULL;
+	ctx->version = 0;
+	ctx->pos = 0;
+	ctx->add = 0;
 
-	pos = 0;
-	trk = NULL;
+	txt = &ctx->txt;
+
+	if (txt_match (txt, "PFI", 1)) {
+		if (txt_match_uint (txt, 10, &ctx->version) == 0) {
+			return (1);
+		}
+	}
 
 	while (1) {
-		c = fgetc (fp);
+		txt_match_space (txt);
 
-		if (c == EOF) {
+		if (feof (txt->fp)) {
 			return (0);
 		}
-		else if (c == '#') {
-			if (txt_skip_line (fp)) {
+
+		if (txt_match (txt, "CLOCK", 1)) {
+			if (txt_enc_clock (ctx)) {
 				return (1);
 			}
 		}
-		else if (((c >= 'a') && (c <= 'z')) || ((c >= 'A' && c <= 'Z'))) {
-			if (txt_parse_ident (fp, str, 256, c)) {
-				return (1);
-			}
-
-			if (strcasecmp (str, "TRACK") == 0) {
-				if (txt_parse_ulong (fp, &tc, 0)) {
-					return (1);
-				}
-
-				if (txt_parse_ulong (fp, &th, 0)) {
-					return (1);
-				}
-
-				pfi_img_del_track (img, tc, th);
-
-				trk = pfi_img_get_track (img, tc, th, 1);
-
-				if (trk == NULL) {
-					return (1);
-				}
-
-				pos = 0;
-			}
-			else if (strcasecmp (str, "CLOCK") == 0) {
-				if (txt_parse_ulong (fp, &val, 0)) {
-					return (1);
-				}
-
-				if (trk != NULL) {
-					pfi_trk_set_clock (trk, val);
-				}
-			}
-			else if (strcasecmp (str, "END") == 0) {
-				return (0);
-			}
-			else if (strcasecmp (str, "INDEX") == 0) {
-				if (txt_parse_ulong (fp, &val, 0)) {
-					return (1);
-				}
-
-				if (trk == NULL) {
-					return (1);
-				}
-
-				if (pfi_trk_add_index (trk, pos + val)) {
-					return (1);
-				}
-			}
-			else {
+		else if (txt_match (txt, "END", 1)) {
+			return (0);
+		}
+		else if (txt_match (txt, "INDEX", 1)) {
+			if (txt_enc_index (ctx)) {
 				return (1);
 			}
 		}
-		else if (c == '+') {
-			add = 1;
+		else if (txt_match (txt, "PFI", 1)) {
+			if (txt_match_uint (txt, 10, &ctx->version) == 0) {
+				return (1);
+			}
+
+			ctx->trk = NULL;
+			ctx->pos = 0;
+			ctx->add = 0;
 		}
-		else if (c == '$') {
-			if (txt_parse_hex (fp, &val)) {
+		else if (txt_match (txt, "TEXT", 1)) {
+			if (txt_enc_text (ctx)) {
 				return (1);
 			}
-
-			if (trk == NULL) {
-				return (1);
-			}
-
-			if (add) {
-				if (pfi_trk_inc_pulse (trk, val)) {
-					return (1);
-				}
-			}
-			else {
-				if (pfi_trk_add_pulse (trk, val)) {
-					return (1);
-				}
-			}
-
-			add = 0;
-			pos += val;
 		}
-		else if ((c >= '0') && (c <= '9')) {
-			if (txt_parse_ulong (fp, &val, c)) {
+		else if (txt_match (txt, "TRACK", 1)) {
+			if (txt_enc_track (ctx)) {
 				return (1);
 			}
-
-			if (trk == NULL) {
+		}
+		else if (txt_match (txt, "+", 1)) {
+			ctx->add = 1;
+		}
+		else if (txt_match (txt, "$", 1)) {
+			if (txt_enc_pulse (ctx, 16)) {
 				return (1);
 			}
-
-			if (add) {
-				if (pfi_trk_inc_pulse (trk, val)) {
-					return (1);
-				}
+		}
+		else {
+			if (txt_enc_pulse (ctx, 10)) {
+				return (1);
 			}
-			else {
-				if (pfi_trk_add_pulse (trk, val)) {
-					return (1);
-				}
-			}
-
-			add = 0;
-			pos += val;
 		}
 	}
 }
 
 int pfi_encode_text (pfi_img_t *img, const char *fname)
 {
-	int  r;
-	FILE *fp;
+	int        r;
+	FILE       *fp;
+	pfi_text_t ctx;
 
 	if ((fp = fopen (fname, "r")) == NULL) {
 		return (1);
 	}
 
-	r = pfi_encode_text_fp (img, fp);
+	txt_init (&ctx.txt, fp);
 
+	ctx.img = img;
+	ctx.trk = NULL;
+	ctx.pos = 0;
+	ctx.add = 0;
+
+	r = txt_encode (&ctx);
+
+	if (r) {
+		txt_error (&ctx.txt, "PFI");
+	}
+
+	txt_free (&ctx.txt);
 	fclose (fp);
 
 	return (r);

@@ -3191,6 +3191,7 @@ src/utils/pfi/text.o: src/utils/pfi/text.c \
 	src/config.h \
 	src/drivers/pfi/pfi.h \
 	src/drivers/pfi/track.h \
+	src/lib/text.h \
 	src/utils/pfi/main.h
 
 src/utils/pfi/track-edit.o: src/utils/pfi/track-edit.c \
