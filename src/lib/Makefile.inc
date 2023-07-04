@@ -28,6 +28,7 @@ LIBPCE_BAS := \
 	srec \
 	string \
 	sysdep \
+	text \
 	thex
 
 ifeq "$(PCE_ENABLE_TUN)" "1"
@@ -68,4 +69,5 @@ $(rel)/tun.o:		$(rel)/tun.c
 $(rel)/srec.o:		$(rel)/srec.c
 $(rel)/string.o:	$(rel)/string.c
 $(rel)/sysdep.o:	$(rel)/sysdep.c
+$(rel)/text.o:		$(rel)/text.c
 $(rel)/thex.o:		$(rel)/thex.c
