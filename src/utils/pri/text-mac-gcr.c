@@ -478,13 +478,9 @@ int mac_dec_rotate (pri_text_t *ctx, unsigned long *idx)
 	ctx->trk = trk;
 	ctx->free_track = 1;
 
-	rot = trk->size - pos;
+	rot = (long) trk->size - (long) pos;
 
-	if (rot > (trk->size / 2)) {
-		rot -= (long) trk->size;
-	}
-
-	fprintf (ctx->txt.fp, "ROTATE %ld\n\n", rot);
+	fprintf (ctx->txt.fp, "ROTATE %ld\t; %lu - %lu\n\n", rot, trk->size, pos);
 
 	pri_trk_rotate (trk, pos);
 
