@@ -21,6 +21,7 @@ PTI_UTIL_OBJ_EXT := \
 	src/lib/ciff.o \
 	src/lib/endian.o \
 	src/lib/getopt.o \
+	src/lib/text.o \
 	$(DRV_PTI_OBJ)
 
 BIN  += $(PTI_UTIL_BIN)

@@ -64,6 +64,7 @@ PCE_VIC20_OBJ_EXT := \
 	src/lib/path.o \
 	src/lib/string.o \
 	src/lib/sysdep.o \
+	src/lib/text.o \
 	$(LIBPCE_LOAD_OBJ) \
 	$(LIBINI_OBJ) \
 	$(CPU_6502_OBJ) \

@@ -2773,9 +2773,11 @@ src/drivers/pti/pti-img-tap.o: src/drivers/pti/pti-img-tap.c \
 	src/drivers/pti/pti.h
 
 src/drivers/pti/pti-img-txt.o: src/drivers/pti/pti-img-txt.c \
+	src/config.h \
 	src/drivers/pti/pti-img-txt.h \
 	src/drivers/pti/pti-io.h \
-	src/drivers/pti/pti.h
+	src/drivers/pti/pti.h \
+	src/lib/text.h
 
 src/drivers/pti/pti-img-wav.o: src/drivers/pti/pti-img-wav.c \
 	src/drivers/pti/pti-img-wav.h \
