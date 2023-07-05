@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pri/pri-img.c                                    *
  * Created:     2012-01-31 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2022 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include "pri-img.h"
+#include "pri-img-moof.h"
 #include "pri-img-pbit.h"
 #include "pri-img-pri.h"
 #include "pri-img-tc.h"
@@ -232,6 +233,9 @@ unsigned pri_guess_type (const char *fname)
 	else if (strcasecmp (ext, ".woz") == 0) {
 		return (PRI_FORMAT_WOZ);
 	}
+	else if (strcasecmp (ext, ".moof") == 0) {
+		return (PRI_FORMAT_MOOF);
+	}
 
 	return (PRI_FORMAT_NONE);
 }
@@ -269,6 +273,9 @@ unsigned pri_get_type (unsigned type, const char *fname)
 	else if (strcasecmp (ext, ".woz") == 0) {
 		return (PRI_FORMAT_WOZ);
 	}
+	else if (strcasecmp (ext, ".moof") == 0) {
+		return (PRI_FORMAT_MOOF);
+	}
 
 	return (PRI_FORMAT_PRI);
 }
@@ -281,6 +288,10 @@ pri_img_t *pri_img_load_fp (FILE *fp, unsigned type)
 	img = NULL;
 
 	switch (type) {
+	case PRI_FORMAT_MOOF:
+		img = pri_load_moof (fp);
+		break;
+
 	case PRI_FORMAT_PBIT:
 		img = pri_load_pbit (fp);
 		break;
@@ -322,6 +333,9 @@ pri_img_t *pri_img_load (const char *fname, unsigned type)
 int pri_img_save_fp (FILE *fp, const pri_img_t *img, unsigned type)
 {
 	switch (type) {
+	case PRI_FORMAT_MOOF:
+		return (pri_save_moof (fp, img));
+
 	case PRI_FORMAT_PBIT:
 		return (pri_save_pbit (fp, img));
 
@@ -372,6 +386,10 @@ unsigned pri_probe_fp (FILE *fp)
 
 	if (pri_probe_woz_fp (fp)) {
 		return (PRI_FORMAT_WOZ);
+	}
+
+	if (pri_probe_moof_fp (fp)) {
+		return (PRI_FORMAT_MOOF);
 	}
 
 	return (PRI_FORMAT_NONE);

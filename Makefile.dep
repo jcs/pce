@@ -2617,6 +2617,12 @@ src/drivers/pri/pri-enc-mfm.o: src/drivers/pri/pri-enc-mfm.c \
 	src/drivers/pri/pri.h \
 	src/drivers/psi/psi.h
 
+src/drivers/pri/pri-img-moof.o: src/drivers/pri/pri-img-moof.c \
+	src/config.h \
+	src/drivers/pri/pri-img-moof.h \
+	src/drivers/pri/pri-img.h \
+	src/drivers/pri/pri.h
+
 src/drivers/pri/pri-img-pbit.o: src/drivers/pri/pri-img-pbit.c \
 	src/drivers/pri/pri-img-pbit.h \
 	src/drivers/pri/pri-img.h \
@@ -2639,6 +2645,7 @@ src/drivers/pri/pri-img-woz.o: src/drivers/pri/pri-img-woz.c \
 	src/drivers/pri/pri.h
 
 src/drivers/pri/pri-img.o: src/drivers/pri/pri-img.c \
+	src/drivers/pri/pri-img-moof.h \
 	src/drivers/pri/pri-img-pbit.h \
 	src/drivers/pri/pri-img-pri.h \
 	src/drivers/pri/pri-img-tc.h \

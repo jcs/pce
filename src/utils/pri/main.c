@@ -204,7 +204,7 @@ void print_help (void)
 		"  ibm-mfm, ibm-mfm-dd-300, ibm-mfm-hd-300, ibm-mfm-hd-360\n"
 		"\n"
 		"file formats are:\n"
-		"  pri, tc, woz\n"
+		"  pri, tc, woz, moof\n"
 		"\n"
 		"image attributes are:\n"
 		"  readonly, woz-cleaned, woz-track-sync\n"
@@ -804,6 +804,12 @@ int pri_set_format (const char *name, unsigned *val)
 	}
 	else if (strcmp (name, "tc") == 0) {
 		*val = PRI_FORMAT_TC;
+	}
+	else if (strcmp (name, "woz") == 0) {
+		*val = PRI_FORMAT_WOZ;
+	}
+	else if (strcmp (name, "moof") == 0) {
+		*val = PRI_FORMAT_MOOF;
 	}
 	else {
 		fprintf (stderr, "%s: unknown format (%s)\n", arg0, name);
