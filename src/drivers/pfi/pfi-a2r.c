@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pfi/pfi-a2r.c                                    *
  * Created:     2019-06-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2019 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2019-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -38,9 +38,12 @@
 
 #define A2R_CLOCK      8000000
 
+#define A2R_MAGIC_A2R  0x00523241
 #define A2R_MAGIC_A2R2 0x32523241
+#define A2R_MAGIC_A2R3 0x33523241
 #define A2R_MAGIC_2    0x0a0d0aff
 #define A2R_MAGIC_INFO 0x4f464e49
+#define A2R_MAGIC_RWCP 0x50435752
 #define A2R_MAGIC_STRM 0x4d525453
 #define A2R_MAGIC_META 0x4154454d
 
@@ -50,6 +53,8 @@ typedef struct {
 	pfi_img_t     *img;
 	pfi_trk_t     *trk;
 
+	unsigned      version;
+
 	unsigned long c;
 	unsigned long h;
 	unsigned long loop;
@@ -58,6 +63,8 @@ typedef struct {
 	unsigned char disk_type;
 	unsigned char write_protected;
 	unsigned char synchronized;
+	unsigned char sect_count;
+
 	char          creator[33];
 } a2r_load_t;
 
@@ -74,6 +81,22 @@ typedef struct {
 	unsigned char *buf;
 } a2r_save_t;
 
+
+static
+int a2r_read (a2r_load_t *a2r, void *buf, unsigned long cnt, unsigned long *size)
+{
+	if (cnt > *size) {
+		return (1);
+	}
+
+	if (pfi_read (a2r->fp, buf, cnt)) {
+		return (1);
+	}
+
+	*size -= cnt;
+
+	return (0);
+}
 
 static
 void a2r_get_string (char *dst, const unsigned char *src, unsigned max)
@@ -111,14 +134,33 @@ void a2r_set_string (unsigned char *dst, const char *src, unsigned max)
 static
 int a2r_load_header (a2r_load_t *a2r)
 {
+	unsigned long id;
 	unsigned char buf[8];
 
 	if (pfi_read (a2r->fp, buf, 8)) {
 		return (1);
 	}
 
-	if (pfi_get_uint32_le (buf, 0) != A2R_MAGIC_A2R2) {
+	id = pfi_get_uint32_le (buf, 0);
+
+	if ((id & 0x00ffffff) != A2R_MAGIC_A2R) {
 		fprintf (stderr, "a2r: bad magic 1\n");
+		return (1);
+	}
+
+	switch (id) {
+	case A2R_MAGIC_A2R2:
+		a2r->version = 2;
+		break;
+
+	case A2R_MAGIC_A2R3:
+		a2r->version = 3;
+		break;
+
+	default:
+		fprintf (stderr, "a2r: unsupported version (%02lX)\n",
+			(id >> 24) & 0xff
+		);
 		return (1);
 	}
 
@@ -156,13 +198,16 @@ int a2r_load_meta (a2r_load_t *a2r, unsigned long size)
 static
 int a2r_load_info (a2r_load_t *a2r, unsigned long size)
 {
-	unsigned char buf[36];
+	unsigned      cnt;
+	unsigned char buf[64];
 
 	if (size < 36) {
 		return (1);
 	}
 
-	if (pfi_read (a2r->fp, buf, 36)) {
+	cnt = (size < 64) ? size : 64;
+
+	if (pfi_read (a2r->fp, buf, cnt)) {
 		return (1);
 	}
 
@@ -175,16 +220,22 @@ int a2r_load_info (a2r_load_t *a2r, unsigned long size)
 
 	a2r->disk_type = buf[33];
 	a2r->write_protected = buf[34];
-	a2r->synchronized = buf[34];
+	a2r->synchronized = buf[35];
+	a2r->sect_count = 0;
+
+	if (size >= 37) {
+		a2r->sect_count = buf[36];
+	}
 
 #if DEBUG_A2R >= 1
 	fprintf (stderr, "a2r: creator         = '%s'\n", a2r->creator);
 	fprintf (stderr, "a2r: disk type       = %u\n", a2r->disk_type);
 	fprintf (stderr, "a2r: write protected = %u\n", a2r->write_protected);
 	fprintf (stderr, "a2r: synchronized    = %u\n", a2r->synchronized);
+	fprintf (stderr, "a2r: sector count    = %u\n", a2r->sect_count);
 #endif
 
-	if (pfi_skip (a2r->fp, size - 36)) {
+	if (pfi_skip (a2r->fp, size - cnt)) {
 		return (1);
 	}
 
@@ -255,25 +306,17 @@ int a2r_load_strm (a2r_load_t *a2r, unsigned long size)
 	unsigned char buf[10];
 
 	while (size > 0) {
-		if (pfi_read (a2r->fp, buf, 1)) {
+		if (a2r_read (a2r, buf, 1, &size)) {
 			return (1);
 		}
-
-		size -= 1;
 
 		if (buf[0] == 0xff) {
 			break;
 		}
 
-		if (size < 9) {
+		if (a2r_read (a2r, buf + 1, 9, &size)) {
 			return (1);
 		}
-
-		if (pfi_read (a2r->fp, buf + 1, 9)) {
-			return (1);
-		}
-
-		size -= 9;
 
 		if (a2r->disk_type == 1) {
 			a2r->c = buf[0];
@@ -341,6 +384,135 @@ int a2r_load_strm (a2r_load_t *a2r, unsigned long size)
 }
 
 static
+int a2r_load_rwcp (a2r_load_t *a2r, unsigned long size)
+{
+	unsigned      i;
+	unsigned      loc, type, icnt;
+	unsigned long cnt, res, clk;
+	unsigned char buf[16];
+
+	if (a2r_read (a2r, buf, 16, &size)) {
+		return (1);
+	}
+
+	if (buf[0] != 1) {
+		fprintf (stderr, "a2r: bad RWCP version (%u)\n", buf[0]);
+		return (1);
+	}
+
+	res = pfi_get_uint32_le (buf, 1);
+
+	if (res < 256) {
+		return (1);
+	}
+
+	clk = 1000000000000ULL / res;
+
+#if DEBUG_A2R >= 1
+	fprintf (stderr, "a2r: resolution = %lu (%lu MHz)\n", res, clk);
+#endif
+
+	while (1) {
+		if (a2r_read (a2r, buf, 1, &size)) {
+			return (1);
+		}
+
+		if (buf[0] == 0x58) {
+			break;
+		}
+
+		if (buf[0] != 0x43) {
+			return (1);
+		}
+
+		if (a2r_read (a2r, buf, 4, &size)) {
+			return (1);
+		}
+
+		type = buf[0];
+		loc = pfi_get_uint16_le (buf, 1);
+		icnt = buf[3];
+
+		if (a2r->disk_type == 1) {
+			a2r->c = loc;
+			a2r->h = 0;
+		}
+		else {
+			a2r->c = loc >> 1;
+			a2r->h = loc & 1;
+		}
+
+		a2r->trk = pfi_img_get_track (a2r->img, a2r->c, a2r->h, 1);
+
+		if (a2r->trk == NULL) {
+			return (1);
+		}
+
+		pfi_trk_reset (a2r->trk);
+		pfi_trk_set_clock (a2r->trk, clk);
+
+		a2r->loop = 0;
+
+		for (i = 0; i < icnt; i++) {
+			if (a2r_read (a2r, buf, 4, &size)) {
+				return (1);
+			}
+
+			if (i == 0) {
+				a2r->loop = pfi_get_uint32_le (buf, 0);
+			}
+		}
+
+		if (a2r_read (a2r, buf, 4, &size)) {
+			return (1);
+		}
+
+		cnt = pfi_get_uint32_le (buf, 0);
+
+		if (cnt > size) {
+			return (1);
+		}
+
+#if DEBUG_A2R >= 1
+		fprintf (stderr, "a2r: %lu/%lu TYPE=%u SIZE=%lu IDX=%u\n",
+			a2r->c, a2r->h, type, cnt, icnt
+		);
+#endif
+
+		if ((type == 1) || (type == 3)) {
+			if (a2r_load_capture (a2r, cnt)) {
+				return (1);
+			}
+		}
+		else {
+			fprintf (stderr,
+				"a2r: warning: unsupported capture type (%u)\n",
+				type
+			);
+
+			if (pfi_skip (a2r->fp, cnt)) {
+				return (1);
+			}
+		}
+
+		size -= cnt;
+	}
+
+	if (size > 0) {
+		fprintf (stderr,
+			"a2r: warning: %lu extra bytes in RWCP chunk\n",
+			size
+		);
+
+		if (pfi_skip (a2r->fp, size)) {
+			return (1);
+		}
+	}
+
+	return (0);
+}
+
+static
 int a2r_load_image (a2r_load_t *a2r)
 {
 	unsigned long type, size;
@@ -367,6 +539,15 @@ int a2r_load_image (a2r_load_t *a2r)
 
 			a2r->have_info = 1;
 		}
+		else if (type == A2R_MAGIC_RWCP) {
+			if (a2r->have_info == 0) {
+				return (1);
+			}
+
+			if (a2r_load_rwcp (a2r, size)) {
+				return (1);
+			}
+		}
 		else if (type == A2R_MAGIC_STRM) {
 			if (a2r->have_info == 0) {
 				return (1);
@@ -382,7 +563,7 @@ int a2r_load_image (a2r_load_t *a2r)
 			}
 		}
 		else {
-			fprintf (stderr, "a2r: unknown chunck type (%08lX)\n",
+			fprintf (stderr, "a2r: unknown chunk type (%08lX)\n",
 				type
 			);
 
@@ -467,7 +648,7 @@ int a2r_save_info (a2r_save_t *a2r)
 	/* version */
 	buf[8] = 1;
 
-	a2r_set_string (buf + 9, PCE_VERSION_STR, 32);
+	a2r_set_string (buf + 9, "pce-" PCE_VERSION_STR, 32);
 
 	buf[41] = a2r->disk_type;
 	buf[42] = 1; /* write protected */
