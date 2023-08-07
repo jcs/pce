@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/cmd_68k.c                                   *
  * Created:     2007-04-15 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -48,7 +48,7 @@ mon_cmd_t par_cmd[] = {
 	{ "reset", "", "reset" },
 	{ "rte", "", "execute to next rte" },
 	{ "r", "reg [val]", "get or set a register" },
-	{ "s", "[what]", "print status (cpu|disks|mem|scc|via)" },
+	{ "s", "[what]", "print status (cpu|disks|iwm|mem|scc|via)" },
 	{ "t", "[cnt]", "execute cnt instructions [1]" },
 	{ "u", "[gas] [[-]addr [cnt]]", "disassemble" }
 };
@@ -277,6 +277,27 @@ void mac_prt_state_via (macplus_t *sim)
 }
 
 static
+void mac_print_state_iwm (macplus_t *sim)
+{
+	unsigned        i;
+	mac_iwm_drive_t *drv;
+
+	pce_prt_sep ("IWM");
+
+	for (i = 0; i < 2; i++) {
+		drv = &sim->iwm.drv[i];
+
+		pce_printf ("D%u: DSK=%d MOT=%d MOD=%c%c TRK=%2u/%u POS=%lu/%lu\n",
+			i + 1, drv->disk_inserted, drv->motor_on,
+			drv->dirty ? 'D' : '-',
+			drv->track_dirty ? 'T' : '-',
+			drv->cur_cyl, drv->cur_head,
+			drv->cur_track_pos, drv->cur_track_len
+		);
+	}
+}
+
+static
 void mac_prt_state_mem (macplus_t *sim)
 {
 	pce_prt_sep ("MEM");
@@ -299,6 +320,9 @@ void mac_prt_state (macplus_t *sim, const char *str)
 		}
 		else if (cmd_match (&cmd, "disks")) {
 			dsks_print_info (sim->dsks);
+		}
+		else if (cmd_match (&cmd, "iwm")) {
+			mac_print_state_iwm (sim);
 		}
 		else if (cmd_match (&cmd, "mem")) {
 			mac_prt_state_mem (sim);
