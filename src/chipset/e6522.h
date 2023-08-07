@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/chipset/e6522.h                                          *
  * Created:     2007-11-09 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -49,13 +49,15 @@ typedef struct {
 	unsigned char  ier;
 
 	char           t1_reload;
+	char           t1_timeout;
+	char           t1_hot;
 	unsigned short t1_latch;
 	unsigned short t1_val;
-	int            t1_hot;
 
+	char           t2_timeout;
+	char           t2_hot;
 	unsigned short t2_latch;
 	unsigned short t2_val;
-	int            t2_hot;
 
 	unsigned char  ca1_inp;
 	unsigned char  ca2_inp;
@@ -122,7 +124,7 @@ void e6522_set_uint32 (e6522_t *via, unsigned long addr, unsigned long val);
 
 void e6522_reset (e6522_t *via);
 
-void e6522_clock (e6522_t *via, unsigned long n);
+void e6522_clock (e6522_t *via, unsigned n);
 
 
 #endif

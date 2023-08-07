@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/chipset/e6522.c                                          *
  * Created:     2007-11-09 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -487,7 +487,7 @@ void e6522_set_t1_counter_high (e6522_t *via, unsigned char val)
 	via->t1_latch &= 0x00ff;
 	via->t1_latch |= (val & 0xff) << 8;
 
-	via->t1_val = via->t1_latch;
+	via->t1_reload = 1;
 
 	if ((via->acr & 0x40) == 0) {
 		via->t1_hot = 1;
@@ -881,13 +881,15 @@ void e6522_reset (e6522_t *via)
 	via->ier = 0x00;
 
 	via->t1_reload = 0;
+	via->t1_timeout = 0;
+	via->t1_hot = 0;
 	via->t1_latch = 0;
 	via->t1_val = 0;
-	via->t1_hot = 0;
 
+	via->t2_timeout = 0;
+	via->t2_hot = 0;
 	via->t2_latch = 0;
 	via->t2_val = 0;
-	via->t2_hot = 0;
 
 	e6522_set_ora_out (via);
 	e6522_set_orb_out (via);
@@ -900,74 +902,71 @@ void e6522_reset (e6522_t *via)
 }
 
 static
-void e6522_clock_t1 (e6522_t *via, unsigned long n)
+void e6522_clock_t1 (e6522_t *via)
 {
 	if (via->t1_reload) {
-		n -= 1;
 		via->t1_reload = 0;
-	}
-
-	if (n <= via->t1_val) {
-		via->t1_val = (via->t1_val - n) & 0xffff;
+		via->t1_timeout = 0;
+		via->t1_val = via->t1_latch;
 		return;
 	}
 
-	if (via->acr & 0x40) {
-		/* free running */
+	via->t1_val = (via->t1_val - 1) & 0xffff;
 
-		n -= via->t1_val;
+	if (via->t1_val == 0) {
+		via->t1_timeout = 1;
+	}
+	else if (via->t1_timeout) {
+		via->t1_timeout = 0;
 
-		e6522_set_ifr (via, via->ifr | E6522_IFR_T1);
+		if (via->acr & 0x40) {
+			/* free running */
 
-		if (via->t1_latch > 0) {
-			n = n % via->t1_latch;
+			e6522_set_ifr (via, via->ifr | E6522_IFR_T1);
+
+			via->t1_reload = 1;
 		}
 		else {
-			n = n & 0xffff;
-		}
+			/* one shot */
 
-		via->t1_val = (via->t1_latch - n) & 0xffff;
-
-		via->t1_reload = 1;
-	}
-	else {
-		/* one shot */
-
-		via->t1_val = (via->t1_val - n) & 0xffff;
-
-		if (via->t1_hot) {
-			via->t1_hot = 0;
-			e6522_set_ifr (via, via->ifr | E6522_IFR_T1);
+			if (via->t1_hot) {
+				via->t1_hot = 0;
+				e6522_set_ifr (via, via->ifr | E6522_IFR_T1);
+			}
 		}
 	}
 }
 
 static
-void e6522_clock_t2 (e6522_t *via, unsigned long n)
+void e6522_clock_t2 (e6522_t *via)
 {
-	if (n <= via->t2_val) {
-		via->t2_val = (via->t2_val - n) & 0xffff;
-		return;
+	via->t2_val = (via->t2_val - 1) & 0xffff;
+
+	if (via->t2_val == 0) {
+		via->t2_timeout = 1;
 	}
+	else if (via->t2_timeout) {
+		via->t2_timeout = 0;
 
-	if (via->acr & 0x20) {
-		/* free running */
-		;
-	}
-	else {
-		/* one shot */
+		if (via->acr & 0x20) {
+			/* free running */
+			;
+		}
+		else {
+			/* one shot */
 
-		via->t2_val = (via->t2_val - n) & 0xffff;
-
-		if (via->t2_hot) {
-			via->t2_hot = 0;
-			e6522_set_ifr (via, via->ifr | E6522_IFR_T2);
+			if (via->t2_hot) {
+				via->t2_hot = 0;
+				e6522_set_ifr (via, via->ifr | E6522_IFR_T2);
+			}
 		}
 	}
 }
 
-void e6522_clock (e6522_t *via, unsigned long n)
+void e6522_clock (e6522_t *via, unsigned n)
 {
-	e6522_clock_t1 (via, n);
-	e6522_clock_t2 (via, n);
+	while (n-- > 0) {
+		e6522_clock_t1 (via);
+		e6522_clock_t2 (via);
+	}
 }
