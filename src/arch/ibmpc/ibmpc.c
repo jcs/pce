@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/ibmpc.c                                       *
  * Created:     1999-04-16 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 1999-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 1999-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -2109,6 +2109,10 @@ void pc_clock (ibmpc_t *pc, unsigned long cnt)
 			}
 		}
 
+		if (pc->fdc != NULL) {
+			e8272_clock (&pc->fdc->e8272, clk);
+		}
+
 		if (pc->clk_div[1] >= 1024) {
 			clk = pc->clk_div[1] & ~1023UL;
 			pc->clk_div[1] &= 1023;
@@ -2120,10 +2124,6 @@ void pc_clock (ibmpc_t *pc, unsigned long cnt)
 
 			if (pc->atari_pc_rtc != NULL) {
 				mc146818a_clock (pc->atari_pc_rtc, clk);
-			}
-
-			if (pc->fdc != NULL) {
-				e8272_clock (&pc->fdc->e8272, clk);
 			}
 
 			if (pc->hdc != NULL) {

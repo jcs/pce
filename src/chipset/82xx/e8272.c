@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/chipset/82xx/e8272.c                                     *
  * Created:     2005-03-06 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2005-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2005-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -298,6 +298,8 @@ void e8272_diskop_init (e8272_t *fdc, e8272_diskop_t *p,
 	p->ls = ls;
 	p->ln = ln;
 
+	p->pos = 0;
+
 	p->buf = buf;
 	p->cnt = cnt;
 
@@ -384,7 +386,7 @@ int e8272_diskop_format (e8272_t *fdc,
 static
 unsigned e8272_diskop_readid (e8272_t *fdc,
 	unsigned pd, unsigned pc, unsigned ph, unsigned ps,
-	unsigned char *id)
+	unsigned char *id, unsigned long *pos)
 {
 	unsigned       r;
 	e8272_diskop_t p;
@@ -402,6 +404,8 @@ unsigned e8272_diskop_readid (e8272_t *fdc,
 	id[2] = p.ls;
 	id[3] = p.ln;
 
+	*pos = p.pos;
+
 	return (r);
 }
 
@@ -411,8 +415,9 @@ unsigned e8272_diskop_readid (e8272_t *fdc,
 static
 void e8272_read_track (e8272_t *fdc)
 {
-	unsigned      i;
+	unsigned      i, j, s;
 	unsigned char id[4];
+	unsigned long pos;
 	unsigned long ofs, cnt;
 	e8272_drive_t *drv;
 
@@ -424,8 +429,10 @@ void e8272_read_track (e8272_t *fdc)
 
 	drv->sct_cnt = 0;
 
+	s = 0;
+
 	for (i = 0; i < E8272_MAX_SCT; i++) {
-		if (e8272_diskop_readid (fdc, drv->d, drv->c, drv->h, i, id)) {
+		if (e8272_diskop_readid (fdc, drv->d, drv->c, drv->h, i, id, &pos)) {
 			break;
 		}
 
@@ -434,6 +441,19 @@ void e8272_read_track (e8272_t *fdc)
 		drv->sct[i].s = id[2];
 		drv->sct[i].n = id[3];
 
+		pos >>= s;
+
+		while (pos >= fdc->track_size) {
+			for (j = 0; j < i; j++) {
+				drv->sct[j].ofs >>= 1;
+			}
+
+			s += 1;
+			pos >>= 1;
+		}
+
+		drv->sct[i].ofs = pos;
+
 		drv->sct_cnt += 1;
 	}
 
@@ -441,7 +461,9 @@ void e8272_read_track (e8272_t *fdc)
 	cnt = fdc->track_size - ofs;
 
 	for (i = 0; i < drv->sct_cnt; i++) {
-		drv->sct[i].ofs = ofs + (2UL * i * cnt) / (2UL * drv->sct_cnt + 1);
+		if (drv->sct[i].ofs == 0) {
+			drv->sct[i].ofs = ofs + (2UL * i * cnt) / (2UL * drv->sct_cnt + 1);
+		}
 	}
 
 	drv->ok = 1;

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/chipset/82xx/e8272.h                                     *
  * Created:     2005-03-06 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2005-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2005-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -47,7 +47,7 @@ typedef struct {
 	unsigned char  h;
 	unsigned char  s;
 	unsigned short n;
-	unsigned short ofs;
+	unsigned long  ofs;
 } e8272_sct_t;
 
 
@@ -72,6 +72,8 @@ typedef struct {
 	unsigned char lh;
 	unsigned char ls;
 	unsigned char ln;
+
+	unsigned long pos;
 
 	void          *buf;
 	unsigned      cnt;
