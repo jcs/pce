@@ -325,17 +325,17 @@ void pc_set_timer1_out (ibmpc_t *pc, unsigned char val)
 static
 void pc_set_timer2_out (ibmpc_t *pc, unsigned char val)
 {
+	if (val) {
+		pc->ppi_port_c[0] |= 0x20;
+		pc->ppi_port_c[1] |= 0x20;
+	}
+	else {
+		pc->ppi_port_c[0] &= ~0x20;
+		pc->ppi_port_c[1] &= ~0x20;
+	}
+
+
 	if (pc->model & PCE_IBMPC_5150) {
-		if (val) {
-			pc->ppi_port_c[0] |= 0x20;
-			pc->ppi_port_c[1] |= 0x20;
-		}
-		else {
-			pc->ppi_port_c[0] &= ~0x20;
-			pc->ppi_port_c[1] &= ~0x20;
-		}
-
-
 		if (pc->cas != NULL) {
 			cas_set_out (pc->cas, !val);
 		}
