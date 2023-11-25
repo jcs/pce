@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e8080/flags.c                                        *
  * Created:     2012-11-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2014 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -86,7 +86,7 @@ void e8080_set_psw_szp (e8080_t *c, unsigned char val, unsigned set, unsigned re
 
 void e8080_set_psw_log (e8080_t *c, unsigned char val)
 {
-	c->psw &= ~(E8080_FLG_S | E8080_FLG_Z | E8080_FLG_P | E8080_FLG_C);
+	c->psw &= ~(E8080_FLG_S | E8080_FLG_Z | E8080_FLG_A | E8080_FLG_P | E8080_FLG_C);
 
 	set_psw_szp (c, val);
 }

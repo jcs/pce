@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e8080/opcodes.c                                      *
  * Created:     2012-11-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2014 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -679,6 +679,7 @@ static void op_a0 (e8080_t *c)
 	s2 = e8080_get_reg8 (c, c->inst[0]);
 	e8080_set_a (c, s1 & s2);
 	e8080_set_psw_log (c, s1 & s2);
+	e8080_set_af (c, 1);
 	e8080_set_clk (c, 1, 4);
 }
 
@@ -691,6 +692,7 @@ static void op_a6 (e8080_t *c)
 	s2 = e8080_get_mem8 (c, e8080_get_hl (c));
 	e8080_set_a (c, s1 & s2);
 	e8080_set_psw_log (c, s1 & s2);
+	e8080_set_af (c, 1);
 	e8080_set_clk (c, 1, 7);
 }
 
@@ -1172,6 +1174,7 @@ static void op_e6 (e8080_t *c)
 	s2 = c->inst[1];
 	e8080_set_a (c, s1 & s2);
 	e8080_set_psw_log (c, s1 & s2);
+	e8080_set_af (c, 1);
 	e8080_set_clk (c, 2, 7);
 }
 
