@@ -353,7 +353,11 @@ static void op_27 (e8080_t *c)
 	e8080_set_psw_szp (c, d, 0, 0);
 	e8080_set_a (c, d);
 	e8080_set_af (c, (s ^ d) & 0x10);
-	e8080_set_cf (c, d > 255);
+
+	if (d > 255) {
+		e8080_set_cf (c, 1);
+	}
+
 	e8080_set_clk (c, 1, 4);
 }
 

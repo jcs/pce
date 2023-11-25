@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e8080/op_z80.c                                       *
  * Created:     2012-12-07 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2014 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -318,7 +318,11 @@ static void op_27 (e8080_t *c)
 
 	e8080_set_a (c, d);
 	e8080_set_psw_szp (c, d, 0, 0);
-	e8080_set_cf (c, d > 255);
+
+	if (d > 255) {
+		e8080_set_cf (c, 1);
+	}
+
 	e8080_set_clk (c, 1, 4);
 }
 
