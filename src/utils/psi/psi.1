@@ -1,4 +1,4 @@
-.TH PSI 1 "2020-10-19" "HH" "pce"
+.TH PSI 1 "2023-11-30" "HH" "pce"
 \
 .SH NAME
 psi \- convert and modify PCE sector image files
@@ -198,6 +198,9 @@ for a list of valid formats.
 .BI "-p, --operation " "name [arg...]"
 Perform an operation on the current image. Valid operations are:
 .RS
+.TP
+.BI "clear-position"
+Remove the sector position of all selected sectors.
 .TP
 .BI "comment-add " text
 Add \fItext\fR to the image comment.

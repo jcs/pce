@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/psi/main.c                                         *
  * Created:     2010-08-13 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2023 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -117,6 +117,7 @@ void print_help (void)
 
 	fputs (
 		"\noperations are:\n"
+		"  clear-position         Clear the sector position\n"
 		"  comment-add text       Add to the image comment\n"
 		"  comment-load filename  Load the image comment from a file\n"
 		"  comment-print          Print the image comment\n"
@@ -448,7 +449,10 @@ int psi_operation (psi_img_t **img, const char *op, int argc, char **argv)
 
 	r = -1;
 
-	if (strcmp (op, "comment-print") == 0) {
+	if (strcmp (op, "clear-position") == 0) {
+		r = psi_edit_sectors (*img, "position", "-1");
+	}
+	else if (strcmp (op, "comment-print") == 0) {
 		r = psi_show_comment (*img);
 	}
 	else if (strcmp (op, "delete") == 0) {
