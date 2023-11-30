@@ -281,8 +281,23 @@ void mac_print_state_iwm (macplus_t *sim)
 {
 	unsigned        i;
 	mac_iwm_drive_t *drv;
+	mac_iwm_t       *iwm;
 
 	pce_prt_sep ("IWM");
+
+	iwm = &sim->iwm;
+
+	pce_printf ("DSEL=%02X  HSEL=%02X  LINE=%02X  WR=%d\n",
+		iwm->drive_sel, iwm->head_sel, iwm->lines, iwm->writing
+	);
+
+	pce_printf ("STAT=%02X  MODE=%02X  HDSK=%02X\n",
+		iwm->status, iwm->mode, iwm->handshake
+	);
+
+	pce_printf ("SCNT=%u   SHFT=%02X  RBUF=%02X\n",
+		iwm->shift_cnt, iwm->shift, iwm->read_buf
+	);
 
 	for (i = 0; i < 2; i++) {
 		drv = &sim->iwm.drv[i];
