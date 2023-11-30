@@ -11,6 +11,7 @@ OFFSET <val>
 RATE <clock-rate>
 RAW <bit>...
 ROTATE <cnt>
+ROTATE TRACK <cylinder> <head> <cnt>
 WEAK <val>
 WEAK RUN <cnt>
 

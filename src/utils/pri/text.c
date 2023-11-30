@@ -33,6 +33,9 @@
 #include "text.h"
 
 
+static int txt_enc_track_finish (pri_text_t *ctx);
+
+
 void txt_save_pos (const pri_text_t *ctx, pri_text_pos_t *pos)
 {
 	pos->pos = ctx->trk->idx;
@@ -476,9 +479,60 @@ int txt_enc_raw (pri_text_t *ctx)
 }
 
 static
+int txt_enc_rotate_track (pri_text_t *ctx)
+{
+	unsigned long c, h, cnt, max;
+	pri_trk_t     *trk;
+
+	if (txt_enc_track_finish (ctx)) {
+		return (1);
+	}
+
+	if (txt_match_uint (&ctx->txt, 10, &c) == 0) {
+		return (1);
+	}
+
+	if (txt_match_uint (&ctx->txt, 10, &h) == 0) {
+		return (1);
+	}
+
+	if (txt_match_uint (&ctx->txt, 10, &cnt) == 0) {
+		return (1);
+	}
+
+	if (cnt == 0) {
+		return (0);
+	}
+
+	if (ctx->img == NULL) {
+		return (1);
+	}
+
+	if ((trk = pri_img_get_track (ctx->img, c, h, 1)) == NULL) {
+		return (1);
+	}
+
+	max = pri_trk_get_size (trk);
+
+	if (max > 0) {
+		if (-cnt < cnt) {
+			cnt = max - (-cnt % max);
+		}
+
+		pri_trk_rotate (trk, cnt);
+	}
+
+	return (0);
+}
+
+static
 int txt_enc_rotate (pri_text_t *ctx)
 {
 	unsigned long val;
+
+	if (txt_match (&ctx->txt, "TRACK", 1)) {
+		return (txt_enc_rotate_track (ctx));
+	}
 
 	if (txt_match_uint (&ctx->txt, 10, &val) == 0) {
 		return (1);
