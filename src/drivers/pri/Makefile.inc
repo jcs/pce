@@ -9,6 +9,7 @@ DRV_PRI_BAS := \
 	pri-enc-fm \
 	pri-enc-gcr \
 	pri-enc-mfm \
+	pri-img-mfm \
 	pri-img-moof \
 	pri-img-pbit \
 	pri-img-pri \
@@ -28,6 +29,7 @@ DIST += $(DRV_PRI_SRC) $(DRV_PRI_HDR)
 $(rel)/pri-enc-fm.o:   $(rel)/pri-enc-fm.c
 $(rel)/pri-enc-gcr.o:  $(rel)/pri-enc-gcr.c
 $(rel)/pri-enc-mfm.o:  $(rel)/pri-enc-mfm.c
+$(rel)/pri-img-mfm.o:  $(rel)/pri-img-mfm.c
 $(rel)/pri-img-moof.o: $(rel)/pri-img-moof.c
 $(rel)/pri-img-pbit.o: $(rel)/pri-img-pbit.c
 $(rel)/pri-img-pri.o:  $(rel)/pri-img-pri.c

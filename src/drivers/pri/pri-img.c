@@ -25,6 +25,7 @@
 #include <string.h>
 
 #include "pri-img.h"
+#include "pri-img-mfm.h"
 #include "pri-img-moof.h"
 #include "pri-img-pbit.h"
 #include "pri-img-pri.h"
@@ -236,6 +237,9 @@ unsigned pri_guess_type (const char *fname)
 	else if (strcasecmp (ext, ".moof") == 0) {
 		return (PRI_FORMAT_MOOF);
 	}
+	else if (strcasecmp (ext, ".mfm") == 0) {
+		return (PRI_FORMAT_MFM);
+	}
 
 	return (PRI_FORMAT_NONE);
 }
@@ -264,6 +268,10 @@ pri_img_t *pri_img_load_fp (FILE *fp, unsigned type)
 	img = NULL;
 
 	switch (type) {
+	case PRI_FORMAT_MFM:
+		img = pri_load_mfm (fp);
+		break;
+
 	case PRI_FORMAT_MOOF:
 		img = pri_load_moof (fp);
 		break;
@@ -309,6 +317,9 @@ pri_img_t *pri_img_load (const char *fname, unsigned type)
 int pri_img_save_fp (FILE *fp, const pri_img_t *img, unsigned type)
 {
 	switch (type) {
+	case PRI_FORMAT_MFM:
+		return (pri_save_mfm (fp, img));
+
 	case PRI_FORMAT_MOOF:
 		return (pri_save_moof (fp, img));
 
@@ -366,6 +377,10 @@ unsigned pri_probe_fp (FILE *fp)
 
 	if (pri_probe_moof_fp (fp)) {
 		return (PRI_FORMAT_MOOF);
+	}
+
+	if (pri_probe_mfm_fp (fp)) {
+		return (PRI_FORMAT_MFM);
 	}
 
 	return (PRI_FORMAT_NONE);

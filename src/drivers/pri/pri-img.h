@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pri/pri-img.h                                    *
  * Created:     2012-01-31 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -35,6 +35,7 @@
 #define PRI_FORMAT_TC   3
 #define PRI_FORMAT_WOZ  4
 #define PRI_FORMAT_MOOF 5
+#define PRI_FORMAT_MFM  6
 
 
 unsigned pri_get_uint16_be (const void *buf, unsigned idx);
