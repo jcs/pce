@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pri/pri-img.c                                    *
  * Created:     2012-01-31 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -243,38 +243,14 @@ unsigned pri_guess_type (const char *fname)
 static
 unsigned pri_get_type (unsigned type, const char *fname)
 {
-	unsigned   i;
-	const char *ext;
-
 	if (type != PRI_FORMAT_NONE) {
 		return (type);
 	}
 
-	ext = "";
+	type = pri_guess_type (fname);
 
-	i = 0;
-	while (fname[i] != 0) {
-		if (fname[i] == '.') {
-			ext = fname + i;
-		}
-
-		i += 1;
-	}
-
-	if (strcasecmp (ext, ".pbit") == 0) {
-		return (PRI_FORMAT_PBIT);
-	}
-	else if (strcasecmp (ext, ".pri") == 0) {
-		return (PRI_FORMAT_PRI);
-	}
-	else if (strcasecmp (ext, ".tc") == 0) {
-		return (PRI_FORMAT_TC);
-	}
-	else if (strcasecmp (ext, ".woz") == 0) {
-		return (PRI_FORMAT_WOZ);
-	}
-	else if (strcasecmp (ext, ".moof") == 0) {
-		return (PRI_FORMAT_MOOF);
+	if (type != PRI_FORMAT_NONE) {
+		return (type);
 	}
 
 	return (PRI_FORMAT_PRI);
