@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text-mac-gcr.c                                 *
  * Created:     2017-10-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2017-2023 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2017-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -84,6 +84,10 @@ static const unsigned char mac_dec_tab[256] = {
 
 static const unsigned char gcr_sync[2] = {
 	0x3f, 0xc0
+};
+
+static const unsigned char gcr_sync2[3] = {
+	0x3f, 0xcf, 0xf0
 };
 
 static const unsigned char gcr_sync_group[6] = {
@@ -187,11 +191,13 @@ int mac_decode_sync (pri_text_t *ctx)
 
 		mac_dec_events (ctx);
 
-		while (txt_dec_match (ctx, gcr_sync, 10) == 0) {
-			sync_cnt += 1;
-		}
+		if (txt_dec_match (ctx, gcr_sync2, 20) == 0) {
+			sync_cnt += 2;
 
-		if (sync_cnt > 0) {
+			while (txt_dec_match (ctx, gcr_sync, 10) == 0) {
+				sync_cnt += 1;
+			}
+
 			mac_flush (ctx);
 			mac_put_nl (ctx, 0);
 			fprintf (ctx->txt.fp, "SYNC %u\n", sync_cnt);
