@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text.c                                         *
  * Created:     2014-08-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2014-2023 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2014-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -173,6 +173,8 @@ void txt_dec_event (pri_text_t *ctx, unsigned long type, unsigned long val)
 static
 void txt_dec_init (pri_text_t *ctx, FILE *fp, pri_img_t *img, pri_trk_t *trk, unsigned long c, unsigned long h)
 {
+	memset (ctx, 0, sizeof (pri_text_t));
+
 	txt_init (&ctx->txt, fp);
 
 	ctx->img = img;
