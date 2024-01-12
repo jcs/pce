@@ -53,35 +53,54 @@ void txt_restore_pos (pri_text_t *ctx, const pri_text_pos_t *pos)
 static
 unsigned txt_guess_encoding (pri_trk_t *trk)
 {
-	unsigned long val;
-	unsigned long bit;
+	unsigned long val, bit;
+	unsigned      fm, mfm, gcr;
+
+	pri_trk_set_pos (trk, 0);
 
 	val = 0;
 
-	pri_trk_set_pos (trk, 0);
+	fm = 0;
+	mfm = 0;
+	gcr = 0;
 
 	while (trk->wrap == 0) {
 		pri_trk_get_bits (trk, &bit, 1);
 
 		val = (val << 1) | (bit & 1);
 
-		switch (val & 0xffff) {
-		case 0x4489:
-			return (PRI_TEXT_MFM);
+		switch (val & 0xffffffff) {
+		case 0xaaaaf56f:
+		case 0xaaaaf57e:
+			fm += 1;
+			break;
 
-		case 0xf57e:
-		case 0xf56f:
-		case 0xf56a:
-			return (PRI_TEXT_FM);
+		case 0x44894489:
+			mfm += 1;
+			break;
 		}
 
-		if ((val & 0x00ffffff) == 0xd5aa96) {
-			return (PRI_TEXT_MAC);
+		switch (val & 0xffffff) {
+		case 0xd5aa96:
+		case 0xd5aaad:
+			gcr += 1;
+			break;
 		}
+	}
 
-		if ((val & 0xffffffff) == 0xcff3fcff) {
-			return (PRI_TEXT_MAC);
-		}
+	fm *= 2;
+	gcr *= 2;
+
+	if ((gcr > 0) && (gcr > fm) && (gcr > mfm)) {
+		return (PRI_TEXT_MAC);
+	}
+
+	if ((fm > 0) && (fm > gcr) && (fm > mfm)) {
+		return (PRI_TEXT_FM);
+	}
+
+	if ((mfm > 0) && (mfm > gcr) && (mfm > fm)) {
+		return (PRI_TEXT_MFM);
 	}
 
 	return (PRI_TEXT_RAW);
