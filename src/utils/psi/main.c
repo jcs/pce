@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/psi/main.c                                         *
  * Created:     2010-08-13 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2023 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -450,6 +450,9 @@ int psi_operation (psi_img_t **img, const char *op, int argc, char **argv)
 	r = -1;
 
 	if (strcmp (op, "clear-position") == 0) {
+		r = psi_edit_sectors (*img, "position", "-1");
+	}
+	else if (strcmp (op, "nopos") == 0) {
 		r = psi_edit_sectors (*img, "position", "-1");
 	}
 	else if (strcmp (op, "comment-print") == 0) {
