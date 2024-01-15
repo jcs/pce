@@ -1053,8 +1053,11 @@ static void op_da (e8080_t *c)
 /* OP DB: IN nn */
 static void op_db (e8080_t *c)
 {
+	unsigned a;
+
 	e8080_get_inst1 (c);
-	e8080_set_a (c, e8080_get_port8 (c, c->inst[1]));
+	a = (e8080_get_a (c) << 8) | c->inst[1];
+	e8080_set_a (c, e8080_get_port8 (c, a));
 	e8080_set_clk (c, 2, 10);
 }
 
