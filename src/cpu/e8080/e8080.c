@@ -37,6 +37,13 @@ void e8080_init (e8080_t *c)
 
 	c->flags = 0;
 
+	c->int_val = 0;
+	c->nmi_val = 0;
+	c->int_req = 0;
+
+	c->int_cnt = 0;
+	c->int_pc = 0;
+
 	c->mem_rd_ext = NULL;
 	c->mem_wr_ext = NULL;
 
@@ -219,6 +226,25 @@ void e8080_set_hook_rst_fct (e8080_t *c, void *ext, void *fct)
 	c->hook_rst = fct;
 }
 
+void e8080_rst (e8080_t *c, unsigned val)
+{
+	e8080_set_clk (c, 0, 11);
+
+	e8080_set_sp (c, e8080_get_sp (c) - 2);
+	e8080_set_mem16 (c, e8080_get_sp (c), e8080_get_pc (c));
+	e8080_set_pc (c, val);
+}
+
+void e8080_set_int (e8080_t *c, unsigned char val)
+{
+	c->int_val = (val != 0);
+
+	if (c->int_val && c->iff) {
+		c->int_req = 1;
+	}
+
+}
+
 unsigned char e8080_get_port8 (e8080_t *c, unsigned addr)
 {
 	if (c->get_port8 != NULL) {
@@ -301,6 +327,30 @@ int e8080_get_reg (e8080_t *c, const char *reg, unsigned long *val)
 		*val = e8080_get_sp (c);
 		return (0);
 	}
+	else if (strcmp (reg, "i") == 0) {
+		*val = e8080_get_i (c);
+		return (0);
+	}
+	else if (strcmp (reg, "icnt") == 0) {
+		*val = e8080_get_int_cnt (c);
+		return (0);
+	}
+	else if (strcmp (reg, "iff") == 0) {
+		*val = e8080_get_iff1 (c);
+		return (0);
+	}
+	else if (strcmp (reg, "iff2") == 0) {
+		*val = e8080_get_iff2 (c);
+		return (0);
+	}
+	else if (strcmp (reg, "im") == 0) {
+		*val = e8080_get_im (c);
+		return (0);
+	}
+	else if (strcmp (reg, "ipc") == 0) {
+		*val = e8080_get_int_pc (c);
+		return (0);
+	}
 	else if (strcmp (reg, "r") == 0) {
 		*val = e8080_get_r (c);
 		return (0);
@@ -373,6 +423,30 @@ int e8080_set_reg (e8080_t *c, const char *reg, unsigned long val)
 	}
 	else if (strcmp (reg, "sp") == 0) {
 		e8080_set_sp (c, val);
+		return (0);
+	}
+	else if (strcmp (reg, "i") == 0) {
+		e8080_set_i (c, val);
+		return (0);
+	}
+	else if (strcmp (reg, "icnt") == 0) {
+		e8080_set_int_cnt (c, val);
+		return (0);
+	}
+	else if (strcmp (reg, "iff") == 0) {
+		e8080_set_iff1 (c, val);
+		return (0);
+	}
+	else if (strcmp (reg, "iff2") == 0) {
+		e8080_set_iff2 (c, val);
+		return (0);
+	}
+	else if (strcmp (reg, "im") == 0) {
+		e8080_set_im (c, val);
+		return (0);
+	}
+	else if (strcmp (reg, "ipc") == 0) {
+		e8080_set_int_pc (c, val);
 		return (0);
 	}
 	else if (strcmp (reg, "r") == 0) {
@@ -449,15 +523,62 @@ void e8080_reset (e8080_t *c)
 	c->iff = 0;
 	c->iff2 = 0;
 
+	c->int_req = 0;
+	c->int_pc = 0;
+	c->im = 0;
+
 	c->halt = 0;
+}
+
+void e8080_interrupt (e8080_t *c)
+{
+	unsigned addr;
+
+	e8080_inc_r (c);
+	c->inscnt += 1;
+
+	if (c->halt) {
+		c->halt = 0;
+		e8080_set_pc (c, e8080_get_pc (c) + 1);
+	}
+
+	c->int_cnt += 1;
+	c->int_pc = e8080_get_pc (c);
+
+	c->int_req = 0;
+
+	if (c->im == 1) {
+		e8080_rst (c, 0x38);
+
+		c->iff = 0;
+		c->iff2 = 0;
+	}
+	else if (c->im == 2) {
+		addr = (e8080_get_i (c) << 8) | 0xff;
+		addr = e8080_get_mem16 (c, addr);
+
+		e8080_rst (c, addr);
+
+		c->iff = 0;
+		c->iff2 = 0;
+	}
+	else {
+		fprintf (stderr, "8080: interrupt mode %u\n", c->im);
+	}
 }
 
 void e8080_execute (e8080_t *c)
 {
 	unsigned short pc;
+	unsigned char  iff;
 
 	if (c->halt) {
-		c->delay = 4;
+		if (c->int_req && c->iff) {
+			e8080_interrupt (c);
+		}
+		else {
+			c->delay += 1;
+		}
 		return;
 	}
 
@@ -475,9 +596,15 @@ void e8080_execute (e8080_t *c)
 	}
 #endif
 
+	iff = c->iff;
+
 	c->op[c->inst[0]] (c);
 
 	c->inscnt += 1;
+
+	if (c->int_req && iff && c->iff) {
+		e8080_interrupt (c);
+	}
 }
 
 void e8080_clock (e8080_t *c, unsigned n)

@@ -571,7 +571,7 @@ static void op_70 (e8080_t *c)
 static void op_76 (e8080_t *c)
 {
 	c->halt = 1;
-	e8080_set_clk (c, 1, 7);
+	e8080_set_clk (c, 0, 7);
 }
 
 /* OP 80: ADD R */
@@ -1296,8 +1296,8 @@ static void op_f2 (e8080_t *c)
 /* OP F3: DI */
 static void op_f3 (e8080_t *c)
 {
-	c->iff = 0;
-	c->iff2 = 0;
+	e8080_set_iff1 (c, 0);
+	e8080_set_iff2 (c, 0);
 	e8080_set_clk (c, 1, 4);
 }
 
@@ -1376,8 +1376,8 @@ static void op_fa (e8080_t *c)
 /* OP FB: EI */
 static void op_fb (e8080_t *c)
 {
-	c->iff = 1;
-	c->iff2 = 1;
+	e8080_set_iff1 (c, 1);
+	e8080_set_iff2 (c, 1);
 	e8080_set_clk (c, 1, 4);
 }
 

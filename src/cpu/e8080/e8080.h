@@ -64,7 +64,16 @@ typedef struct e8080_t {
 	unsigned char  iff;
 	unsigned char  iff2;
 
+	unsigned char  im;
+
 	unsigned char  halt;
+
+	unsigned char  int_val;
+	unsigned char  nmi_val;
+	unsigned char  int_req;
+
+	unsigned       int_cnt;
+	unsigned short int_pc;
 
 	void           *mem_rd_ext;
 	void           *mem_wr_ext;
@@ -128,6 +137,13 @@ typedef struct e8080_t {
 #define e8080_get_l2(c) ((c)->reg2[5]);
 #define e8080_get_psw2(c) ((c)->psw2)
 
+#define e8080_get_halt(c) ((c)->halt)
+#define e8080_get_iff1(c) ((c)->iff)
+#define e8080_get_iff2(c) ((c)->iff2)
+#define e8080_get_im(c) ((c)->im)
+#define e8080_get_int_cnt(c) ((c)->int_cnt)
+#define e8080_get_int_pc(c) ((c)->int_pc)
+
 #define e8080_set_a(c, v) do { (c)->reg[7] = (v) & 0xff; } while (0)
 #define e8080_set_b(c, v) do { (c)->reg[0] = (v) & 0xff; } while (0)
 #define e8080_set_c(c, v) do { (c)->reg[1] = (v) & 0xff; } while (0)
@@ -159,6 +175,13 @@ typedef struct e8080_t {
 #define e8080_set_h2(c, v) do { (c)->reg2[4] = (v) & 0xff; } while (0)
 #define e8080_set_l2(c, v) do { (c)->reg2[5] = (v) & 0xff; } while (0)
 #define e8080_set_psw2(c, v) do { (c)->psw2 = (v) & 0xff; } while (0)
+
+#define e8080_set_halt(c, v) do { (c)->halt = ((v) != 0); } while (0)
+#define e8080_set_iff1(c, v) do { (c)->iff = ((v) != 0); } while (0)
+#define e8080_set_iff2(c, v) do { (c)->iff2 = ((v) != 0); } while (0)
+#define e8080_set_im(c, v) do { (c)->im = (v); } while (0)
+#define e8080_set_int_cnt(c, v) do { (c)->int_cnt = (v); } while (0)
+#define e8080_set_int_pc(c, v) do { (c)->int_pc = (v) & 0xffff; } while (0)
 
 #define e8080_get_cf(c) (((c)->psw & E8080_FLG_C) != 0)
 #define e8080_get_nf(c) (((c)->psw & E8080_FLG_N) != 0)
@@ -285,6 +308,10 @@ void e8080_set_port_fct (e8080_t *c, void *ext, void *get8, void *set8);
 void e8080_set_hook_all_fct (e8080_t *c, void *ext, void *fct);
 void e8080_set_hook_undef_fct (e8080_t *c, void *ext, void *fct);
 void e8080_set_hook_rst_fct (e8080_t *c, void *ext, void *fct);
+
+void e8080_rst (e8080_t *c, unsigned val);
+
+void e8080_set_int (e8080_t *c, unsigned char val);
 
 unsigned char e8080_get_port8 (e8080_t *c, unsigned addr);
 void e8080_set_port8 (e8080_t *c, unsigned addr, unsigned char val);

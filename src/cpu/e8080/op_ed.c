@@ -99,9 +99,18 @@ static void op_ed_44 (e8080_t *c)
 /* OP ED 45: RETN */
 static void op_ed_45 (e8080_t *c)
 {
+	e8080_set_iff1 (c, e8080_get_iff2 (c));
 	e8080_set_pc (c, e8080_get_mem16 (c, e8080_get_sp (c)));
 	e8080_set_sp (c, e8080_get_sp (c) + 2);
 	e8080_set_clk (c, 0, 14);
+}
+
+/* OP ED 46: IM 0 */
+static void op_ed_46 (e8080_t *c)
+{
+	c->im = 0;
+
+	e8080_set_clk (c, 2, 8);
 }
 
 /* OP ED 47: LD I, A */
@@ -174,6 +183,14 @@ static void op_ed_53 (e8080_t *c)
 	e8080_set_clk (c, 4, 20);
 }
 
+/* OP ED 56: IM 1 */
+static void op_ed_56 (e8080_t *c)
+{
+	c->im = 1;
+
+	e8080_set_clk (c, 2, 8);
+}
+
 /* OP ED 57: LD A, I */
 static void op_ed_57 (e8080_t *c)
 {
@@ -208,6 +225,14 @@ static void op_ed_5b (e8080_t *c)
 	adr = e8080_uint16 (c->inst[2], c->inst[3]);
 	e8080_set_de (c, e8080_get_mem16 (c, adr));
 	e8080_set_clk (c, 4, 20);
+}
+
+/* OP ED 5E: IM 2 */
+static void op_ed_5e (e8080_t *c)
+{
+	c->im = 2;
+
+	e8080_set_clk (c, 2, 8);
 }
 
 /* OP ED 5F: LD A, R */
@@ -682,10 +707,10 @@ static e8080_opcode_f opcodes_ed[256] = {
 	op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud,
 	op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, /* 30 */
 	op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud,
-	op_ed_40, op_ed_41, op_ed_42, op_ed_43, op_ed_44, op_ed_45, op_ed_ud, op_ed_47, /* 40 */
+	op_ed_40, op_ed_41, op_ed_42, op_ed_43, op_ed_44, op_ed_45, op_ed_46, op_ed_47, /* 40 */
 	op_ed_40, op_ed_41, op_ed_4a, op_ed_4b, op_ed_ud, op_ed_4d, op_ed_ud, op_ed_4f,
-	op_ed_40, op_ed_41, op_ed_52, op_ed_53, op_ed_ud, op_ed_45, op_ed_ud, op_ed_57, /* 50 */
-	op_ed_40, op_ed_41, op_ed_5a, op_ed_5b, op_ed_ud, op_ed_45, op_ed_ud, op_ed_5f,
+	op_ed_40, op_ed_41, op_ed_52, op_ed_53, op_ed_ud, op_ed_45, op_ed_56, op_ed_57, /* 50 */
+	op_ed_40, op_ed_41, op_ed_5a, op_ed_5b, op_ed_ud, op_ed_45, op_ed_5e, op_ed_5f,
 	op_ed_40, op_ed_41, op_ed_62, op_ed_63, op_ed_ud, op_ed_45, op_ed_ud, op_ed_67, /* 60 */
 	op_ed_40, op_ed_41, op_ed_6a, op_ed_6b, op_ed_ud, op_ed_45, op_ed_ud, op_ed_6f,
 	op_ed_70, op_ed_71, op_ed_72, op_ed_73, op_ed_ud, op_ed_45, op_ed_ud, op_ed_ud, /* 70 */

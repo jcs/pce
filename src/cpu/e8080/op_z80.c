@@ -530,7 +530,7 @@ static void op_70 (e8080_t *c)
 static void op_76 (e8080_t *c)
 {
 	c->halt = 1;
-	e8080_set_clk (c, 1, 7);
+	e8080_set_clk (c, 0, 7);
 }
 
 /* OP 80: ADD A, r */
