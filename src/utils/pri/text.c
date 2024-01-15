@@ -571,6 +571,14 @@ int txt_enc_track_finish (pri_text_t *ctx)
 		return (0);
 	}
 
+	if (ctx->bit_cnt == 0) {
+		ctx->trk = NULL;
+
+		pri_img_del_track (ctx->img, ctx->c, ctx->h);
+
+		return (0);
+	}
+
 	if (pri_trk_set_size (ctx->trk, ctx->bit_cnt)) {
 		return (1);
 	}
