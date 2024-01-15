@@ -27,6 +27,7 @@
 #include <stdio.h>
 
 
+#if 0
 static void op_cb_ud (e8080_t *c)
 {
 	if (e8080_hook_undefined (c)) {
@@ -35,6 +36,7 @@ static void op_cb_ud (e8080_t *c)
 
 	e8080_set_clk (c, 1, 4);
 }
+#endif
 
 /* OP CB 00: RLC r */
 static void op_cb_00 (e8080_t *c)
@@ -204,6 +206,34 @@ static void op_cb_2e (e8080_t *c)
 	e8080_set_clk (c, 2, 15);
 }
 
+/* OP CB 30: SLL r */
+static void op_cb_30 (e8080_t *c)
+{
+	unsigned      r;
+	unsigned char s, d;
+
+	r = c->inst[1] & 7;
+	s = e8080_get_reg8 (c, r);
+	d = (s << 1) | 1;
+	e8080_set_reg8 (c, r, d);
+	z80_set_psw_rot (c, d, s & 0x80);
+	e8080_set_clk (c, 2, 8);
+}
+
+/* OP CB 36: SLL (HL) */
+static void op_cb_36 (e8080_t *c)
+{
+	unsigned      p;
+	unsigned char s, d;
+
+	p = e8080_get_hl (c);
+	s = e8080_get_mem8 (c, p);
+	d = (s << 1) | 1;
+	e8080_set_mem8 (c, p, d);
+	z80_set_psw_rot (c, d, s & 0x80);
+	e8080_set_clk (c, 2, 15);
+}
+
 /* OP CB 38: SRL r */
 static void op_cb_38 (e8080_t *c)
 {
@@ -324,7 +354,7 @@ static e8080_opcode_f opcodes_cb[256] = {
 	op_cb_18, op_cb_18, op_cb_18, op_cb_18, op_cb_18, op_cb_18, op_cb_1e, op_cb_18,
 	op_cb_20, op_cb_20, op_cb_20, op_cb_20, op_cb_20, op_cb_20, op_cb_26, op_cb_20, /* 20 */
 	op_cb_28, op_cb_28, op_cb_28, op_cb_28, op_cb_28, op_cb_28, op_cb_2e, op_cb_28,
-	op_cb_ud, op_cb_ud, op_cb_ud, op_cb_ud, op_cb_ud, op_cb_ud, op_cb_ud, op_cb_ud, /* 30 */
+	op_cb_30, op_cb_30, op_cb_30, op_cb_30, op_cb_30, op_cb_30, op_cb_36, op_cb_30, /* 30 */
 	op_cb_38, op_cb_38, op_cb_38, op_cb_38, op_cb_38, op_cb_38, op_cb_3e, op_cb_38,
 	op_cb_40, op_cb_40, op_cb_40, op_cb_40, op_cb_40, op_cb_40, op_cb_46, op_cb_40, /* 40 */
 	op_cb_40, op_cb_40, op_cb_40, op_cb_40, op_cb_40, op_cb_40, op_cb_46, op_cb_40,

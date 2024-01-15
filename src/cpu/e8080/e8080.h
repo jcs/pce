@@ -110,10 +110,23 @@ typedef struct e8080_t {
 #define e8080_get_sp(c) ((c)->sp)
 #define e8080_get_ix(c) ((c)->ix)
 #define e8080_get_iy(c) ((c)->iy)
+#define e8080_get_ixl(c) ((c)->ix & 0xff)
+#define e8080_get_ixh(c) (((c)->ix >> 8) & 0xff)
+#define e8080_get_iyl(c) ((c)->iy & 0xff)
+#define e8080_get_iyh(c) (((c)->iy >> 8) & 0xff)
 #define e8080_get_i(c) ((c)->i)
 #define e8080_get_r(c) ((c)->r)
 #define e8080_get_psw(c) ((c)->psw)
 #define e8080_get_reg8(c, r) ((c)->reg[(r) & 7])
+
+#define e8080_get_a2(c) ((c)->reg2[7]);
+#define e8080_get_b2(c) ((c)->reg2[0]);
+#define e8080_get_c2(c) ((c)->reg2[1]);
+#define e8080_get_d2(c) ((c)->reg2[2]);
+#define e8080_get_e2(c) ((c)->reg2[3]);
+#define e8080_get_h2(c) ((c)->reg2[4]);
+#define e8080_get_l2(c) ((c)->reg2[5]);
+#define e8080_get_psw2(c) ((c)->psw2)
 
 #define e8080_set_a(c, v) do { (c)->reg[7] = (v) & 0xff; } while (0)
 #define e8080_set_b(c, v) do { (c)->reg[0] = (v) & 0xff; } while (0)
@@ -129,10 +142,23 @@ typedef struct e8080_t {
 #define e8080_set_sp(c, v) do { (c)->sp = (v) & 0xffff; } while (0)
 #define e8080_set_ix(c, v) do { (c)->ix = (v) & 0xffff; } while (0)
 #define e8080_set_iy(c, v) do { (c)->iy = (v) & 0xffff; } while (0)
+#define e8080_set_ixl(c, v) do { (c)->ix = ((c)->ix & 0xff00) | ((v) & 0xff); } while (0)
+#define e8080_set_ixh(c, v) do { (c)->ix = ((c)->ix & 0x00ff) | (((v) & 0xff) << 8); } while (0)
+#define e8080_set_iyl(c, v) do { (c)->iy = ((c)->iy & 0xff00) | ((v) & 0xff); } while (0)
+#define e8080_set_iyh(c, v) do { (c)->iy = ((c)->iy & 0x00ff) | (((v) & 0xff) << 8); } while (0)
 #define e8080_set_i(c, v) do { (c)->i = (v) & 0xff; } while (0)
 #define e8080_set_r(c, v) do { (c)->r = (v) & 0xff; } while (0)
 #define e8080_set_psw(c, v) do { (c)->psw = (v) & 0xff; } while (0)
 #define e8080_set_reg8(c, r, v) do { (c)->reg[(r) & 7] = (v) & 0xff; } while (0)
+
+#define e8080_set_a2(c, v) do { (c)->reg2[7] = (v) & 0xff; } while (0)
+#define e8080_set_b2(c, v) do { (c)->reg2[0] = (v) & 0xff; } while (0)
+#define e8080_set_c2(c, v) do { (c)->reg2[1] = (v) & 0xff; } while (0)
+#define e8080_set_d2(c, v) do { (c)->reg2[2] = (v) & 0xff; } while (0)
+#define e8080_set_e2(c, v) do { (c)->reg2[3] = (v) & 0xff; } while (0)
+#define e8080_set_h2(c, v) do { (c)->reg2[4] = (v) & 0xff; } while (0)
+#define e8080_set_l2(c, v) do { (c)->reg2[5] = (v) & 0xff; } while (0)
+#define e8080_set_psw2(c, v) do { (c)->psw2 = (v) & 0xff; } while (0)
 
 #define e8080_get_cf(c) (((c)->psw & E8080_FLG_C) != 0)
 #define e8080_get_nf(c) (((c)->psw & E8080_FLG_N) != 0)

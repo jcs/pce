@@ -104,6 +104,13 @@ static void op_ed_45 (e8080_t *c)
 	e8080_set_clk (c, 0, 14);
 }
 
+/* OP ED 47: LD I, A */
+static void op_ed_47 (e8080_t *c)
+{
+	e8080_set_i (c, e8080_get_a (c));
+	e8080_set_clk (c, 2, 9);
+}
+
 /* OP ED 4A: ADC HL, BC */
 static void op_ed_4a (e8080_t *c)
 {
@@ -134,6 +141,13 @@ static void op_ed_4d (e8080_t *c)
 	e8080_set_pc (c, e8080_get_mem16 (c, e8080_get_sp (c)));
 	e8080_set_sp (c, e8080_get_sp (c) + 2);
 	e8080_set_clk (c, 0, 14);
+}
+
+/* OP ED 4F: R, A */
+static void op_ed_4f (e8080_t *c)
+{
+	e8080_set_r (c, e8080_get_a (c));
+	e8080_set_clk (c, 2, 9);
 }
 
 /* OP ED 52: SBC HL, DE */
@@ -201,7 +215,7 @@ static void op_ed_5f (e8080_t *c)
 {
 	unsigned char d;
 
-	d = 0;
+	d = e8080_get_r (c);
 	e8080_set_a (c, d);
 	e8080_set_psw_szp (c, d, 0, E8080_FLG_A | E8080_FLG_N);
 	e8080_set_pf (c, c->iff2);
@@ -668,14 +682,14 @@ static e8080_opcode_f opcodes_ed[256] = {
 	op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud,
 	op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, /* 30 */
 	op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud,
-	op_ed_40, op_ed_41, op_ed_42, op_ed_43, op_ed_44, op_ed_45, op_ed_ud, op_ed_ud, /* 40 */
-	op_ed_40, op_ed_41, op_ed_4a, op_ed_4b, op_ed_ud, op_ed_4d, op_ed_ud, op_ed_ud,
-	op_ed_40, op_ed_41, op_ed_52, op_ed_53, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_57, /* 50 */
-	op_ed_40, op_ed_41, op_ed_5a, op_ed_5b, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_5f,
-	op_ed_40, op_ed_41, op_ed_62, op_ed_63, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_67, /* 60 */
-	op_ed_40, op_ed_41, op_ed_6a, op_ed_6b, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_6f,
-	op_ed_70, op_ed_71, op_ed_72, op_ed_73, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, /* 70 */
-	op_ed_40, op_ed_41, op_ed_7a, op_ed_7b, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud,
+	op_ed_40, op_ed_41, op_ed_42, op_ed_43, op_ed_44, op_ed_45, op_ed_ud, op_ed_47, /* 40 */
+	op_ed_40, op_ed_41, op_ed_4a, op_ed_4b, op_ed_ud, op_ed_4d, op_ed_ud, op_ed_4f,
+	op_ed_40, op_ed_41, op_ed_52, op_ed_53, op_ed_ud, op_ed_45, op_ed_ud, op_ed_57, /* 50 */
+	op_ed_40, op_ed_41, op_ed_5a, op_ed_5b, op_ed_ud, op_ed_45, op_ed_ud, op_ed_5f,
+	op_ed_40, op_ed_41, op_ed_62, op_ed_63, op_ed_ud, op_ed_45, op_ed_ud, op_ed_67, /* 60 */
+	op_ed_40, op_ed_41, op_ed_6a, op_ed_6b, op_ed_ud, op_ed_45, op_ed_ud, op_ed_6f,
+	op_ed_70, op_ed_71, op_ed_72, op_ed_73, op_ed_ud, op_ed_45, op_ed_ud, op_ed_ud, /* 70 */
+	op_ed_40, op_ed_41, op_ed_7a, op_ed_7b, op_ed_ud, op_ed_45, op_ed_ud, op_ed_ud,
 	op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, /* 80 */
 	op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud,
 	op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, op_ed_ud, /* 90 */
