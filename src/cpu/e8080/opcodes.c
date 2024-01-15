@@ -982,7 +982,7 @@ static void op_d3 (e8080_t *c)
 {
 	e8080_get_inst1 (c);
 	e8080_set_port8 (c, c->inst[1], e8080_get_a (c));
-	e8080_set_clk (c, 2, 10);
+	e8080_set_clk (c, 2, 11);
 }
 
 /* OP D4: CNC IM16 */
