@@ -58,6 +58,10 @@
 #define e8080_get_ixd(c, i) (((c)->ix + e8080_sext8 ((c)->inst[(i)])) & 0xffff)
 #define e8080_get_iyd(c, i) (((c)->iy + e8080_sext8 ((c)->inst[(i)])) & 0xffff)
 
+#define e8080_inc_r(c) do { \
+	(c)->r = ((c)->r & 0x80) | (((c)->r + 1) & 0x7f); \
+	} while (0)
+
 
 enum {
 	ARG_NONE,

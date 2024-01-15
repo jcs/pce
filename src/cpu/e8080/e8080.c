@@ -301,6 +301,10 @@ int e8080_get_reg (e8080_t *c, const char *reg, unsigned long *val)
 		*val = e8080_get_sp (c);
 		return (0);
 	}
+	else if (strcmp (reg, "r") == 0) {
+		*val = e8080_get_r (c);
+		return (0);
+	}
 
 	return (1);
 }
@@ -369,6 +373,10 @@ int e8080_set_reg (e8080_t *c, const char *reg, unsigned long val)
 	}
 	else if (strcmp (reg, "sp") == 0) {
 		e8080_set_sp (c, val);
+		return (0);
+	}
+	else if (strcmp (reg, "r") == 0) {
+		e8080_set_r (c, val);
 		return (0);
 	}
 
@@ -456,6 +464,8 @@ void e8080_execute (e8080_t *c)
 	pc = e8080_get_pc (c);
 
 	c->inst[0] = e8080_get_mem8 (c, pc);
+
+	e8080_inc_r (c);
 
 #ifdef E8080_ENABLE_HOOK_ALL
 	if (c->hook_all != NULL) {

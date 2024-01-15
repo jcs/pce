@@ -215,5 +215,6 @@ static e8080_opcode_f opcodes_fd_cb[256] = {
 void z80_op_fd_cb (e8080_t *c)
 {
 	e8080_get_inst23 (c);
+	e8080_inc_r (c);
 	opcodes_fd_cb[c->inst[3]] (c);
 }

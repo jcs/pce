@@ -405,5 +405,6 @@ static e8080_opcode_f opcodes_fd[256] = {
 void z80_op_fd (e8080_t *c)
 {
 	e8080_get_inst1 (c);
+	e8080_inc_r (c);
 	opcodes_fd[c->inst[1]] (c);
 }
