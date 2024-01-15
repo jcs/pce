@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/covox.c                                       *
  * Created:     2010-08-14 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -158,7 +158,7 @@ void pc_covox_set_volume (pc_covox_t *cov, unsigned vol)
 		vol = 1000;
 	}
 
-	cov->vol = (256UL * vol) / 1000;
+	cov->vol = (257UL * vol) / 1000;
 }
 
 
