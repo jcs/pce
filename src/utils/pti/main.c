@@ -490,6 +490,15 @@ int pti_set_parameter (const char *name, const char *val)
 
 		pti_wav_set_srate (srate);
 	}
+	else if ((strcmp (name, "wav-minimum-volume") == 0) || (strcmp (name, "wav-vol") == 0)) {
+		unsigned vol;
+
+		if (pti_parse_uint (val, &vol)) {
+			return (1);
+		}
+
+		pti_wav_set_min_volume (vol);
+	}
 	else {
 		return (1);
 	}

@@ -60,6 +60,8 @@ typedef struct {
 	unsigned      bytes;
 	unsigned      frame;
 
+	unsigned      minvol;
+
 	unsigned char buf[WAV_BUF_SIZE];
 } wav_load_t;
 
@@ -92,6 +94,7 @@ typedef struct {
 
 
 static unsigned long wav_default_clock = 1000000;
+static unsigned      wav_min_volume = 256;
 
 static pti_wav_param_t wav_default = {
 	.srate       = 48000,
@@ -143,6 +146,11 @@ void pti_wav_set_lowpass (unsigned long val)
 void pti_wav_set_lowpass_order (unsigned val)
 {
 	wav_default.order = val;
+}
+
+void pti_wav_set_min_volume (unsigned val)
+{
+	wav_min_volume = val;
 }
 
 
@@ -284,7 +292,7 @@ static
 int wav_load_data (wav_load_t *wav, unsigned long size)
 {
 	int           level1, level2;
-	unsigned      smp1, smp2;
+	unsigned      smp1, smp2, abs, max;
 	unsigned long clk, rem;
 
 	if (wav->frame > WAV_BUF_SIZE) {
@@ -296,6 +304,7 @@ int wav_load_data (wav_load_t *wav, unsigned long size)
 
 	smp2 = 0;
 	level2 = 0;
+	max = 0;
 
 	while (size >= wav->frame) {
 		if (wav_read (wav, wav->buf, wav->frame)) {
@@ -309,7 +318,20 @@ int wav_load_data (wav_load_t *wav, unsigned long size)
 
 		wav_get_smp (wav, wav->buf, &smp2, &level2);
 
-		if (level1 != level2) {
+		abs = ((smp2 & 0x8000) ? (~smp2 + 1) : smp2) & 0xffff;
+
+		if (level1 == level2) {
+			if (abs > max) {
+				max = abs;
+			}
+		}
+		else {
+			if (max < wav->minvol) {
+				level1 = 0;
+			}
+
+			max = abs;
+
 			if (wav_add_pulse (wav, smp1, smp2, &clk, &rem, level1) == 0) {
 				continue;
 			}
@@ -416,6 +438,7 @@ pti_img_t *pti_load_wav (FILE *fp, unsigned long clock)
 	memset (&wav, 0, sizeof (wav_load_t));
 
 	wav.fp = fp;
+	wav.minvol = wav_min_volume;
 
 	if ((wav.img = pti_img_new()) == NULL) {
 		return (NULL);

@@ -43,6 +43,7 @@ void pti_wav_set_srate (unsigned long val);
 void pti_wav_set_bits (unsigned val);
 void pti_wav_set_lowpass (unsigned long val);
 void pti_wav_set_lowpass_order (unsigned val);
+void pti_wav_set_min_volume (unsigned val);
 
 pti_img_t *pti_load_wav (FILE *fp, unsigned long clock);
 
