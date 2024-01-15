@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pti/pti-img-pti.c                                *
  * Created:     2020-04-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2020-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -38,6 +38,9 @@
 #define CKID_TEXT 0x54455854
 #define CKID_DATA 0x44415441
 #define CKID_END  0x454e4420
+
+#define PTI_FLAG_INVERT 1
+#define PTI_FLAG_KNOWN  (PTI_FLAG_INVERT)
 
 
 typedef struct {
@@ -102,9 +105,11 @@ int pti_load_header (pti_load_t *pti)
 
 	flags = (n >= 12) ? get_uint32_be (buf, 8) : 0;
 
-	if (flags) {
+	if (flags & ~PTI_FLAG_KNOWN) {
 		fprintf (stderr, "pti: unknown flags (0x%08lx)\n", flags);
 	}
+
+	pti_img_set_inverted (pti->img, flags & PTI_FLAG_INVERT);
 
 	return (0);
 }
@@ -202,9 +207,12 @@ int pti_load_comment (pti_load_t *pti)
 static
 int pti_decode_data (pti_load_t *pti, unsigned char *buf, unsigned long size)
 {
+	int           inv;
 	unsigned      tag, cnt;
 	unsigned long clk;
 	int           level;
+
+	inv = pti_img_get_inverted (pti->img);
 
 	if (ciff_read (&pti->ciff, buf, size)) {
 		return (1);
@@ -238,7 +246,7 @@ int pti_decode_data (pti_load_t *pti, unsigned char *buf, unsigned long size)
 			break;
 
 		case 0x80:
-			level = 0;
+			level = -1;
 			break;
 
 		case 0xc0:
@@ -249,12 +257,16 @@ int pti_decode_data (pti_load_t *pti, unsigned char *buf, unsigned long size)
 			return (1);
 		}
 
+		if (inv) {
+			level = -level;
+		}
+
 		if ((tag & 0xc0) == 0x80) {
-			if (pti_img_add_pulse (pti->img, clk / 2, -1)) {
+			if (pti_img_add_pulse (pti->img, clk / 2, level)) {
 				return (1);
 			}
 
-			if (pti_img_add_pulse (pti->img, clk - (clk / 2), 1)) {
+			if (pti_img_add_pulse (pti->img, clk - (clk / 2), -level)) {
 				return (1);
 			}
 		}
@@ -333,6 +345,8 @@ pti_img_t *pti_load_pti (FILE *fp)
 	int        r;
 	pti_load_t pti;
 
+	memset (&pti, 0, sizeof (pti));
+
 	if ((pti.img = pti_img_new()) == NULL) {
 		return (NULL);
 	}
@@ -366,10 +380,17 @@ static
 int pti_save_header (ciff_t *ciff, const pti_img_t *img)
 {
 	unsigned char buf[24];
+	unsigned long flags;
+
+	flags = 0;
+
+	if (pti_img_get_inverted (img)) {
+		flags |= PTI_FLAG_INVERT;
+	}
 
 	set_uint32_be (buf, 0, 0);
 	set_uint32_be (buf, 4, pti_img_get_clock (img));
-	set_uint32_be (buf, 8, 0);
+	set_uint32_be (buf, 8, flags);
 
 	if (ciff_write_chunk (ciff, CKID_PTI, buf, 12)) {
 		return (1);
@@ -465,7 +486,7 @@ int pti_save_comment (ciff_t *ciff, const pti_img_t *img)
 static
 int pti_save_data (ciff_t *ciff, const pti_img_t *img)
 {
-	int           r;
+	int           r, inv;
 	unsigned long clk, clk2;
 	int           level, level2;
 	unsigned      tag;
@@ -482,11 +503,17 @@ int pti_save_data (ciff_t *ciff, const pti_img_t *img)
 		return (1);
 	}
 
+	inv = pti_img_get_inverted (img);
+
 	i = 0;
 	n = 0;
 
 	while (i < img->pulse_cnt) {
 		pti_pulse_get (img->pulse[i++], &clk, &level);
+
+		if (inv) {
+			level = -level;
+		}
 
 		if (clk == 0) {
 			continue;
@@ -508,6 +535,10 @@ int pti_save_data (ciff_t *ciff, const pti_img_t *img)
 
 		if (i < img->pulse_cnt) {
 			pti_pulse_get (img->pulse[i], &clk2, &level2);
+
+			if (inv) {
+				level2 = -level2;
+			}
 		}
 
 		if ((level < 0) && (level2 > 0) && (clk == ((clk + clk2) / 2))) {

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pti/pti.c                                        *
  * Created:     2020-04-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2020-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -43,6 +43,8 @@ pti_img_t *pti_img_new (void)
 
 	img->comment_size = 0;
 	img->comment = NULL;
+
+	img->save_inverted = 0;
 
 	return (img);
 }
@@ -179,6 +181,16 @@ void pti_img_set_clock (pti_img_t *img, unsigned long clock)
 unsigned long pti_img_get_clock (const pti_img_t *img)
 {
 	return (img->clock);
+}
+
+void pti_img_set_inverted (pti_img_t *img, int val)
+{
+	img->save_inverted = (val != 0);
+}
+
+int pti_img_get_inverted (const pti_img_t *img)
+{
+	return (img->save_inverted != 0);
 }
 
 void pti_pulse_get (uint32_t pulse, unsigned long *clk, int *level)

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pti/pti.h                                        *
  * Created:     2020-04-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2020-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -36,6 +36,8 @@ typedef struct {
 
 	unsigned long comment_size;
 	unsigned char *comment;
+
+	char          save_inverted;
 } pti_img_t;
 
 
@@ -52,6 +54,9 @@ void pti_img_clean (pti_img_t *img);
 
 void pti_img_set_clock (pti_img_t *img, unsigned long clock);
 unsigned long pti_img_get_clock (const pti_img_t *img);
+
+void pti_img_set_inverted (pti_img_t *img, int val);
+int pti_img_get_inverted (const pti_img_t *img);
 
 void pti_pulse_get (uint32_t pulse, unsigned long *clk, int *level);
 void pti_pulse_set (uint32_t *pulse, unsigned long clk, int level);

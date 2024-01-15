@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pti/ops.c                                          *
  * Created:     2020-04-30 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2020-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -311,6 +311,21 @@ int pti_operation (pti_img_t **img, const char *op, int argc, char **argv)
 	}
 	else if (strcmp (op, "new") == 0) {
 		r = pti_new (img);
+	}
+	else if (strcmp (op, "save-inverted") == 0) {
+		int val;
+
+		if (pti_get_opt (argc, argv, &optarg, 1)) {
+			return (1);
+		}
+
+		if (pti_parse_bool (optarg[0], &val)) {
+			return (1);
+		}
+
+		pti_img_set_inverted (*img, val);
+
+		r = 0;
 	}
 	else if (strcmp (op, "scale") == 0) {
 		double fct;

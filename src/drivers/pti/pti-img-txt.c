@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pti/pti-img-txt.c                                *
  * Created:     2020-04-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020-2023 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2020-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -104,6 +104,31 @@ int txt_load_clock (txt_load_t *txt)
 	}
 
 	pti_img_set_clock (txt->img, val);
+
+	return (0);
+}
+
+static
+int txt_load_flag (txt_load_t *txt)
+{
+	int val;
+
+	val = 1;
+
+	if (txt_match (&txt->txt, "+", 1)) {
+		val = 1;
+	}
+	else if (txt_match (&txt->txt, "-", 1)) {
+		val = 0;
+	}
+
+	if (txt_match (&txt->txt, "INVERT", 1)) {
+		pti_img_set_inverted (txt->img, val);
+		txt->invert = val;
+	}
+	else {
+		return (1);
+	}
 
 	return (0);
 }
@@ -253,6 +278,11 @@ int txt_load_seq (txt_load_t *txt)
 		}
 		else if (txt_match (&txt->txt, "CLOCK", 1)) {
 			if (txt_load_clock (txt)) {
+				return (1);
+			}
+		}
+		else if (txt_match (&txt->txt, "FLAG", 1)) {
+			if (txt_load_flag (txt)) {
 				return (1);
 			}
 		}
@@ -407,13 +437,20 @@ int pti_save_txt (FILE *fp, const pti_img_t *img)
 {
 	unsigned      j;
 	unsigned long i;
+	int           inv;
 	unsigned long clk;
 	int           val;
 	unsigned      col;
 	char          buf[256];
 
+	inv = pti_img_get_inverted (img);
+
 	fprintf (fp, "PTI 0\n\n");
 	fprintf (fp, "CLOCK %lu\n", pti_img_get_clock (img));
+
+	if (inv) {
+		fprintf (fp, "FLAG  INVERT\n");
+	}
 
 	if (pti_txt_save_comment (fp, img)) {
 		return (1);
@@ -425,6 +462,10 @@ int pti_save_txt (FILE *fp, const pti_img_t *img)
 
 	for (i = 0; i < img->pulse_cnt; i++) {
 		pti_pulse_get (img->pulse[i], &clk, &val);
+
+		if (inv) {
+			val = -val;
+		}
 
 		j = 0;
 
