@@ -17,7 +17,8 @@ DEV_BAS := \
 	pci \
 	pci-ata \
 	serport \
-	slip
+	slip \
+	speaker
 
 DEV_SRC := $(foreach f,$(DEV_BAS),$(rel)/$(f).c)
 DEV_OBJ := $(foreach f,$(DEV_BAS),$(rel)/$(f).o)
@@ -38,3 +39,4 @@ $(rel)/pci.o:		$(rel)/pci.c
 $(rel)/pci-ata.o:	$(rel)/pci-ata.c
 $(rel)/serport.o:	$(rel)/serport.c
 $(rel)/slip.o:		$(rel)/slip.c
+$(rel)/speaker.o:	$(rel)/speaker.c

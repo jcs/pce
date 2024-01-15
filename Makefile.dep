@@ -2304,6 +2304,12 @@ src/devices/slip.o: src/devices/slip.c \
 	src/devices/slip.h \
 	src/lib/tun.h
 
+src/devices/speaker.o: src/devices/speaker.c \
+	src/config.h \
+	src/devices/speaker.h \
+	src/drivers/sound/filter.h \
+	src/drivers/sound/sound.h
+
 src/devices/video/cga.o: src/devices/video/cga.c \
 	src/chipset/e6845.h \
 	src/devices/memory.h \
