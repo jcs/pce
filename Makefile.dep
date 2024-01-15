@@ -1821,6 +1821,183 @@ src/arch/sims32/sims32.o: src/arch/sims32/sims32.c \
 	src/lib/sysdep.h \
 	src/libini/libini.h
 
+src/arch/spectrum/cmd.o: src/arch/spectrum/cmd.c \
+	src/arch/spectrum/main.h \
+	src/arch/spectrum/snapshot.h \
+	src/arch/spectrum/spectrum.h \
+	src/arch/spectrum/video.h \
+	src/config.h \
+	src/cpu/e8080/e8080.h \
+	src/devices/cassette.h \
+	src/devices/memory.h \
+	src/devices/speaker.h \
+	src/drivers/block/block.h \
+	src/drivers/char/char.h \
+	src/drivers/pti/pti.h \
+	src/drivers/sound/filter.h \
+	src/drivers/sound/sound.h \
+	src/drivers/video/keys.h \
+	src/drivers/video/terminal.h \
+	src/lib/brkpt.h \
+	src/lib/cmd.h \
+	src/lib/console.h \
+	src/lib/log.h \
+	src/lib/monitor.h \
+	src/lib/sysdep.h \
+	src/libini/libini.h
+
+src/arch/spectrum/keyboard.o: src/arch/spectrum/keyboard.c \
+	src/arch/spectrum/keyboard.h \
+	src/arch/spectrum/main.h \
+	src/arch/spectrum/spectrum.h \
+	src/arch/spectrum/video.h \
+	src/config.h \
+	src/cpu/e8080/e8080.h \
+	src/devices/cassette.h \
+	src/devices/memory.h \
+	src/devices/speaker.h \
+	src/drivers/block/block.h \
+	src/drivers/char/char.h \
+	src/drivers/pti/pti.h \
+	src/drivers/sound/filter.h \
+	src/drivers/sound/sound.h \
+	src/drivers/video/keys.h \
+	src/drivers/video/terminal.h \
+	src/lib/brkpt.h \
+	src/lib/cmd.h \
+	src/libini/libini.h
+
+src/arch/spectrum/main.o: src/arch/spectrum/main.c \
+	src/arch/spectrum/cmd.h \
+	src/arch/spectrum/main.h \
+	src/arch/spectrum/msg.h \
+	src/arch/spectrum/spectrum.h \
+	src/arch/spectrum/video.h \
+	src/config.h \
+	src/cpu/e8080/e8080.h \
+	src/devices/cassette.h \
+	src/devices/memory.h \
+	src/devices/speaker.h \
+	src/drivers/block/block.h \
+	src/drivers/char/char.h \
+	src/drivers/pti/pti.h \
+	src/drivers/sound/filter.h \
+	src/drivers/sound/sound.h \
+	src/drivers/video/keys.h \
+	src/drivers/video/terminal.h \
+	src/lib/brkpt.h \
+	src/lib/cfg.h \
+	src/lib/cmd.h \
+	src/lib/console.h \
+	src/lib/getopt.h \
+	src/lib/log.h \
+	src/lib/monitor.h \
+	src/lib/path.h \
+	src/lib/sysdep.h \
+	src/libini/libini.h
+
+src/arch/spectrum/msg.o: src/arch/spectrum/msg.c \
+	src/arch/spectrum/main.h \
+	src/arch/spectrum/msg.h \
+	src/arch/spectrum/spectrum.h \
+	src/arch/spectrum/video.h \
+	src/config.h \
+	src/cpu/e8080/e8080.h \
+	src/devices/cassette.h \
+	src/devices/memory.h \
+	src/devices/speaker.h \
+	src/drivers/block/block.h \
+	src/drivers/char/char.h \
+	src/drivers/pti/pti.h \
+	src/drivers/sound/filter.h \
+	src/drivers/sound/sound.h \
+	src/drivers/video/keys.h \
+	src/drivers/video/terminal.h \
+	src/lib/brkpt.h \
+	src/lib/cmd.h \
+	src/lib/console.h \
+	src/lib/inidsk.h \
+	src/lib/log.h \
+	src/lib/monitor.h \
+	src/lib/msg.h \
+	src/libini/libini.h
+
+src/arch/spectrum/snapshot.o: src/arch/spectrum/snapshot.c \
+	src/arch/spectrum/main.h \
+	src/arch/spectrum/snapshot.h \
+	src/arch/spectrum/spectrum.h \
+	src/arch/spectrum/video.h \
+	src/config.h \
+	src/cpu/e8080/e8080.h \
+	src/devices/cassette.h \
+	src/devices/memory.h \
+	src/devices/speaker.h \
+	src/drivers/block/block.h \
+	src/drivers/char/char.h \
+	src/drivers/pti/pti.h \
+	src/drivers/sound/filter.h \
+	src/drivers/sound/sound.h \
+	src/drivers/video/keys.h \
+	src/drivers/video/terminal.h \
+	src/lib/brkpt.h \
+	src/lib/ciff.h \
+	src/lib/cmd.h \
+	src/lib/endian.h \
+	src/lib/log.h \
+	src/libini/libini.h
+
+src/arch/spectrum/spectrum.o: src/arch/spectrum/spectrum.c \
+	src/arch/spectrum/keyboard.h \
+	src/arch/spectrum/main.h \
+	src/arch/spectrum/msg.h \
+	src/arch/spectrum/snapshot.h \
+	src/arch/spectrum/spectrum.h \
+	src/arch/spectrum/video.h \
+	src/config.h \
+	src/cpu/e8080/e8080.h \
+	src/devices/cassette.h \
+	src/devices/memory.h \
+	src/devices/speaker.h \
+	src/drivers/block/block.h \
+	src/drivers/char/char.h \
+	src/drivers/pti/pti-io.h \
+	src/drivers/pti/pti.h \
+	src/drivers/sound/filter.h \
+	src/drivers/sound/sound.h \
+	src/drivers/video/keys.h \
+	src/drivers/video/terminal.h \
+	src/lib/brkpt.h \
+	src/lib/cmd.h \
+	src/lib/iniram.h \
+	src/lib/initerm.h \
+	src/lib/load.h \
+	src/lib/log.h \
+	src/lib/msg.h \
+	src/lib/path.h \
+	src/lib/string.h \
+	src/lib/sysdep.h \
+	src/libini/libini.h
+
+src/arch/spectrum/video.o: src/arch/spectrum/video.c \
+	src/arch/spectrum/main.h \
+	src/arch/spectrum/spectrum.h \
+	src/arch/spectrum/video.h \
+	src/config.h \
+	src/cpu/e8080/e8080.h \
+	src/devices/cassette.h \
+	src/devices/memory.h \
+	src/devices/speaker.h \
+	src/drivers/block/block.h \
+	src/drivers/char/char.h \
+	src/drivers/pti/pti.h \
+	src/drivers/sound/filter.h \
+	src/drivers/sound/sound.h \
+	src/drivers/video/keys.h \
+	src/drivers/video/terminal.h \
+	src/lib/brkpt.h \
+	src/lib/cmd.h \
+	src/libini/libini.h
+
 src/arch/vic20/cmd.o: src/arch/vic20/cmd.c \
 	src/arch/vic20/cmd.h \
 	src/arch/vic20/main.h \

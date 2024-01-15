@@ -661,6 +661,7 @@ PCE_ENABLE_CHAR_PTY
 PCE_ENABLE_CHAR_PPP
 PCE_ENABLE_CHAR_POSIX
 PCE_ENABLE_TUN
+PCE_BUILD_SPECTRUM
 PCE_BUILD_VIC20
 PCE_BUILD_SIMARM
 PCE_BUILD_SIMS32
@@ -778,6 +779,7 @@ enable_sim405
 enable_sims32
 enable_simarm
 enable_vic20
+enable_spectrum
 enable_tun
 enable_char_posix
 enable_char_ppp
@@ -1435,6 +1437,7 @@ Optional Features:
   --enable-sims32         Enable the sparc32 simulator [yes]
   --enable-simarm         Enable the arm simulator [yes]
   --enable-vic20          Enable the VIC20 emulator [yes]
+  --enable-spectrum       Enable the ZX Spectrum emulator [yes]
   --enable-tun            Enable tun networking [guessed]
   --enable-char-posix     Enable the posix file character driver [guessed]
   --enable-char-ppp       Enable the PPP character driver [guessed]
@@ -5538,6 +5541,38 @@ if test $PCE_BUILD_VIC20 -eq 1 ; then
 fi
 
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether to build the ZX Spectrum emulator" >&5
+printf %s "checking whether to build the ZX Spectrum emulator... " >&6; }
+# Check whether --enable-spectrum was given.
+if test ${enable_spectrum+y}
+then :
+  enableval=$enable_spectrum;
+	if test "x$enableval" = "xyes" ; then
+		PCE_BUILD_SPECTRUM=1
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes (forced)" >&5
+printf "%s\n" "yes (forced)" >&6; }
+	else
+		PCE_BUILD_SPECTRUM=0
+		{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no (forced)" >&5
+printf "%s\n" "no (forced)" >&6; }
+	fi
+
+else $as_nop
+
+	PCE_BUILD_SPECTRUM=1
+	{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes (default)" >&5
+printf "%s\n" "yes (default)" >&6; }
+
+
+fi
+
+
+if test $PCE_BUILD_SPECTRUM -eq 1 ; then
+	printf "%s\n" "#define PCE_BUILD_SPECTRUM 1" >>confdefs.h
+
+fi
+
+
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether to enable tun" >&5
 printf %s "checking whether to enable tun... " >&6; }
 # Check whether --enable-tun was given.
@@ -6145,6 +6180,12 @@ if test "x$PCE_BUILD_SIMS32" = "x1" ; then
 	emu1="$emu1 sims32"
 else
 	emu2="$emu2 sims32"
+fi
+
+if test "x$PCE_BUILD_SPECTRUM" = "x1" ; then
+	emu1="$emu1 spectrum"
+else
+	emu2="$emu2 spectrum"
 fi
 
 if test "x$PCE_BUILD_VIC20" = "x1" ; then

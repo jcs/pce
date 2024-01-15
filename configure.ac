@@ -605,6 +605,29 @@ if test $PCE_BUILD_VIC20 -eq 1 ; then
 fi
 
 
+AC_MSG_CHECKING([whether to build the ZX Spectrum emulator])
+AC_ARG_ENABLE(spectrum,
+  [AS_HELP_STRING([--enable-spectrum], [Enable the ZX Spectrum emulator [yes]])],
+  [
+	if test "x$enableval" = "xyes" ; then
+		PCE_BUILD_SPECTRUM=1
+		AC_MSG_RESULT([yes (forced)])
+	else
+		PCE_BUILD_SPECTRUM=0
+		AC_MSG_RESULT([no (forced)])
+	fi
+  ],
+  [
+	PCE_BUILD_SPECTRUM=1
+	AC_MSG_RESULT([yes (default)])
+  ]
+)
+AC_SUBST(PCE_BUILD_SPECTRUM)
+if test $PCE_BUILD_SPECTRUM -eq 1 ; then
+	AC_DEFINE(PCE_BUILD_SPECTRUM)
+fi
+
+
 AC_MSG_CHECKING([whether to enable tun])
 AC_ARG_ENABLE(tun,
   [AS_HELP_STRING([--enable-tun], [Enable tun networking [guessed]])],
@@ -978,6 +1001,12 @@ if test "x$PCE_BUILD_SIMS32" = "x1" ; then
 	emu1="$emu1 sims32"
 else
 	emu2="$emu2 sims32"
+fi
+
+if test "x$PCE_BUILD_SPECTRUM" = "x1" ; then
+	emu1="$emu1 spectrum"
+else
+	emu2="$emu2 spectrum"
 fi
 
 if test "x$PCE_BUILD_VIC20" = "x1" ; then
