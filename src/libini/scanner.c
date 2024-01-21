@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/libini/scanner.c                                         *
  * Created:     2000-12-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2000-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2000-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -461,7 +461,10 @@ int scn_match_space (scanner_t *scn)
 		if (scn_is_space (c)) {
 			scn_rmv_chr (scn, 1);
 		}
-		else if (c == '#') {
+		else if ((c == ';') || (c == '#')) {
+			scn_skip_line (scn);
+		}
+		else if ((c == '/') && (scn_get_chr (scn, 1) == '/')) {
 			scn_skip_line (scn);
 		}
 		else if ((c == '/') && (scn_get_chr (scn, 1) == '*')) {
