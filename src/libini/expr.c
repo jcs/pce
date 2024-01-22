@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/libini/expr.c                                            *
  * Created:     2010-09-13 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -630,6 +630,14 @@ int ini_eval_literal (scanner_t *scn, ini_sct_t *sct, ini_val_t *val)
 			return (0);
 		}
 		else if (strcmp (str, "false") == 0) {
+			ini_val_set_uint32 (val, 0);
+			return (0);
+		}
+		else if (strcmp (str, "yes") == 0) {
+			ini_val_set_uint32 (val, 1);
+			return (0);
+		}
+		else if (strcmp (str, "no") == 0) {
 			ini_val_set_uint32 (val, 0);
 			return (0);
 		}
