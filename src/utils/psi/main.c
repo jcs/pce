@@ -91,7 +91,7 @@ static pce_option_t opts[] = {
 	{ 'm', 1, "merge", "filename", "Merge an image" },
 	{ 'n', 1, "new-dos", "size", "Create a standard image of <size> KiB" },
 	{ 'N', 2, "new", "type size", "Create a standard image of <size> KiB" },
-	{ 'o', 1, "output", "filename", "Set the output file name [none]" },
+	{ 'o', 1, "output", "filename", "Save to an output file [none]" },
 	{ 'O', 1, "output-format", "format", "Set the output format [auto]" },
 	{ 'p', 1, "operation", "name [...]", "Perform an operation" },
 	{ 'r', 3, "record", "c h s", "Select sectors [all all all]" },
@@ -111,7 +111,7 @@ void print_help (void)
 {
 	pce_getopt_help (
 		"psi: convert and modify PCE sector image files",
-		"usage: psi [options] [input] [options] [output]",
+		"usage: psi [options] [input] [options] [output...]",
 		opts
 	);
 
@@ -601,13 +601,21 @@ psi_img_t *psi_load_image (const char *fname)
 }
 
 static
-int psi_save_image (psi_img_t *img, const char *fname)
+int psi_save_image (psi_img_t **img, const char *fname)
 {
 	int      r;
 	unsigned fmt;
 
 	if (par_verbose) {
 		fprintf (stderr, "%s: save image to %s\n", arg0, fname);
+	}
+
+	if (*img == NULL) {
+		*img = psi_img_new();
+
+		if (*img == NULL) {
+			return (1);
+		}
 	}
 
 	if (strcmp (fname, "-") == 0) {
@@ -617,10 +625,10 @@ int psi_save_image (psi_img_t *img, const char *fname)
 			fmt = PSI_FORMAT_PSI;
 		}
 
-		r = psi_save_fp (stdout, img, fmt);
+		r = psi_save_fp (stdout, *img, fmt);
 	}
 	else {
-		r = psi_save (fname, img, par_fmt_out);
+		r = psi_save (fname, *img, par_fmt_out);
 	}
 
 	if (r) {
@@ -711,12 +719,10 @@ int main (int argc, char **argv)
 	int        r;
 	char       **optarg;
 	psi_img_t *img;
-	const char *out;
 
 	arg0 = argv[0];
 
 	img = NULL;
-	out = NULL;
 
 	while (1) {
 		r = pce_getopt (argc, argv, &optarg, opts);
@@ -857,7 +863,9 @@ int main (int argc, char **argv)
 			break;
 
 		case 'o':
-			out = optarg[0];
+			if (psi_save_image (&img, optarg[0])) {
+				return (1);
+			}
 			break;
 
 		case 'O':
@@ -933,15 +941,10 @@ int main (int argc, char **argv)
 					return (1);
 				}
 			}
-			else if (out == NULL) {
-				out = optarg[0];
-			}
 			else {
-				fprintf (stderr, "%s: unknown option (%s)\n",
-					arg0, optarg[0]
-				);
-
-				return (1);
+				if (psi_save_image (&img, optarg[0])) {
+					return (1);
+				}
 			}
 			break;
 
@@ -950,10 +953,8 @@ int main (int argc, char **argv)
 		}
 	}
 
-	if ((img != NULL) && (out != NULL)) {
-		if (psi_save_image (img, out)) {
-			return (1);
-		}
+	if (img != NULL) {
+		psi_img_del (img);
 	}
 
 	return (0);

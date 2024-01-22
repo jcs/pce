@@ -1,10 +1,10 @@
-.TH PSI 1 "2023-11-30" "HH" "pce"
+.TH PSI 1 "2024-01-20" "HH" "pce"
 \
 .SH NAME
 psi \- convert and modify PCE sector image files
 
 .SH SYNOPSIS
-.BI psi " [options] [input-file] [options] [output-file]"
+.BI psi " [options] [input-file] [options] [output-file...]"
 
 .SH DESCRIPTION
 \fBpsi\fR(1) is used to modify and convert sector images
@@ -186,8 +186,7 @@ are \fBdos\fR and \fBmac\fR. Valid sizes for mac images are 800 and 1600.
 \
 .TP
 .BI "-o, --output " filename
-Set the output file name. Before exiting, the current image will
-be written to this file.
+Write the current image to the output file \fIfilename\fR.
 \
 .TP
 .BI "-O, --output-format " format
