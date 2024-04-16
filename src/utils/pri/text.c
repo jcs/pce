@@ -605,6 +605,20 @@ int txt_enc_track_finish (pri_text_t *ctx)
 }
 
 static
+int txt_enc_track_size (pri_text_t *ctx)
+{
+	unsigned long size;
+
+	if (txt_match_uint (&ctx->txt, 10, &size) == 0) {
+		return (1);
+	}
+
+	ctx->track_size = size;
+
+	return (0);
+}
+
+static
 int txt_enc_track (pri_text_t *ctx)
 {
 	unsigned long c, h;
@@ -827,12 +841,19 @@ int txt_encode_pri0 (pri_text_t *ctx)
 			}
 		}
 		else if (txt_match (&ctx->txt, "TRACK", 1)) {
-			if (txt_enc_track_finish (ctx)) {
-				return (1);
+			if (txt_match (&ctx->txt, "SIZE", 1)) {
+				if (txt_enc_track_size (ctx)) {
+					return (1);
+				}
 			}
+			else {
+				if (txt_enc_track_finish (ctx)) {
+					return (1);
+				}
 
-			if (txt_enc_track (ctx)) {
-				return (1);
+				if (txt_enc_track (ctx)) {
+					return (1);
+				}
 			}
 		}
 		else if (txt_match (&ctx->txt, "WEAK", 1) || txt_match (&ctx->txt, "FUZZY", 1)) {
@@ -913,6 +934,8 @@ int pri_encode_text (pri_img_t *img, const char *fname)
 	pri_text_t ctx;
 
 	memset (&ctx, 0, sizeof (ctx));
+
+	ctx.track_size = par_track_size;
 
 	if ((ctx.txt.fp = fopen (fname, "r")) == NULL) {
 		return (1);

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/main.c                                         *
  * Created:     2012-01-31 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2023 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -59,6 +59,7 @@ char          par_trk_all = 1;
 unsigned long par_trk[2];
 
 unsigned long par_data_rate = 500000;
+unsigned long par_track_size = 0;
 
 pri_enc_fm_t  par_enc_fm;
 
@@ -784,6 +785,9 @@ int pri_set_parameter (const char *name, const char *val)
 	}
 	else if (strcmp (name, "text-align") == 0) {
 		par_text_align = (strtoul (val, NULL, 0) != 0);
+	}
+	else if (strcmp (name, "track-size") == 0) {
+		par_track_size = strtoul (val, NULL, 0);
 	}
 	else {
 		fprintf (stderr, "%s: unknown parameter (%s)\n", arg0, name);

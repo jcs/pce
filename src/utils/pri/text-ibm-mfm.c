@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text-ibm-mfm.c                                 *
  * Created:     2017-10-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2017-2023 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2017-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -421,7 +421,10 @@ int mfm_enc_eot (pri_text_t *ctx)
 {
 	unsigned long max;
 
-	if (pri_trk_get_clock (ctx->trk) < 750000) {
+	if (ctx->track_size > 0) {
+		max = ctx->track_size;
+	}
+	else if (pri_trk_get_clock (ctx->trk) < 750000) {
 		max = 100000;
 	}
 	else {

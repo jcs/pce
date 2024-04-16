@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/main.h                                         *
  * Created:     2012-01-31 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2023 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -52,6 +52,7 @@ extern char          par_trk_all;
 extern unsigned long par_trk[2];
 
 extern unsigned long par_data_rate;
+extern unsigned long par_track_size;
 
 extern unsigned      par_mac_align;
 extern char          par_mac_no_slip;

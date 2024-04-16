@@ -3,7 +3,7 @@ PRI Text
 
 PRI <version>
 TRACK <cylinder> <head>
-
+TRACK SIZE <size>
 CLOCK <val>
 INDEX
 MODE <mode>
