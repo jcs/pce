@@ -263,6 +263,23 @@ int psi_parse_int_list (const char **str, unsigned *val)
 	return (0);
 }
 
+int psi_isstr (const char *str, const char *s1, const char *s2)
+{
+	if (s1 != NULL) {
+		if (strcmp (str, s1) == 0) {
+			return (1);
+		}
+	}
+
+	if (s2 != NULL) {
+		if (strcmp (str, s2) == 0) {
+			return (1);
+		}
+	}
+
+	return (0);
+}
+
 static
 int psi_sel_match_track (unsigned c, unsigned h)
 {
@@ -449,13 +466,10 @@ int psi_operation (psi_img_t **img, const char *op, int argc, char **argv)
 
 	r = -1;
 
-	if (strcmp (op, "clear-position") == 0) {
+	if (psi_isstr (op, "clear-position", "nopos")) {
 		r = psi_edit_sectors (*img, "position", "-1");
 	}
-	else if (strcmp (op, "nopos") == 0) {
-		r = psi_edit_sectors (*img, "position", "-1");
-	}
-	else if (strcmp (op, "comment-print") == 0) {
+	else if (psi_isstr (op, "comment-print", "cp")) {
 		r = psi_show_comment (*img);
 	}
 	else if (strcmp (op, "delete") == 0) {
@@ -495,16 +509,16 @@ int psi_operation (psi_img_t **img, const char *op, int argc, char **argv)
 
 	r = 1;
 
-	if (strcmp (op, "comment-add") == 0) {
+	if (psi_isstr (op, "comment-add", "ca")) {
 		r = psi_add_comment (*img, optarg[0]);
 	}
-	else if (strcmp (op, "comment-load") == 0) {
+	else if (psi_isstr (op, "comment-load", "cload")) {
 		r = psi_load_comment (*img, optarg[0]);
 	}
-	else if (strcmp (op, "comment-save") == 0) {
+	else if (psi_isstr (op, "comment-save", "csave")) {
 		r = psi_save_comment (*img, optarg[0]);
 	}
-	else if (strcmp (op, "comment-set") == 0) {
+	else if (psi_isstr (op, "comment-set", "cs")) {
 		r = psi_set_comment (*img, optarg[0]);
 	}
 	else if (strcmp (op, "interleave") == 0) {
