@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/ibmpc.c                                       *
  * Created:     1999-04-16 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 1999-2023 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 1999-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -354,6 +354,9 @@ void pc_set_key (ibmpc_t *pc, unsigned event, unsigned key)
 		}
 		else if (key == PCE_KEY_O) {
 			pc_set_msg (pc, "emu.video.composite.cycle", "");
+		}
+		else if (key == PCE_KEY_9) {
+			pc_set_speed (pc, 2 * pc->speed_current);
 		}
 		else if (key == PCE_KEY_F9) {
 			pc_set_msg (pc, "emu.cas.play", "");

@@ -48,6 +48,8 @@ PCE/atarist Terminal Keys
 PCE/ibmpc Terminal Keys
 ==============================================================================
 
+<ESC> 9		Double the CPU speed
+
 
 PCE/macplus Terminal Keys
 ==============================================================================
