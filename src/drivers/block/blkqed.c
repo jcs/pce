@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/block/blkqed.c                                   *
  * Created:     2011-05-10 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2011-2018 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2011-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -174,6 +174,7 @@ int dsk_qed_translate (disk_qed_t *qed, uint64_t *ofs, int alloc)
 	t2idx = (*ofs / qed->cluster_size) % table_entries;
 
 	t1ofs = dsk_get_uint64_le (qed->t1 + 8 * t1idx, 0);
+	t1ofs &= ~qed->cluster_mask;
 
 	cluster_index = *ofs & qed->cluster_mask;
 
@@ -218,13 +219,12 @@ int dsk_qed_translate (disk_qed_t *qed, uint64_t *ofs, int alloc)
 		return (0);
 	}
 
-	t1ofs &= ~qed->cluster_mask;
-
 	if (dsk_qed_read_l2 (qed, t1ofs)) {
 		return (1);
 	}
 
 	t2ofs = dsk_get_uint64_le (qed->t2 + 8 * t2idx, 0);
+	t2ofs &= ~qed->cluster_mask;
 
 	if (t2ofs == 0) {
 		if (alloc == 0) {
@@ -252,8 +252,6 @@ int dsk_qed_translate (disk_qed_t *qed, uint64_t *ofs, int alloc)
 
 		return (0);
 	}
-
-	t2ofs &= ~qed->cluster_mask;
 
 	*ofs = t2ofs + cluster_index;
 
@@ -336,6 +334,11 @@ int dsk_qed_write (disk_t *dsk, const void *buf, uint32_t i, uint32_t n)
 		ofs = 512 * (uint64_t) i;
 
 		if (dsk_qed_translate (qed, &ofs, 1)) {
+			return (1);
+		}
+
+		if (ofs == 0) {
+			fprintf (stderr, "qed: not writing to offset 0\n");
 			return (1);
 		}
 
