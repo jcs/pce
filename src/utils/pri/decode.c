@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/decode.c                                       *
  * Created:     2013-12-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -282,7 +282,7 @@ int pri_decode_psi_auto_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, uns
 		}
 	}
 
-	if (psi_img_add_track (dec->img, dtrk, c)) {
+	if (psi_img_set_track (dec->img, dtrk, c, h)) {
 		psi_trk_del (dtrk);
 		return (1);
 	}
@@ -302,7 +302,7 @@ int pri_decode_psi_mfm_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsi
 		return (1);
 	}
 
-	if (psi_img_add_track (dec->img, dtrk, c)) {
+	if (psi_img_set_track (dec->img, dtrk, c, h)) {
 		psi_trk_del (dtrk);
 		return (1);
 	}
@@ -322,7 +322,7 @@ int pri_decode_psi_fm_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsig
 		return (1);
 	}
 
-	if (psi_img_add_track (dec->img, dtrk, c)) {
+	if (psi_img_set_track (dec->img, dtrk, c, h)) {
 		psi_trk_del (dtrk);
 		return (1);
 	}
@@ -342,7 +342,7 @@ int pri_decode_psi_gcr_cb (pri_img_t *img, pri_trk_t *trk, unsigned long c, unsi
 		return (1);
 	}
 
-	if (psi_img_add_track (dec->img, dtrk, c)) {
+	if (psi_img_set_track (dec->img, dtrk, c, h)) {
 		psi_trk_del (dtrk);
 		return (1);
 	}

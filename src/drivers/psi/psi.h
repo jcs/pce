@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/psi/psi.h                                        *
  * Created:     2010-08-13 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2023 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -172,6 +172,8 @@ void psi_img_free (psi_img_t *img);
 void psi_img_del (psi_img_t *img);
 
 void psi_img_erase (psi_img_t *img);
+
+int psi_img_set_track (psi_img_t *img, psi_trk_t *trk, unsigned c, unsigned h);
 
 int psi_img_add_cylinder (psi_img_t *img, psi_cyl_t *cyl);
 

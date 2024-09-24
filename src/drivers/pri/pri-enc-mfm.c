@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pri/pri-enc-mfm.c                                *
  * Created:     2012-02-01 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2023 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -547,7 +547,7 @@ psi_img_t *pri_decode_mfm (pri_img_t *img, pri_dec_mfm_t *par)
 				return (NULL);
 			}
 
-			psi_img_add_track (dimg, dtrk, c);
+			psi_img_set_track (dimg, dtrk, c, h);
 		}
 	}
 

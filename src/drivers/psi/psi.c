@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/psi/psi.c                                        *
  * Created:     2010-08-13 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2023 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -824,6 +824,29 @@ void psi_img_remove_sector (psi_img_t *img, const psi_sct_t *sct)
 			trk->sct_cnt = d;
 		}
 	}
+}
+
+int psi_img_set_track (psi_img_t *img, psi_trk_t *trk, unsigned c, unsigned h)
+{
+	psi_cyl_t *cyl;
+
+	if ((cyl = psi_img_get_cylinder (img, c, 1)) == NULL) {
+		return (1);
+	}
+
+	while (cyl->trk_cnt <= h) {
+		if (psi_cyl_add_track (cyl, NULL)) {
+			return (1);
+		}
+	}
+
+	if (cyl->trk[h] != NULL) {
+		psi_trk_del (cyl->trk[h]);
+	}
+
+	cyl->trk[h] = trk;
+
+	return (0);
 }
 
 psi_cyl_t *psi_img_get_cylinder (psi_img_t *img, unsigned c, int alloc)
