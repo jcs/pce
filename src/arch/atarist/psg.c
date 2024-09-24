@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/atarist/psg.c                                       *
  * Created:     2013-06-06 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -309,7 +309,7 @@ void psg_write_buffer (st_psg_t *psg)
 }
 
 /*
- * Highpass filter (15 HZ at 44100)
+ * Highpass filter
  */
 static
 uint16_t psg_filter_hp (st_psg_t *psg, uint16_t v)
@@ -320,7 +320,11 @@ uint16_t psg_filter_hp (st_psg_t *psg, uint16_t v)
 	x0 = (long) v - 32768;
 	y0 = psg->filter_hp_y0;
 
-	y0 = 32733 * (x0 - x1) + 32698 * y0;
+	/* 15 Hz at 44100 Hz */
+	/* y0 = 32733 * (x0 - x1) + 32698 * y0; */
+
+	/* 100 Hz at 480000 Hz */
+	y0 = 32555 * (x0 - x1) + 32342 * y0;
 
 	if (y0 < 0) {
 		y0 = -(-y0 / 32768);
