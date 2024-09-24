@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/chipset/wd179x.c                                         *
  * Created:     2012-07-05 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -102,6 +102,8 @@ void wd179x_init (wd179x_t *fdc)
 	wd179x_drv_init (&fdc->drive[0], 0);
 	wd179x_drv_init (&fdc->drive[1], 1);
 
+	fdc->drvmsk = 0;
+
 	fdc->check = 0;
 	fdc->auto_motor = 0;
 
@@ -173,6 +175,16 @@ void wd179x_set_bit_clock (wd179x_t *fdc, unsigned long clk)
 
 	fdc->drive[1].bit_clock_base = clk;
 	fdc->drive[1].bit_clock = clk;
+}
+
+void wd179x_set_drive_mask (wd179x_t *fdc, unsigned drive, int present)
+{
+	if (present) {
+		fdc->drvmsk |= (1U << drive);
+	}
+	else {
+		fdc->drvmsk &= ~(1U << drive);
+	}
 }
 
 void wd179x_set_default_track_size (wd179x_t *fdc, unsigned drive, unsigned long val)
@@ -836,6 +848,17 @@ void cmd_done (wd179x_t *fdc, int irq)
 	wd179x_write_track (fdc, fdc->drv);
 }
 
+static
+int cmd_check_drive (wd179x_t *fdc, unsigned drive)
+{
+	if (~fdc->drvmsk & (1 << drive)) {
+		fdc->status |= WD179X_ST_NOT_READY;
+		return (1);
+	}
+
+	return (0);
+}
+
 /*
  * Check for and re-issue a delayed force interrupt command.
  */
@@ -925,6 +948,10 @@ void cmd_restore (wd179x_t *fdc)
 	}
 #endif
 
+	if (cmd_check_drive (fdc, fdc->drv->d)) {
+		return;
+	}
+
 	fdc->status = WD179X_ST_BUSY;
 
 	if (fdc->auto_motor) {
@@ -1008,6 +1035,10 @@ void cmd_seek (wd179x_t *fdc)
 	);
 #endif
 
+	if (cmd_check_drive (fdc, fdc->drv->d)) {
+		return;
+	}
+
 	fdc->status = WD179X_ST_BUSY;
 
 	if (fdc->auto_motor) {
@@ -1074,6 +1105,10 @@ void cmd_step (wd179x_t *fdc, unsigned dir)
 		(fdc->cmd & 0x10) != 0
 	);
 #endif
+
+	if (cmd_check_drive (fdc, fdc->drv->d)) {
+		return;
+	}
 
 	if (dir != 0) {
 		fdc->step_dir = dir;
@@ -1262,6 +1297,10 @@ void cmd_read_sector (wd179x_t *fdc)
 		fdc->drv->d, fdc->cmd, fdc->drv->c, fdc->track, h, fdc->sector
 	);
 #endif
+
+	if (cmd_check_drive (fdc, fdc->drv->d)) {
+		return;
+	}
 
 	fdc->status = WD179X_ST_BUSY;
 
@@ -1459,6 +1498,10 @@ void cmd_write_sector (wd179x_t *fdc)
 	);
 #endif
 
+	if (cmd_check_drive (fdc, fdc->drv->d)) {
+		return;
+	}
+
 	fdc->status = WD179X_ST_BUSY;
 
 	if (fdc->drv->wprot) {
@@ -1570,6 +1613,10 @@ void cmd_write_track (wd179x_t *fdc)
 		fdc->drv->d, fdc->cmd, fdc->track, h
 	);
 #endif
+
+	if (cmd_check_drive (fdc, fdc->drv->d)) {
+		return;
+	}
 
 	fdc->status = WD179X_ST_BUSY;
 
@@ -1703,6 +1750,10 @@ void cmd_read_address (wd179x_t *fdc)
 	);
 #endif
 
+	if (cmd_check_drive (fdc, fdc->drv->d)) {
+		return;
+	}
+
 	fdc->status = WD179X_ST_BUSY;
 
 	if (fdc->auto_motor) {
@@ -1809,6 +1860,10 @@ void cmd_read_track (wd179x_t *fdc)
 		fdc->drv->d, fdc->cmd, fdc->track, h
 	);
 #endif
+
+	if (cmd_check_drive (fdc, fdc->drv->d)) {
+		return;
+	}
 
 	fdc->status = WD179X_ST_BUSY;
 

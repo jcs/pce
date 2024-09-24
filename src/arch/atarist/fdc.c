@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/atarist/fdc.c                                       *
  * Created:     2013-06-02 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -144,6 +144,8 @@ void st_fdc_set_disks (st_fdc_t *fdc, disks_t *dsks)
 void st_fdc_set_disk_id (st_fdc_t *fdc, unsigned drive, unsigned diskid)
 {
 	fdc->diskid[drive] = diskid;
+
+	wd179x_set_drive_mask (&fdc->wd179x, drive, diskid < 0xffff);
 }
 
 void st_fdc_set_wprot (st_fdc_t *fdc, unsigned drive, int wprot)

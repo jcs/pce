@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/chipset/wd179x.h                                         *
  * Created:     2012-07-05 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -63,6 +63,8 @@ typedef struct {
 
 
 typedef struct wd179x_t {
+	unsigned char  drvmsk;
+
 	unsigned char  check;
 	unsigned char  auto_motor;
 
@@ -140,6 +142,8 @@ void wd179x_set_write_track_fct (wd179x_t *fdc, void *ext, void *fct);
 
 void wd179x_set_input_clock (wd179x_t *fdc, unsigned long clk);
 void wd179x_set_bit_clock (wd179x_t *fdc, unsigned long clk);
+
+void wd179x_set_drive_mask (wd179x_t *fdc, unsigned drive, int present);
 
 /*****************************************************************************
  * @short Set the default track size
