@@ -528,6 +528,11 @@ fdc {
 	drive2 = 0x02
 	drive3 = 0x03
 
+	# Set the verbosity level. A level of 0 produces no output, higher
+	# levels produce more output. Levels above 2 are insane. The highest
+	# level is 5.
+	verbose = 0
+
 	# Enable or disable accurate timing.
 	# If accurate timing is enabled, the CPU speed should be set to
 	# 1, otherwise timeout errors will occur.

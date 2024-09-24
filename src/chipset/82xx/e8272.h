@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/chipset/82xx/e8272.h                                     *
  * Created:     2005-03-06 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2005-2023 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2005-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -115,6 +115,7 @@ typedef struct e8272_t {
 
 	unsigned short step_rate;
 
+	unsigned       verbose;
 	char           accurate;
 	char           ignore_eot;
 
@@ -172,6 +173,8 @@ void e8272_set_diskop_fct (e8272_t *fdc, void *ext, void *fct);
 
 
 void e8272_set_input_clock (e8272_t *fdc, unsigned long clk);
+
+void e8272_set_verbose (e8272_t *fdc, unsigned val);
 
 void e8272_set_accuracy (e8272_t *fdc, int accurate);
 

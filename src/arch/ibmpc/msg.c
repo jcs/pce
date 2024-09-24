@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/msg.c                                         *
  * Created:     2004-09-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2004-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2004-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -137,6 +137,24 @@ int pc_set_msg_emu_fdc_accurate (ibmpc_t *pc, const char *msg, const char *val)
 		);
 
 		e8272_set_accuracy (&pc->fdc->e8272, v);
+	}
+
+	return (0);
+}
+
+static
+int pc_set_msg_emu_fdc_verbose (ibmpc_t *pc, const char *msg, const char *val)
+{
+	unsigned v;
+
+	if (msg_get_uint (val, &v)) {
+		return (1);
+	}
+
+	if (pc->fdc != NULL) {
+		pce_log (MSG_INF, "FDC verbosity level %u\n", v);
+
+		e8272_set_verbose (&pc->fdc->e8272, v);
 	}
 
 	return (0);
@@ -285,6 +303,7 @@ static pc_msg_list_t set_msg_list[] = {
 	{ "emu.disk.boot", pc_set_msg_emu_disk_boot },
 	{ "emu.exit", pc_set_msg_emu_exit },
 	{ "emu.fdc.accurate", pc_set_msg_emu_fdc_accurate },
+	{ "emu.fdc.verbose", pc_set_msg_emu_fdc_verbose },
 	{ "emu.par1.file", pc_set_msg_emu_par1_file },
 	{ "emu.par2.file", pc_set_msg_emu_par2_file },
 	{ "emu.par3.file", pc_set_msg_emu_par3_file },

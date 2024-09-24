@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/cmd.c                                         *
  * Created:     2010-09-21 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -806,6 +806,7 @@ void pc_cmd_hm (cmd_t *cmd)
 		"\n"
 		"emu.disk.boot        <bootdrive>\n"
 		"emu.fdc.accurate     \"0\" | \"1\"\n"
+		"emu.fdc.verbose      <level>\n"
 		"\n"
 		"emu.parport.driver   <driver>\n"
 		"emu.parport.file     <filename>\n"

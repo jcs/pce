@@ -95,6 +95,9 @@ emu.disk.boot <bootdrive>
 emu.fdc.accurate "0" | "1"
 	Disable or enable the FDC accurate mode.
 
+emu.fdc.verbose <level>
+	Set the FDC verbosity level.
+
 emu.par1.file <filename>
 	Set the output file for parallel port 1.
 
