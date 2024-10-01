@@ -188,6 +188,10 @@ rtc {
 	# Set the startup disk to the ROM disk. This only works with
 	# the Macintosh Classic ROM.
 	romdisk = 0
+
+	# Override the system beep volume setting in the PRAM. Valid
+	# values are in the range [0, 7].
+	#volume = 4
 }
 
 

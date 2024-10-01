@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/macplus/macplus.c                                   *
  * Created:     2007-04-15 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2023 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -846,12 +846,14 @@ void mac_setup_rtc (macplus_t *sim, ini_sct_t *ini)
 	const char    *fname;
 	const char    *start;
 	int           realtime, romdisk, atalk;
+	unsigned      volume;
 
 	sct = ini_next_sct (ini, NULL, "rtc");
 
 	ini_get_string (sct, "file", &fname, "pram.dat");
 	ini_get_bool (sct, "realtime", &realtime, 1);
 	ini_get_bool (sct, "romdisk", &romdisk, 0);
+	ini_get_uint16 (sct, "volume", &volume, 0xff);
 	ini_get_string (sct, "start", &start, NULL);
 
 	if (ini_get_bool (sct, "appletalk", &atalk, 0)) {
@@ -859,10 +861,10 @@ void mac_setup_rtc (macplus_t *sim, ini_sct_t *ini)
 	}
 
 	pce_log_tag (MSG_INF, "RTC:",
-		"file=%s realtime=%d start=%s romdisk=%d atalk=%d\n",
+		"file=%s realtime=%d start=%s romdisk=%d atalk=%d volume=%u\n",
 		fname, realtime,
 		(start != NULL) ? start : "<now>",
-		romdisk, atalk
+		romdisk, atalk, volume
 	);
 
 	sim->rtc_fname = strdup (fname);
@@ -890,6 +892,11 @@ void mac_setup_rtc (macplus_t *sim, ini_sct_t *ini)
 	}
 	else if (atalk == 1) {
 		sim->rtc.data[0x13] = 0x21;
+	}
+
+	if (volume < 8) {
+		sim->rtc.data[0x08] &= 0xf8;
+		sim->rtc.data[0x08] |= (volume & 7);
 	}
 
 	if (start != NULL) {
