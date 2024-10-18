@@ -234,7 +234,6 @@ void pc_kbd_set_enable (pc_kbd_t *kbd, unsigned char val)
 		kbd->timeout = PC_KBD_TIMEOUT;
 	}
 	else {
-		kbd->key = 0x00;
 		kbd->key_valid = 0;
 		pc_kbd_set_irq (kbd, 0);
 	}
