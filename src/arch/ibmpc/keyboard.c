@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/keyboard.c                                    *
  * Created:     2007-11-26 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2011 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -231,8 +231,7 @@ void pc_kbd_set_enable (pc_kbd_t *kbd, unsigned char val)
 	kbd->enable = val;
 
 	if (val) {
-		kbd->delay = PC_KBD_DELAY;
-		kbd->delay = PC_KBD_TIMEOUT;
+		kbd->timeout = PC_KBD_TIMEOUT;
 	}
 	else {
 		kbd->key = 0x00;
@@ -344,7 +343,7 @@ void pc_kbd_clock (pc_kbd_t *kbd, unsigned long cnt)
 	}
 
 	kbd->delay = PC_KBD_DELAY;
-	kbd->delay = PC_KBD_TIMEOUT;
+	kbd->timeout = PC_KBD_TIMEOUT;
 
 	kbd->key = kbd->key_buf[kbd->key_i];
 	kbd->key_valid = 1;
