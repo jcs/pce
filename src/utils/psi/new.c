@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/psi/new.c                                          *
  * Created:     2013-06-09 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -526,6 +526,9 @@ int psi_regular (psi_img_t **img, const char *def)
 	}
 	else if (strcmp (def, "mac800") == 0) {
 		tmp = psi_regular_mac (*img, 2);
+	}
+	else if (strcmp (def, "mac1440") == 0) {
+		tmp = psi_regular_img (*img, 80, 2, 18, 512);
 	}
 	else {
 		if (psi_regular_parse (*img, def, val)) {
