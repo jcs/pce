@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/lib/console.c                                            *
  * Created:     2006-06-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2006-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2006-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -211,16 +211,16 @@ int pce_printf (const char *msg, ...)
 	}
 
 	va_start (va, msg);
-
 	r = vfprintf (pce_fp_out, msg, va);
 	fflush (pce_fp_out);
+	va_end (va);
 
 	if (pce_redir_out != NULL) {
+		va_start (va, msg);
 		vfprintf (pce_redir_out, msg, va);
 		fflush (pce_redir_out);
+		va_end (va);
 	}
-
-	va_end (va);
 
 	return (r);
 }
