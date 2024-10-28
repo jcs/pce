@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/cpm80/cmd.c                                         *
  * Created:     2012-11-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2016 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -44,6 +44,7 @@ static mon_cmd_t par_cmd[] = {
 	{ "p", "[cnt]", "execute cnt instructions, skip calls [1]" },
 	{ "r", "reg [val]", "set a register" },
 	{ "s", "[what]", "print status (cpu|mem)" },
+	{ "trace", "on|off|expr", "turn trace on or off" },
 	{ "t", "[cnt]", "execute cnt instructions [1]" },
 	{ "u", "[addr [cnt]]", "disassemble" }
 };
@@ -270,6 +271,11 @@ void print_state_cpu (e8080_t *c)
 	c80_print_cpu (c, 0);
 }
 
+void c80_print_trace (cpm80_t *sim)
+{
+	c80_print_cpu (sim->cpu, 1);
+}
+
 static
 void print_state_mem (cpm80_t *sim)
 {
@@ -474,6 +480,10 @@ void c80_cmd_g_b (cpm80_t *sim, cmd_t *cmd)
 	c80_clock_discontinuity (sim);
 
 	while (1) {
+		if (sim->trace) {
+			c80_print_trace (sim);
+		}
+
 		c80_exec (sim);
 
 		if (c80_check_break (sim)) {
@@ -564,7 +574,7 @@ void c80_cmd_p (cpm80_t *sim, cmd_t *cmd)
 		c80_disasm_cur (sim->cpu, &dis);
 
 		if (s) {
-			c80_print_cpu (sim->cpu, 1);
+			c80_print_trace (sim);
 		}
 
 		if (dis.flags & E8080_OPF_CALL) {
@@ -640,6 +650,30 @@ void c80_cmd_s (cpm80_t *sim, cmd_t *cmd)
 }
 
 static
+void c80_cmd_trace (cpm80_t *sim, cmd_t *cmd)
+{
+	unsigned short v;
+
+	if (cmd_match_eol (cmd)) {
+		pce_printf ("trace is %s\n", sim->trace ? "on" : "off");
+		return;
+	}
+
+	if (cmd_match (cmd, "on")) {
+		sim->trace = 1;
+	}
+	else if (cmd_match (cmd, "off")) {
+		sim->trace = 0;
+	}
+	else if (cmd_match_uint16 (cmd, &v)) {
+		sim->trace = (v != 0);
+	}
+	else {
+		cmd_error (cmd, "on or off expected\n");
+	}
+}
+
+static
 void c80_cmd_t (cpm80_t *sim, cmd_t *cmd)
 {
 	int            s;
@@ -662,7 +696,7 @@ void c80_cmd_t (cpm80_t *sim, cmd_t *cmd)
 
 	for (i = 0; i < n; i++) {
 		if (s) {
-			c80_print_cpu (sim->cpu, 1);
+			c80_print_trace (sim);
 		}
 
 		c80_exec (sim);
@@ -765,6 +799,9 @@ int c80_cmd (cpm80_t *sim, cmd_t *cmd)
 	}
 	else if (cmd_match (cmd, "s")) {
 		c80_cmd_s (sim, cmd);
+	}
+	else if (cmd_match (cmd, "trace")) {
+		c80_cmd_trace (sim, cmd);
 	}
 	else if (cmd_match (cmd, "t")) {
 		c80_cmd_t (sim, cmd);
