@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/cpm80/cpm80.c                                       *
  * Created:     2012-11-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2024 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -56,7 +56,7 @@
 static
 void c80_set_port8 (cpm80_t *sim, unsigned long addr, unsigned char val)
 {
-	switch (addr) {
+	switch (addr & 0xff) {
 	case 0x00:
 	case 0x10:
 		break;
@@ -95,7 +95,7 @@ unsigned char c80_get_port8 (cpm80_t *sim, unsigned long addr)
 
 	val = 0x00;
 
-	switch (addr) {
+	switch (addr & 0xff) {
 	case 0x00:
 		val = con_ready (sim) ? 0x22 : 0x03;
 		break;
