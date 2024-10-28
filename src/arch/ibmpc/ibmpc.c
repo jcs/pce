@@ -480,7 +480,7 @@ void pc_set_ram_size (ibmpc_t *pc, unsigned long cnt)
 static
 void pc_setup_system (ibmpc_t *pc, ini_sct_t *ini)
 {
-	unsigned   fdcnt, sw1val, sw1msk;
+	unsigned   fdcnt, sw1val, sw1msk, fdd40;
 	int        patch_init, patch_int19, memtest, kbden, cga40;
 	const char *model;
 	ini_sct_t  *sct;
@@ -515,14 +515,16 @@ void pc_setup_system (ibmpc_t *pc, ini_sct_t *ini)
 	ini_get_uint16 (sct, "switches_1_msk", &sw1msk, 0);
 	ini_get_bool (sct, "force_keyboard_enable", &kbden, 0);
 	ini_get_bool (sct, "cga40", &cga40, 0);
+	ini_get_uint16 (sct, "fdd40", &fdd40, 0);
 	ini_get_bool (sct, "patch_bios_init", &patch_init, 1);
 	ini_get_bool (sct, "patch_bios_int19", &patch_int19, 1);
 	ini_get_bool (sct, "memtest", &memtest, 1);
 
 	pce_log_tag (MSG_INF, "SYSTEM:",
-		"model=%s floppies=%u cga40=%d sw1=%02X/%02X"
+		"model=%s floppies=%u cga40=%d fdd40=%02X sw1=%02X/%02X"
 		" patch-init=%d patch-int19=%d\n",
-		model, fdcnt, cga40, sw1val, sw1msk, patch_init, patch_int19
+		model, fdcnt, cga40, fdd40, sw1val, sw1msk,
+		patch_init, patch_int19
 	);
 
 	if (strcmp (model, "5150") == 0) {
@@ -557,7 +559,7 @@ void pc_setup_system (ibmpc_t *pc, ini_sct_t *ini)
 	pc->switches1_msk = sw1msk;
 
 	pc->cga40 = (cga40 != 0);
-
+	pc->fdd40 = fdd40 & 0xff;
 	pc->force_keyboard_enable = (kbden != 0);
 
 	if (pc->model & PCE_IBMPC_5160) {

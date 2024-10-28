@@ -558,6 +558,23 @@ void pce_op_stat (void *ext, unsigned char op1, unsigned char op2)
 }
 #endif
 
+/*
+ * Force floppy disk drive types to 40 tracks in the BIOS data area of
+ * newer PC/XT BIOSes.
+ */
+static
+void pc_bios_set_40_track (ibmpc_t *pc, unsigned mask)
+{
+	unsigned i, v;
+
+	for (i = 0; i < 2; i++) {
+		if (mask & (1 << i)) {
+			v = e86_get_mem8 (pc->cpu, 0x40, 0x90 + i);
+			e86_set_mem8 (pc->cpu, 0x40, 0x90 + i, v & 0xfe);
+		}
+	}
+}
+
 static
 void pce_op_int (void *ext, unsigned char n)
 {
@@ -598,6 +615,10 @@ void pce_op_int (void *ext, unsigned char n)
 			 * temporarily remove it. */
 			pc->dsk0 = dsks_get_disk (pc->dsk, 0);
 			dsks_rmv_disk (pc->dsk, pc->dsk0);
+		}
+
+		if (pc->fdd40) {
+			pc_bios_set_40_track (pc, pc->fdd40);
 		}
 
 		if (pc->patch_bios_int19 == 0) {
