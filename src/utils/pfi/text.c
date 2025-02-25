@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/text.c                                         *
  * Created:     2012-01-20 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2023 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -51,7 +51,7 @@ int pfi_decode_text_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigne
 	fp = opaque;
 
 	fprintf (fp, "TRACK %lu %lu\n", c, h);
-	fprintf (fp, "CLOCK %lu\n", pfi_trk_get_clock (trk));
+	fprintf (fp, "CLOCK %lu\n\n", pfi_trk_get_clock (trk));
 
 	pfi_trk_rewind (trk);
 
@@ -73,10 +73,10 @@ int pfi_decode_text_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigne
 			row = 0;
 
 			if (trk->index_cnt > idx) {
-				fprintf (fp, "\n# Revolution %u", idx);
+				fprintf (fp, "\n; Revolution %u", idx);
 			}
 
-			fprintf (fp, "\n# %lu + %lu", total, (unsigned long) ofs);
+			fprintf (fp, "\n; %lu + %lu", total, (unsigned long) ofs);
 			fprintf (fp, "\nINDEX %lu\n\n", (unsigned long) ofs);
 
 			index = total + ofs;
@@ -93,7 +93,7 @@ int pfi_decode_text_cb (pfi_img_t *img, pfi_trk_t *trk, unsigned long c, unsigne
 
 			if (++col >= 16) {
 				if (++row >= 8) {
-					fprintf (fp, "\t\t# %lu + %lu",
+					fprintf (fp, "\t\t; %lu + %lu",
 						index, total - index
 					);
 					row = 0;
@@ -119,6 +119,8 @@ int pfi_decode_text (pfi_img_t *img, const char *fname)
 	if ((fp = fopen (fname, "w")) == NULL) {
 		return (1);
 	}
+
+	fprintf (fp, "PFI 0\n\n");
 
 	r = pfi_for_all_tracks (img, pfi_decode_text_cb, fp);
 
