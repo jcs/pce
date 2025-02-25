@@ -5,7 +5,7 @@
 ;-----------------------------------------------------------------------------
 ; File name:    src/config.inc.in
 ; Created:      2003-09-03 by Hampa Hug <hampa@hampa.ch>
-; Copyright:    (C) 2003-2022 Hampa Hug <hampa@hampa.ch>
+; Copyright:    (C) 2003-2025 Hampa Hug <hampa@hampa.ch>
 ;-----------------------------------------------------------------------------
 
 ;-----------------------------------------------------------------------------
@@ -24,7 +24,7 @@
 %define PCE_CONFIG_INC 1
 
 
-%define PCE_YEAR "2022"
+%define PCE_YEAR "2025"
 
 %define PCE_VERSION_MAJ @PCE_VERSION_MAJ@
 %define PCE_VERSION_MIN @PCE_VERSION_MIN@
