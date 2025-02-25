@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/ibmpc.c                                       *
  * Created:     1999-04-16 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 1999-2024 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 1999-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -79,7 +79,7 @@
 #include <libini/libini.h>
 
 
-#define PCE_IBMPC_SLEEP 25000
+#define PCE_IBMPC_SLEEP 10000
 
 
 static char *par_intlog[256];
@@ -2036,8 +2036,8 @@ void pc_clock_delay (ibmpc_t *pc)
 			pc->speed_clock_extra -= 1;
 		}
 
-		if (pc->sync_clock2_real > PCE_IBMPC_CLK2) {
-			pc->sync_clock2_real = 0;
+		if (pc->sync_clock2_real >= (2 * PCE_IBMPC_CLK2)) {
+			pc->sync_clock2_real -= PCE_IBMPC_CLK2;
 			pce_log (MSG_INF, "host system too slow, skipping 1 second.\n");
 		}
 
