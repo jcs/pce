@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text-mac-gcr.c                                 *
  * Created:     2017-10-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2017-2024 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2017-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -237,7 +237,7 @@ int mac_decode_id (pri_text_t *ctx)
 
 	fprintf (ctx->txt.fp,
 		"  %02X %02X %02X %02X %02X  %02X %02X %02X"
-		"\t# SECT %02X %02X %02X %02X\n",
+		"\t\t; SECT %02X %02X %02X %02X\n",
 		buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7],
 		c, h, dec[1], dec[3]
 	);
@@ -320,7 +320,7 @@ int mac_decode_data_nibbles (pri_text_t *ctx)
 	}
 
 	fprintf (ctx->txt.fp, " %02X\n", s);
-	fprintf (ctx->txt.fp, "#CHECK START\n");
+	fprintf (ctx->txt.fp, ";CHECK START\n");
 
 	for (i = 0; i < 699; i++) {
 		j = i & 15;
@@ -336,7 +336,7 @@ int mac_decode_data_nibbles (pri_text_t *ctx)
 		}
 	}
 
-	fprintf (ctx->txt.fp, "\n#CHECK END\n");
+	fprintf (ctx->txt.fp, "\n;CHECK END\n");
 	fprintf (ctx->txt.fp, "%02X %02X %02X %02X\n",
 		chk[0], chk[1], chk[2], chk[3]
 	);
