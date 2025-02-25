@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/sound/sound.h                                    *
  * Created:     2009-10-17 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2009-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2009-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -44,6 +44,8 @@ typedef struct sound_drv_t {
 	unsigned      channels;
 	unsigned long sample_rate;
 	int           sample_sign;
+
+	unsigned      volume;
 
 	unsigned long lowpass_freq;
 	sound_iir2_t  lowpass_iir2[SND_CHN_MAX];
@@ -138,6 +140,8 @@ int snd_write (sound_drv_t *sdrv, const uint16_t *buf, unsigned cnt);
 int snd_set_params (sound_drv_t *sdrv, unsigned chn, unsigned long srate, int sign);
 
 int snd_set_opts (sound_drv_t *sdrv, unsigned opts, int val);
+
+void snd_set_volume (sound_drv_t *sdrv, unsigned val);
 
 
 sound_drv_t *snd_open (const char *name);

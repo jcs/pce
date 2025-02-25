@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/sound/sound.c                                    *
  * Created:     2009-10-17 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2009-2017 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2009-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -198,33 +198,35 @@ void snd_close (sound_drv_t *sdrv)
 	}
 }
 
-
 const uint16_t *snd_filter (sound_drv_t *sdrv, const uint16_t *buf, unsigned cnt)
 {
 	unsigned      i;
 	unsigned long scnt;
 	uint16_t      *sbuf;
 
-	if (sdrv->lowpass_freq == 0) {
-		return (buf);
-	}
-
 	scnt = (unsigned long) sdrv->channels * (unsigned long) cnt;
 
-	sbuf = snd_get_sbuf (sdrv, scnt);
-
-	if (sbuf == NULL) {
+	if ((sbuf = snd_get_sbuf (sdrv, scnt)) == NULL) {
 		return (NULL);
 	}
 
-	for (i = 0; i < sdrv->channels; i++) {
-		snd_iir2_filter (
-			&sdrv->lowpass_iir2[i], sbuf + i, buf + i,
-			cnt, sdrv->channels, sdrv->sample_sign
-		);
+	if (sdrv->lowpass_freq != 0) {
+		for (i = 0; i < sdrv->channels; i++) {
+			snd_iir2_filter (
+				&sdrv->lowpass_iir2[i], sbuf + i, buf + i,
+				cnt, sdrv->channels, sdrv->sample_sign
+			);
+		}
+
+		buf = sbuf;
 	}
 
-	return (sbuf);
+	if (sdrv->volume != 256) {
+		snd_volume (sbuf, buf, scnt, sdrv->volume, sdrv->sample_sign);
+		buf = sbuf;
+	}
+
+	return (buf);
 }
 
 int snd_write (sound_drv_t *sdrv, const uint16_t *buf, unsigned cnt)
@@ -320,9 +322,16 @@ int snd_set_opts (sound_drv_t *sdrv, unsigned opts, int val)
 	return (0);
 }
 
+void snd_set_volume (sound_drv_t *sdrv, unsigned val)
+{
+	sdrv->volume = (val <= 65535) ? val : 65535;
+}
+
 static
 sound_drv_t *snd_open_sdrv (sound_drv_t *sdrv, const char *name)
 {
+	unsigned long val;
+
 	if (sdrv == NULL) {
 		return (NULL);
 	}
@@ -331,6 +340,10 @@ sound_drv_t *snd_open_sdrv (sound_drv_t *sdrv, const char *name)
 		snd_close (sdrv);
 		return (NULL);
 	}
+
+	val = drv_get_option_uint (name, "volume", 100);
+
+	snd_set_volume (sdrv, (256 * val + 50) / 100);
 
 	sdrv->wav_filter = drv_get_option_bool (name, "wavfilter", 1);
 
