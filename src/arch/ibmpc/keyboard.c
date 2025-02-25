@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/keyboard.c                                    *
  * Created:     2007-11-26 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2007-2024 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2007-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -199,8 +199,9 @@ void pc_kbd_reset (pc_kbd_t *kbd)
 	kbd->key = 0x55;
 
 	kbd->key_i = 0;
-	kbd->key_j = 1;
+	kbd->key_j = 2;
 	kbd->key_buf[0] = 0xaa;
+	kbd->key_buf[1] = 0x00;
 
 	pc_kbd_set_irq (kbd, 0);
 }
@@ -341,13 +342,17 @@ void pc_kbd_clock (pc_kbd_t *kbd, unsigned long cnt)
 		return;
 	}
 
+	kbd->key = kbd->key_buf[kbd->key_i];
+	kbd->key_i = (kbd->key_i + 1) % PC_KBD_BUF;
+
+	if (kbd->key == 0) {
+		return;
+	}
+
 	kbd->delay = PC_KBD_DELAY;
 	kbd->timeout = PC_KBD_TIMEOUT;
 
-	kbd->key = kbd->key_buf[kbd->key_i];
 	kbd->key_valid = 1;
-
-	kbd->key_i = (kbd->key_i + 1) % PC_KBD_BUF;
 
 	pc_kbd_set_irq (kbd, 0);
 	pc_kbd_set_irq (kbd, 1);
