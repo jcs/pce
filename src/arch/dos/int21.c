@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/dos/int21.c                                         *
  * Created:     2012-12-30 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -1518,6 +1518,34 @@ int int21_fct_5b (dos_t *sim)
 	return (0);
 }
 
+/*
+ * 6300: Get double byte character set lead-byte table
+ */
+static
+int int21_fct_6300 (dos_t *sim)
+{
+	e86_set_ds (&sim->cpu, 0);
+	e86_set_si (&sim->cpu, 0);
+
+	int21_ret (sim, 1, 0x00ff);
+
+	return (0);
+}
+
+/*
+ * 63:
+ */
+static
+int int21_fct_63 (dos_t *sim)
+{
+	switch (e86_get_al (&sim->cpu)) {
+	case 0:
+		return (int21_fct_6300 (sim));
+	}
+
+	return (int21_ret (sim, 1, 0x0001));
+}
+
 int sim_int21 (dos_t *sim)
 {
 	switch (e86_get_ah (&sim->cpu)) {
@@ -1659,10 +1687,12 @@ int sim_int21 (dos_t *sim)
 	case 0x5b:
 		return (int21_fct_5b (sim));
 
+	case 0x63:
+		return (int21_fct_63 (sim));
+
 	case 0x59:
 	case 0x5a:
 	case 0x60:
-	case 0x63:
 	case 0xe3:
 		return (int21_ret (sim, 1, 0x0001));
 	}
