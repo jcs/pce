@@ -504,6 +504,7 @@ void dsk_int13 (disks_t *dsks, e8086_t *cpu)
 
 	case 0x17:
 		dsk_int13_set_status (dsks, cpu, 0x00);
+		break;
 
 	case 0x18:
 		dsk_int13_18 (dsks, cpu);
