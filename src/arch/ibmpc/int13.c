@@ -166,9 +166,9 @@ void dsk_int13_02 (disks_t *dsks, e8086_t *cpu)
 			addr += n;
 		}
 		else {
-			for (i = 0; i < n; i += 2) {
-				e86_set_mem16 (cpu, addr >> 4, addr & 0x0f, buf[i] | (buf[i + 1] << 8));
-				addr += 2;
+			for (i = 0; i < n; i++) {
+				e86_set_mem8 (cpu, addr >> 4, addr & 0x0f, buf[i]);
+				addr += 1;
 			}
 		}
 	}
@@ -179,13 +179,12 @@ void dsk_int13_02 (disks_t *dsks, e8086_t *cpu)
 static
 void dsk_int13_03 (disks_t *dsks, e8086_t *cpu)
 {
-	unsigned       i, k, n;
-	uint32_t       blk_i, blk_n;
-	unsigned       c, h, s;
-	unsigned long  addr;
-	unsigned short val;
-	unsigned char  buf[512 * INT13_MAX_BLOCKS];
-	disk_t         *dsk;
+	unsigned      i, k, n;
+	uint32_t      blk_i, blk_n;
+	unsigned      c, h, s;
+	unsigned long addr;
+	unsigned char buf[512 * INT13_MAX_BLOCKS];
+	disk_t        *dsk;
 
 	if ((dsk = dsks_get_disk (dsks, e86_get_dl (cpu))) == NULL) {
 		dsk_int13_set_status (dsks, cpu, 0x01);
@@ -219,11 +218,9 @@ void dsk_int13_03 (disks_t *dsks, e8086_t *cpu)
 			addr += k;
 		}
 		else {
-			for (i = 0; i < k; i += 2) {
-				val = e86_get_mem16 (cpu, addr >> 4, addr & 0x0f);
-				buf[i + 0] = val & 0xff;
-				buf[i + 1] = (val >> 8) & 0xff;
-				addr += 2;
+			for (i = 0; i < k; i++) {
+				buf[i] = e86_get_mem8 (cpu, addr >> 4, addr & 0x0f);
+				addr += 1;
 			}
 		}
 
