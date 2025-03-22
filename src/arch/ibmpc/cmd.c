@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/ibmpc/cmd.c                                         *
  * Created:     2010-09-21 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2024 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -886,22 +886,24 @@ void pc_cmd_i (cmd_t *cmd, ibmpc_t *pc)
 static
 void pc_cmd_key (cmd_t *cmd, ibmpc_t *pc)
 {
-	unsigned       i;
-	unsigned       event;
-	pce_key_t      key;
-	char           str[256];
+	unsigned  i;
+	unsigned  mask;
+	pce_key_t key;
+	char      str[256];
 
 	while (cmd_match_str (cmd, str, 256)) {
 		i = 0;
 
-		event = PCE_KEY_EVENT_DOWN;
-
 		if (str[0] == '+') {
+			mask = 1;
 			i += 1;
 		}
 		else if (str[0] == '-') {
+			mask = 2;
 			i += 1;
-			event = PCE_KEY_EVENT_UP;
+		}
+		else {
+			mask = 3;
 		}
 
 		key = pce_key_from_string (str + i);
@@ -910,12 +912,13 @@ void pc_cmd_key (cmd_t *cmd, ibmpc_t *pc)
 			pce_printf ("unknown key: %s\n", str);
 		}
 		else {
-			pce_printf ("key: %s%s\n",
-				(event == PCE_KEY_EVENT_DOWN) ? "+" : "-",
-				str + i
-			);
+			if (mask & 1) {
+				pc_kbd_set_key (&pc->kbd, PCE_KEY_EVENT_DOWN, key);
+			}
 
-			pc_kbd_set_key (&pc->kbd, event, key);
+			if (mask & 2) {
+				pc_kbd_set_key (&pc->kbd, PCE_KEY_EVENT_UP, key);
+			}
 		}
 	}
 
