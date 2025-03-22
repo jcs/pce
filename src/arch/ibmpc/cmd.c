@@ -649,7 +649,9 @@ void pce_op_undef (void *ext, unsigned char op1, unsigned char op2)
 		e86_get_cs (pc->cpu), e86_get_ip (pc->cpu), op1, op2
 	);
 
-	pce_usleep (100000UL);
+	if (pc->brk == 0) {
+		pce_usleep (100000UL);
+	}
 
 	trm_check (pc->trm);
 }
