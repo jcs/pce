@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/video/sdl2.c                                     *
  * Created:     2015-06-15 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2015-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2015-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -521,9 +521,11 @@ void sdl2_event_window (sdl2_t *sdl, SDL_WindowEvent *evt)
 		break;
 
 	case SDL_WINDOWEVENT_RESIZED:
-		sdl->wdw_w = evt->data1;
-		sdl->wdw_h = evt->data2;
-		sdl->autosize = 0;
+		if ((sdl->wdw_w != evt->data1) || (sdl->wdw_h != evt->data2)) {
+			sdl->wdw_w = evt->data1;
+			sdl->wdw_h = evt->data2;
+			sdl->autosize = 0;
+		}
 		sdl->update = 1;
 		break;
 
