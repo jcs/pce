@@ -196,12 +196,13 @@ void pc_kbd_reset (pc_kbd_t *kbd)
 
 	kbd->delay = PC_KBD_DELAY;
 	kbd->timeout = PC_KBD_TIMEOUT;
-	kbd->key = 0x55;
+
+	kbd->key_valid = 0;
+	kbd->key = 0x00;
 
 	kbd->key_i = 0;
-	kbd->key_j = 2;
+	kbd->key_j = 1;
 	kbd->key_buf[0] = 0xaa;
-	kbd->key_buf[1] = 0x00;
 
 	pc_kbd_set_irq (kbd, 0);
 }
@@ -236,6 +237,8 @@ void pc_kbd_set_enable (pc_kbd_t *kbd, unsigned char val)
 	}
 	else {
 		kbd->key_valid = 0;
+		kbd->key = 0x00;
+
 		pc_kbd_set_irq (kbd, 0);
 	}
 }
@@ -342,17 +345,13 @@ void pc_kbd_clock (pc_kbd_t *kbd, unsigned long cnt)
 		return;
 	}
 
-	kbd->key = kbd->key_buf[kbd->key_i];
-	kbd->key_i = (kbd->key_i + 1) % PC_KBD_BUF;
-
-	if (kbd->key == 0) {
-		return;
-	}
-
 	kbd->delay = PC_KBD_DELAY;
 	kbd->timeout = PC_KBD_TIMEOUT;
 
+	kbd->key = kbd->key_buf[kbd->key_i];
 	kbd->key_valid = 1;
+
+	kbd->key_i = (kbd->key_i + 1) % PC_KBD_BUF;
 
 	pc_kbd_set_irq (kbd, 0);
 	pc_kbd_set_irq (kbd, 1);
