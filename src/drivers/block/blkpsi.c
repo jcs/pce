@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/block/blkfdc.c                                   *
  * Created:     2010-08-11 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2023 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -171,7 +171,7 @@ unsigned dsk_psi_write_chs (disk_psi_t *fdc, const void *buf, unsigned *cnt,
 	}
 
 	if (sct->flags & PSI_FLAG_NO_DAM) {
-		return (PCE_BLK_PSI_NO_DATA);
+		sct->flags &= ~PSI_FLAG_NO_DAM;
 	}
 
 	fdc->dirty = 1;
