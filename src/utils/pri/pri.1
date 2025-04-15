@@ -1,4 +1,4 @@
-.TH PRI 1 "2023-07-03" "HH" "pce"
+.TH PRI 1 "2025-04-15" "HH" "pce"
 \
 .SH NAME
 pri \- convert and modify PCE raw image files
@@ -370,6 +370,10 @@ Set the GAP4A length in bytes. The default is 40.
 .TP
 .BI "fm-track-size " integer
 Set the track size in bits.
+.TP
+.BI "psi-pos " boolean
+Enable or disable setting the sector position in decoded PSI files. The
+default is not to record the position.
 .TP
 .BI "text-align " boolean
 If true, bit-align the text output to the first address mark on a track.

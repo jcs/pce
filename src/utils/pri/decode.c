@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/decode.c                                       *
  * Created:     2013-12-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2024 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -387,6 +387,10 @@ int pri_decode_psi (pri_img_t *img, const char *type, const char *fname)
 
 	if (img->comment_size > 0) {
 		psi_img_set_comment (dec.img, img->comment, img->comment_size);
+	}
+
+	if (par_psi_dec_pos == 0) {
+		psi_img_clear_position (dec.img);
 	}
 
 	r = psi_save (fname, dec.img, PSI_FORMAT_NONE);
