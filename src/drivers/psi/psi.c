@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/psi/psi.c                                        *
  * Created:     2010-08-13 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2024 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -323,6 +323,11 @@ int psi_sct_have_position (const psi_sct_t *sct)
 	return (sct->position != (unsigned long) -1);
 }
 
+void psi_sct_clear_position (psi_sct_t *sct)
+{
+	sct->position = (unsigned long) -1;
+}
+
 void psi_sct_set_position (psi_sct_t *sct, unsigned long val)
 {
 	sct->position = val;
@@ -546,6 +551,17 @@ psi_sct_t *psi_trk_get_indexed_sector (psi_trk_t *trk, unsigned idx, int phy)
 	return (NULL);
 }
 
+void psi_trk_clear_position (psi_trk_t *trk)
+{
+	unsigned i;
+
+	for (i = 0; i < trk->sct_cnt; i++) {
+		if (trk->sct[i] != NULL) {
+			psi_sct_clear_position (trk->sct[i]);
+		}
+	}
+}
+
 int psi_trk_interleave (psi_trk_t *trk, unsigned il)
 {
 	unsigned  i, j, n;
@@ -676,6 +692,17 @@ psi_trk_t *psi_cyl_get_track (psi_cyl_t *cyl, unsigned h, int alloc)
 	}
 
 	return (cyl->trk[h]);
+}
+
+void psi_cyl_clear_position (psi_cyl_t *cyl)
+{
+	unsigned i;
+
+	for (i = 0; i < cyl->trk_cnt; i++) {
+		if (cyl->trk[i] != NULL) {
+			psi_trk_clear_position (cyl->trk[i]);
+		}
+	}
 }
 
 
@@ -1037,6 +1064,18 @@ void psi_img_clean_comment (psi_img_t *img)
 		img->comment = NULL;
 	}
 }
+
+void psi_img_clear_position (psi_img_t *img)
+{
+	unsigned i;
+
+	for (i = 0; i < img->cyl_cnt; i++) {
+		if (img->cyl[i] != NULL) {
+			psi_cyl_clear_position (img->cyl[i]);
+		}
+	}
+}
+
 
 unsigned long psi_img_get_sector_count (const psi_img_t *img)
 {

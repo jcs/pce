@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/psi/psi.h                                        *
  * Created:     2010-08-13 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2010-2024 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2010-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -124,6 +124,7 @@ void psi_sct_set_flags (psi_sct_t *sct, unsigned long flags, int set);
 void psi_sct_set_encoding (psi_sct_t *sct, unsigned enc);
 
 int psi_sct_have_position (const psi_sct_t *sct);
+void psi_sct_clear_position (psi_sct_t *sct);
 void psi_sct_set_position (psi_sct_t *sct, unsigned long val);
 unsigned long psi_sct_get_position (const psi_sct_t *sct);
 
@@ -151,6 +152,8 @@ int psi_trk_add_sector (psi_trk_t *trk, psi_sct_t *sct);
 
 psi_sct_t *psi_trk_get_indexed_sector (psi_trk_t *trk, unsigned idx, int phy);
 
+void psi_trk_clear_position (psi_trk_t *trk);
+
 int psi_trk_interleave (psi_trk_t *trk, unsigned il);
 
 
@@ -163,6 +166,8 @@ void psi_cyl_del (psi_cyl_t *cyl);
 int psi_cyl_add_track (psi_cyl_t *cyl, psi_trk_t *trk);
 
 psi_trk_t *psi_cyl_get_track (psi_cyl_t *cyl, unsigned h, int alloc);
+
+void psi_cyl_clear_position (psi_cyl_t *cyl);
 
 
 psi_img_t *psi_img_new (void);
@@ -196,6 +201,8 @@ int psi_img_add_comment (psi_img_t *img, const unsigned char *buf, unsigned cnt)
 int psi_img_set_comment (psi_img_t *img, const unsigned char *buf, unsigned cnt);
 
 void psi_img_clean_comment (psi_img_t *img);
+
+void psi_img_clear_position (psi_img_t *img);
 
 unsigned long psi_img_get_sector_count (const psi_img_t *img);
 
