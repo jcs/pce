@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/rc759.c                                       *
  * Created:     2012-06-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -434,6 +434,9 @@ void rc759_setup_fdc (rc759_t *sim, ini_sct_t *ini)
 
 	wd179x_set_input_clock (&sim->fdc.wd179x, sim->clock_freq);
 	wd179x_set_bit_clock (&sim->fdc.wd179x, 2000000);
+
+	wd179x_set_drive_mask (&sim->fdc.wd179x, 0, 1);
+	wd179x_set_drive_mask (&sim->fdc.wd179x, 1, 1);
 
 	rc759_fdc_set_disks (&sim->fdc, sim->dsks);
 
