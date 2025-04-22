@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/main.c                                        *
  * Created:     2012-06-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -45,6 +45,7 @@
 
 const char           *par_terminal = NULL;
 const char           *par_video = NULL;
+const char           *par_boot = NULL;
 
 monitor_t            par_mon;
 
@@ -57,6 +58,7 @@ static ini_strings_t par_ini_str;
 
 static pce_option_t opts[] = {
 	{ '?', 0, "help", NULL, "Print usage information" },
+	{ 'b', 1, "boot", "string", "Set the boot device [none]" },
 	{ 'c', 1, "config", "string", "Set the config file name [none]" },
 	{ 'd', 1, "path", "string", "Add a directory to the search path" },
 	{ 'g', 1, "video", "string", "Set the video device" },
@@ -249,6 +251,10 @@ int main (int argc, char *argv[])
 		case 'V':
 			print_version();
 			return (0);
+
+		case 'b':
+			par_boot = optarg[0];
+			break;
 
 		case 'c':
 			cfg = optarg[0];

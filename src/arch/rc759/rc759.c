@@ -371,17 +371,22 @@ void rc759_setup_kbd (rc759_t *sim, ini_sct_t *ini)
 static
 void rc759_setup_nvm (rc759_t *sim, ini_sct_t *ini)
 {
-	const char *nvm;
+	const char *nvm, *boot;
 	int        sanitize;
 	ini_sct_t  *sct;
 
 	sct = ini_next_sct (ini, NULL, "system");
 
 	ini_get_string (sct, "nvm", &nvm, "nvm.dat");
+	ini_get_string (sct, "boot", &boot, "");
 	ini_get_bool (sct, "sanitize_nvm", &sanitize, 0);
 
+	if (par_boot != NULL) {
+		boot = par_boot;
+	}
+
 	pce_log_tag (MSG_INF, "NVM:",
-		"file=%s sanitize=%d\n", nvm, sanitize
+		"file=%s boot=%s sanitize=%d\n", nvm, boot, sanitize
 	);
 
 	rc759_nvm_init (&sim->nvm);
@@ -391,6 +396,33 @@ void rc759_setup_nvm (rc759_t *sim, ini_sct_t *ini)
 		pce_log (MSG_ERR, "*** error loading the NVM (%s)\n",
 			(nvm != NULL) ? nvm : "<none>"
 		);
+	}
+
+	if (*boot != 0) {
+		unsigned val = 0;
+
+		if (strcmp (boot, "a") == 0) {
+			val = 0x41;
+		}
+		else if (strcmp (boot, "b") == 0) {
+			val = 0x42;
+		}
+		else if (strcmp (boot, "prom") == 0) {
+			val = 0x4d;
+		}
+		else if (strcmp (boot, "net") == 0) {
+			val = 0x4e;
+		}
+		else {
+			pce_log (MSG_ERR, "*** unknown boot device (%s)\n",
+				boot
+			);
+		}
+
+		if (val != 0) {
+			rc759_nvm_set_uint8 (&sim->nvm, 0x19, val);
+			rc759_nvm_fix_checksum (&sim->nvm);
+		}
 	}
 
 	if (sanitize) {

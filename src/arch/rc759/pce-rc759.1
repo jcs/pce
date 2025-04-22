@@ -1,4 +1,4 @@
-.TH PCE-RC759 1 "2012-07-08" "HH" "pce"
+.TH PCE-RC759 1 "2025-04-22" "HH" "pce"
 \
 .SH NAME
 pce-rc759 \- RC759 Piccoline emulator
@@ -11,6 +11,24 @@ pce-rc759 \- RC759 Piccoline emulator
 is an RC759 Piccoline emulator.
 \
 .SH OPTIONS
+.TP
+.BI "-b, --boot " device
+Set the boot device in the NVM before starting the emulation. Valid
+boot devices are:
+.RS
+.TP
+.B a
+The first floppy disk drive (A:)
+.TP
+.B b
+The second floppy disk drive (B:)
+.TP
+.B net
+Network
+.TP
+.B prom
+Boot into PROM
+.RE
 .TP
 .BI "-c, --config " file
 Set the config file name.

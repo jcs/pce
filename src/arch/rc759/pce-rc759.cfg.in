@@ -64,6 +64,11 @@ system {
 	# and the NVM checksum is set correctly.
 	sanitize_nvm = 1
 
+	# Update the boot device in the NVM.
+	#
+	# Valid boot devices are "a", "b", "prom" and "net".
+	boot = "prom"
+
 	# The local parallel port
 	parport1 = "stdio:file=parport1.out:flush=1"
 
