@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/nvm.c                                         *
  * Created:     2012-07-02 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -150,7 +150,7 @@ void rc759_nvm_fix_checksum (rc759_nvm_t *nvm)
 		v += nvm->data[i];
 	}
 
-	nvm->data[0] = (0xaa - v) & 0xff;
+	rc759_nvm_set_uint8 (nvm, 0, (0xaa - v) & 0xff);
 }
 
 void rc759_nvm_sanitize (rc759_nvm_t *nvm)
@@ -158,6 +158,7 @@ void rc759_nvm_sanitize (rc759_nvm_t *nvm)
 	if (nvm->data[0x1a] < 2) {
 		/* data buffers */
 		nvm->data[0x1a] = 2;
+		nvm->modified = 1;
 	}
 }
 
@@ -181,23 +182,27 @@ unsigned char rc759_nvm_get_uint4 (const rc759_nvm_t *nvm, unsigned idx)
 
 void rc759_nvm_set_uint4 (rc759_nvm_t *nvm, unsigned idx, unsigned char val)
 {
-	unsigned char *p;
+	unsigned char *ptr;
+	unsigned char msk;
 
-	if (idx < (2 * RC759_NVM_SIZE)) {
-		p = &nvm->data[idx >> 1];
-	}
-	else {
+	if (idx >= (2 * RC759_NVM_SIZE)) {
 		return;
 	}
 
+	ptr = &nvm->data[idx >> 1];
+
 	if (idx & 1) {
-		*p = (*p & 0xf0) | (val & 0x0f);
+		msk = 0x0f;
 	}
 	else {
-		*p = (*p & 0x0f) | ((val << 4) & 0xf0);
+		msk = 0xf0;
+		val = val << 4;
 	}
 
-	nvm->modified = 1;
+	if ((*ptr & msk) != (val & msk)) {
+		*ptr = (*ptr & ~msk) | (val & msk);
+		nvm->modified = 1;
+	}
 }
 
 unsigned char rc759_nvm_get_uint8 (const rc759_nvm_t *nvm, unsigned idx)
@@ -212,7 +217,9 @@ unsigned char rc759_nvm_get_uint8 (const rc759_nvm_t *nvm, unsigned idx)
 void rc759_nvm_set_uint8 (rc759_nvm_t *nvm, unsigned idx, unsigned char val)
 {
 	if (idx < RC759_NVM_SIZE) {
-		nvm->data[idx] = val;
-		nvm->modified = 1;
+		if (nvm->data[idx] != val) {
+			nvm->data[idx] = val;
+			nvm->modified = 1;
+		}
 	}
 }
