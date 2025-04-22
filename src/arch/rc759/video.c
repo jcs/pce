@@ -302,6 +302,8 @@ void e82730_reset (e82730_t *crt)
 	crt->channel_attention = 0;
 	crt->blank_row = 0;
 
+	crt->scroll_margin = 0;
+
 	crt->field_attrib = 0;
 
 	for (i = 0; i < 2; i++) {
@@ -431,6 +433,9 @@ void e82730_cmd_modeset (e82730_t *crt)
 	v = e82730_get_mem16 (crt, mp + 4);
 	crt->mode_hfldstrt = (v >> 8) & 0xff;
 	crt->mode_hfldstp = v & 0xff;
+
+	v = e82730_get_mem16 (crt, mp + 8);
+	crt->scroll_margin = v & 0x1f;
 
 	v = e82730_get_mem16 (crt, mp + 10);
 	crt->mode_lines_per_row = v & 0x1f;
@@ -683,6 +688,27 @@ void e82730_dscmd_fullrowdescrpt (e82730_t *crt, e82730_rowbuf_t *rb, unsigned c
 }
 
 static
+void e82730_dscmd_sl_scroll_start (e82730_t *crt, e82730_rowbuf_t *rb, unsigned cmd)
+{
+#if DEBUG_E82730 >= 2
+	sim_log_deb ("82730: DS CMD: SL SCROLL START (%u)\n", cmd & 0x1f);
+#endif
+
+	rb->scroll_start = cmd & 0x1f;
+}
+
+static
+void e82730_dscmd_sl_scroll_end (e82730_t *crt, e82730_rowbuf_t *rb, unsigned cmd)
+{
+#if DEBUG_E82730 >= 2
+	sim_log_deb ("82730: DS CMD: SL SCROLL END (%u)\n", cmd & 0x1f);
+#endif
+
+	rb->scroll_start = 0;
+	rb->lines_per_row = cmd & 0x1f;
+}
+
+static
 void e82730_dscmd_ld_max_dma_count (e82730_t *crt, e82730_rowbuf_t *rb, unsigned cmd)
 {
 #if DEBUG_E82730 >= 2
@@ -765,6 +791,14 @@ void e82730_dscmd (e82730_t *crt, e82730_rowbuf_t *rb, unsigned short cmd)
 
 	case 0x83:
 		e82730_dscmd_fullrowdescrpt (crt, rb, cmd);
+		break;
+
+	case 0x84:
+		e82730_dscmd_sl_scroll_start (crt, rb, cmd);
+		break;
+
+	case 0x85:
+		e82730_dscmd_sl_scroll_end (crt, rb, cmd);
 		break;
 
 	case 0x87:
@@ -1020,7 +1054,7 @@ void e82730_rowbuf_switch (e82730_t *crt)
 	crt->rbp[0] = rb0;
 	crt->rbp[1] = rb1;
 
-	crt->cur_row_idx = 0;
+	crt->cur_row_idx = rb0->scroll_start;
 
 	if (rb0->fullrowdesc_cnt > 0) {
 		crt->mode_lines_per_row = rb0->fullrowdesc[0] & 0x1f;
@@ -1043,6 +1077,7 @@ void e82730_rowbuf_switch (e82730_t *crt)
 	rb1->ready = 0;
 	rb1->cnt = 0;
 	rb1->fullrowdesc_cnt = 0;
+	rb1->scroll_start = 0;
 	rb1->lines_per_row = crt->mode_lines_per_row;
 }
 
@@ -1057,6 +1092,7 @@ void e82730_clock_line (e82730_t *crt)
 
 	if (crt->cur_line < crt->mode_vfldstrt) {
 		if (crt->cur_line == 0) {
+			crt->list_switch = (e82730_get_mem16 (crt, crt->cbp + 2) & 0x80) != 0;
 			crt->lbase = e82730_get_mem32 (crt, crt->cbp + 6 + (crt->list_switch ? 4 : 0));
 			crt->strptr = e82730_get_mem32 (crt, crt->lbase);
 			crt->lbase += 4;

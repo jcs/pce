@@ -35,6 +35,7 @@ typedef struct {
 	unsigned short fullrowdesc_cnt;
 	unsigned short fullrowdesc[7];
 
+	unsigned char  scroll_start;
 	unsigned char  lines_per_row;
 } e82730_rowbuf_t;
 
@@ -68,6 +69,8 @@ typedef struct {
 	unsigned short  mode_vfldstp;
 	unsigned char   mode_lines_per_row;
 	char            blank_row;
+
+	unsigned char   scroll_margin;
 
 	unsigned short  field_attrib;
 
