@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/video.c                                       *
  * Created:     2012-06-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012 Hampa Hug <hampa@hampa.ch>                          *
+ * Copyright:   (C) 2012-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -638,7 +638,12 @@ void e82730_dscmd_endrow (e82730_t *crt, e82730_rowbuf_t *rb)
 static
 void e82730_dscmd_eof (e82730_t *crt, e82730_rowbuf_t *rb)
 {
+#if DEBUG_E82730 >= 2
+	sim_log_deb ("82730: DS CMD: EOF (%u)\n", crt->buf_y);
+#endif
+
 	crt->end_of_frame = 1;
+	crt->strptr = e82730_get_mem32 (crt, crt->cbp + 34);
 }
 
 static
@@ -1007,34 +1012,38 @@ void e82730_rowbuf_init (e82730_t *crt)
 static
 void e82730_rowbuf_switch (e82730_t *crt)
 {
-	e82730_rowbuf_t *rb;
+	e82730_rowbuf_t *rb0, *rb1;
 
-	rb = crt->rbp[0];
-	crt->rbp[0] = crt->rbp[1];
-	crt->rbp[1] = rb;
+	rb0 = crt->rbp[1];
+	rb1 = crt->rbp[0];
 
-	rb = crt->rbp[0];
+	crt->rbp[0] = rb0;
+	crt->rbp[1] = rb1;
 
-	if (rb->fullrowdesc_cnt > 0) {
-		crt->mode_lines_per_row = rb->fullrowdesc[0] & 0x1f;
-		crt->blank_row = (rb->fullrowdesc[0] & 0x400) != 0;
+	crt->cur_row_idx = 0;
+
+	if (rb0->fullrowdesc_cnt > 0) {
+		crt->mode_lines_per_row = rb0->fullrowdesc[0] & 0x1f;
+		rb0->lines_per_row = crt->mode_lines_per_row;
+		crt->blank_row = (rb0->fullrowdesc[0] & 0x400) != 0;
 	}
 
-	if (rb->fullrowdesc_cnt >= 5) {
-		crt->cursor_start[0] = (rb->fullrowdesc[4] >> 8) & 0x1f;
-		crt->cursor_stop[0] = rb->fullrowdesc[4] & 0x1f;
+	if (rb0->fullrowdesc_cnt >= 5) {
+		crt->cursor_start[0] = (rb0->fullrowdesc[4] >> 8) & 0x1f;
+		crt->cursor_stop[0] = rb0->fullrowdesc[4] & 0x1f;
 	}
 
-	if (rb->fullrowdesc_cnt >= 6) {
-		crt->cursor_start[1] = (rb->fullrowdesc[5] >> 8) & 0x1f;
-		crt->cursor_stop[1] = rb->fullrowdesc[5] & 0x1f;
+	if (rb0->fullrowdesc_cnt >= 6) {
+		crt->cursor_start[1] = (rb0->fullrowdesc[5] >> 8) & 0x1f;
+		crt->cursor_stop[1] = rb0->fullrowdesc[5] & 0x1f;
 	}
 
-	crt->rbp[0]->fullrowdesc_cnt = 0;
+	rb0->fullrowdesc_cnt = 0;
 
-	crt->rbp[1]->ready = 0;
-	crt->rbp[1]->cnt = 0;
-	crt->rbp[1]->fullrowdesc_cnt = 0;
+	rb1->ready = 0;
+	rb1->cnt = 0;
+	rb1->fullrowdesc_cnt = 0;
+	rb1->lines_per_row = crt->mode_lines_per_row;
 }
 
 static
@@ -1061,48 +1070,43 @@ void e82730_clock_line (e82730_t *crt)
 	}
 	else if (crt->cur_line < crt->mode_vfldstp) {
 		if (crt->cur_line == crt->mode_vfldstrt) {
-			crt->cur_row = 0;
-			crt->cur_row_idx = 0;
-
-			crt->buf_y = 0;
-
 			e82730_rowbuf_switch (crt);
+
+			crt->cur_row = 0;
+			crt->buf_y = 0;
 		}
 
 		e82730_line (crt);
 
 		crt->cur_row_idx += 1;
 
-		if (crt->cur_row_idx > crt->mode_lines_per_row) {
-			crt->cur_row += 1;
-			crt->cur_row_idx = 0;
-
+		if (crt->cur_row_idx > crt->rbp[0]->lines_per_row) {
 			e82730_rowbuf_switch (crt);
 
-			if (crt->cur_line == (crt->mode_vfldstp - 1)) {
-				crt->rbp[1]->ready = 1;
-			}
+			crt->cur_row += 1;
+		}
+
+		if (crt->cur_line == (crt->mode_vfldstp - 1)) {
+			crt->strptr = e82730_get_mem32 (crt, crt->cbp + 34);
+			crt->end_of_frame = 0;
 		}
 	}
-	else if (crt->cur_line == crt->mode_vfldstp) {
-		crt->cur_row_idx = 0;
-		crt->end_of_frame = 0;
-		crt->strptr = e82730_get_mem32 (crt, crt->cbp + 34);
-		e82730_rowbuf_switch (crt);
-	}
-	else if (crt->cur_line <= (crt->mode_vfldstp + crt->mode_lines_per_row + 1)) {
-		if (crt->cur_row_idx == 0) {
+	else if (crt->cur_line < (crt->mode_vfldstp + crt->rbp[0]->lines_per_row)) {
+		if (crt->cur_line == crt->mode_vfldstp) {
 			e82730_rowbuf_switch (crt);
+
 			crt->rbp[1]->ready = 1;
 		}
 
-		e82730_line (crt);
+		if (crt->rbp[0]->lines_per_row > 0) {
+			e82730_line (crt);
 
-		crt->cur_row_idx += 1;
+			crt->cur_row_idx += 1;
 
-		if (crt->cur_row_idx > crt->mode_lines_per_row) {
-			crt->cur_row += 1;
-			crt->cur_row_idx = 0;
+			if (crt->cur_row_idx > crt->rbp[0]->lines_per_row) {
+				crt->cur_row += 1;
+				crt->cur_row_idx = 0;
+			}
 		}
 	}
 
@@ -1156,7 +1160,7 @@ void e82730_clock (e82730_t *crt, unsigned cnt)
 
 	crt->rclk += crt->input_clock_mul * cnt;
 
-	ll = crt->input_clock_div * crt->mode_line_length;
+	ll = crt->input_clock_div * (crt->mode_line_length + 1);
 
 	while (crt->rclk >= ll) {
 		e82730_clock_line (crt);
