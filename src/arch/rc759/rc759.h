@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/rc759.h                                       *
  * Created:     2012-06-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -83,6 +83,8 @@ typedef struct rc759_t {
 	unsigned char      ppi_port_a;
 	unsigned char      ppi_port_b;
 	unsigned char      ppi_port_c;
+
+	char               alt_ram_sizes;
 
 	char               rtc_enable;
 	char               rtc_stop;

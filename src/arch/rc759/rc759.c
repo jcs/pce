@@ -175,13 +175,14 @@ static
 void rc759_setup_system (rc759_t *sim, ini_sct_t *ini)
 {
 	unsigned  model, speed;
-	int       fastboot, rtc_enable, rtc_stop;
+	int       fastboot, rtc_enable, rtc_stop, alt_ram_sizes;
 	ini_sct_t *sct;
 
 	sct = ini_next_sct (ini, NULL, "system");
 
 	ini_get_uint16 (sct, "model", &model, 1);
 	ini_get_uint16 (sct, "speed", &speed, 1);
+	ini_get_bool (sct, "alt_ram_sizes", &alt_ram_sizes, 0);
 	ini_get_bool (sct, "fastboot", &fastboot, 0);
 	ini_get_bool (sct, "rtc", &rtc_enable, 1);
 	ini_get_bool (sct, "rtc_stop", &rtc_stop, 0);
@@ -208,6 +209,8 @@ void rc759_setup_system (rc759_t *sim, ini_sct_t *ini)
 		sim->speed = speed;
 	}
 
+	sim->alt_ram_sizes = (alt_ram_sizes != 0);
+
 	sim->rtc_enable = (rtc_enable != 0);
 	sim->rtc_stop = (rtc_stop != 0);
 
@@ -219,9 +222,9 @@ void rc759_setup_system (rc759_t *sim, ini_sct_t *ini)
 	sim->pause = 0;
 
 	pce_log_tag (MSG_INF, "SYSTEM:",
-		"model=rc759-%u %lu MHz speed=%u rtc=%d fastboot=%d\n",
+		"model=rc759-%u %lu MHz speed=%u altram=%d rtc=%d fastboot=%d\n",
 		sim->model, sim->clock_freq / 1000000, speed,
-		rtc_enable, fastboot
+		sim->alt_ram_sizes, rtc_enable, fastboot
 	);
 }
 
@@ -326,7 +329,7 @@ void rc759_setup_ppi (rc759_t *sim, ini_sct_t *ini)
 	sim->ppi_port_b = 0x87;
 
 	if (sim->ram != NULL) {
-		if (sim->model == 2) {
+		if (sim->alt_ram_sizes) {
 			if (sim->ram->size >= (832 * 1024)) {
 				sim->ppi_port_a |= 0x00;
 			}
