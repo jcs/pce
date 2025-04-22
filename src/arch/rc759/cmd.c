@@ -501,7 +501,7 @@ void rc759_run (rc759_t *sim)
 
 	while (sim->brk == 0) {
 		if (sim->pause == 0) {
-			rc759_clock (sim, 1);
+			rc759_clock (sim, 0);
 		}
 		else {
 			pce_usleep (100000);

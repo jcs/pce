@@ -958,8 +958,14 @@ void rc759_clock (rc759_t *sim, unsigned cnt)
 {
 	unsigned long sysclk, cpuclk;
 
-	sysclk = 1;
-	cpuclk = sim->speed;
+	if (cnt == 0) {
+		sysclk = 1;
+		cpuclk = sim->speed;
+	}
+	else {
+		sysclk = cnt;
+		cpuclk = cnt;
+	}
 
 	e86_clock (sim->cpu, cpuclk);
 
