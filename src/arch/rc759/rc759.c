@@ -445,7 +445,7 @@ void rc759_setup_rtc (rc759_t *sim, ini_sct_t *ini)
 		rc759_rtc_set_time_now (&sim->rtc);
 	}
 	else {
-		rc759_rtc_set_time (&sim->rtc, 0, 0, 0, 0);
+		rc759_rtc_set_time_zero (&sim->rtc);
 	}
 }
 

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/rtc.c                                         *
  * Created:     2012-07-06 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -124,6 +124,12 @@ void rc759_rtc_set_time_now (rc759_rtc_t *rtc)
 	rtc->wday[0] = tval->tm_wday;
 	rtc->mday[0] = tval->tm_mday - 1;
 	rtc->month[0] = tval->tm_mon;
+}
+
+void rc759_rtc_set_time_zero (rc759_rtc_t *rtc)
+{
+	rc759_rtc_set_time (rtc, 0, 0, 0, 0);
+	rc759_rtc_set_date (rtc, 0, 0);
 }
 
 static
