@@ -893,7 +893,7 @@ void e82730_line_blank (e82730_t *crt, unsigned char *p)
 }
 
 static
-int e82730_is_cursor (e82730_t *crt, unsigned idx, unsigned x)
+int e82730_is_cursor_idx (e82730_t *crt, unsigned idx, unsigned x)
 {
 	unsigned duty;
 
@@ -928,76 +928,104 @@ int e82730_is_cursor (e82730_t *crt, unsigned idx, unsigned x)
 }
 
 static
+int e82730_is_cursor (e82730_t *crt, unsigned x)
+{
+	if (e82730_is_cursor_idx (crt, 0, x)) {
+		return (1);
+	}
+
+	if (e82730_is_cursor_idx (crt, 1, x)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+static
 void e82730_line_text (e82730_t *crt, e82730_rowbuf_t *rb, unsigned char *p)
 {
-	int                 curs;
-	unsigned            i;
-	unsigned            idx, val, adr, msk, atr;
-	const unsigned char *fg, *bg;
+	unsigned            i, idx;
+	unsigned            chr, adr;
+	unsigned            val, msk, res;
+	unsigned            attr, rgb1, rgb2;
+	const unsigned char *pal[4], *col, *tmp;
 
 	idx = 0;
 	val = 0;
 	msk = 0;
+	res = 0;
 
-	curs = 0;
-
-	fg = &crt->rgb[4 * 15];
-	bg = &crt->rgb[4 * 0];
+	col = &crt->rgb[0];
+	pal[0] = &crt->rgb[0];
+	pal[1] = &crt->rgb[0];
+	pal[2] = &crt->rgb[0];
+	pal[3] = &crt->rgb[0];
 
 	for (i = 0; i < crt->buf_w; i++) {
 		if (msk == 0) {
 			if (idx < rb->cnt) {
-				atr = (rb->buf[idx] >> 10) & 0x1f;
-				atr = crt->palette[atr];
+				chr = rb->buf[idx];
 
-				fg = &crt->rgb[(atr >> 2) & 0x3c];
-				bg = &crt->rgb[(atr << 2) & 0x3c];
+				if (crt->graphic && (chr & 0x4000)) {
+					res = 3;
 
-				adr = rb->buf[idx] & 0x3ff;
+					attr = (chr >> 10) & 0x0f;
+					rgb1 = crt->palette[attr];
+					rgb2 = crt->palette[attr + 16];
+
+					pal[0] = &crt->rgb[(rgb1 << 2) & 0x3c];
+					pal[1] = &crt->rgb[(rgb1 >> 2) & 0x3c];
+					pal[2] = &crt->rgb[(rgb2 << 2) & 0x3c];
+					pal[3] = &crt->rgb[(rgb2 >> 2) & 0x3c];
+				}
+				else {
+					res = 0;
+
+					attr = (chr >> 10) & 0x1f;
+					rgb1 = crt->palette[attr];
+
+					pal[0] = &crt->rgb[(rgb1 << 2) & 0x3c];
+					pal[1] = &crt->rgb[(rgb1 >> 2) & 0x3c];
+				}
+
+				adr = chr & 0x3ff;
 				adr = ((adr << 4) | crt->cur_row_idx) << 1;
-				val = e82730_get_mem16 (crt, crt->pixel_mem + adr);
 
-				msk = (~val << 1) | 0xfe00;
+				val = e82730_get_mem16 (crt, crt->pixel_mem + adr);
+				msk = ((~val << 1) | 0xfe00) & 0xffff;
 			}
 			else {
 				val = 0;
 				msk = 1;
 			}
 
-			idx += 1;
-
 			if (crt->graphic) {
 				msk = 1;
 			}
 
-			curs = 0;
-
-			if (e82730_is_cursor (crt, 0, idx - 1)) {
-				curs = 1;
-			}
-			else if (e82730_is_cursor (crt, 1, idx - 1)) {
-				curs = 1;
+			if (e82730_is_cursor (crt, idx)) {
+				tmp = pal[0];
+				pal[0] = pal[1];
+				pal[1] = tmp;
 			}
 
-			if (curs) {
-				const unsigned char *tmp;
-
-				tmp = fg;
-				fg = bg;
-				bg = tmp;
-			}
+			idx += 1;
 		}
 
-		if (val & 0x8000) {
-			*(p++) = fg[0];
-			*(p++) = fg[1];
-			*(p++) = fg[2];
+		if (res) {
+			if (res & 1) {
+				col = pal[(val >> 14) & 3];
+			}
+
+			res ^= 1;
 		}
 		else {
-			*(p++) = bg[0];
-			*(p++) = bg[1];
-			*(p++) = bg[2];
+			col = pal[(val >> 15) & 1];
 		}
+
+		*(p++) = col[0];
+		*(p++) = col[1];
+		*(p++) = col[2];
 
 		val = (val << 1) & 0xffff;
 		msk = (msk << 1) & 0xffff;
