@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pri/text.c                                         *
  * Created:     2014-08-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2014-2024 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2014-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -555,11 +555,15 @@ int txt_enc_rotate (pri_text_t *ctx)
 		return (txt_enc_rotate_track (ctx));
 	}
 
+	if (txt_match (&ctx->txt, "SET", 1)) {
+		ctx->rotate = 0;
+	}
+
 	if (txt_match_uint (&ctx->txt, 10, &val) == 0) {
 		return (1);
 	}
 
-	ctx->rotate = val;
+	ctx->rotate += val;
 
 	return (0);
 }
