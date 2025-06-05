@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/rc759/cmd.c                                         *
  * Created:     2012-06-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -45,6 +45,9 @@ static mon_cmd_t par_cmd[] = {
 	{ "key", "[[+|-]key...]", "simulate pressing or releasing keys" },
 	{ "log", "int l", "list interrupt log expressions" },
 	{ "log", "int n [expr]", "set interrupt n log expression to expr" },
+	{ "nv", "get addr [cnt]", "read bytes from nvram" },
+	{ "nv", "set addr [val...]", "write bytes to nvram" },
+	{ "nv", "sum", "fix the nvram checksum" },
 	{ "o", "[b|w] port val", "output a byte or word to a port" },
 	{ "pq", "[c|f|s]", "prefetch queue clear/fill/status" },
 	{ "p", "[cnt]", "execute cnt instructions, without trace in calls [1]" },
@@ -834,6 +837,117 @@ void rc759_cmd_log (cmd_t *cmd, rc759_t *sim)
 }
 
 static
+int rc759_cmd_nv_match_addr (cmd_t *cmd, unsigned short *addr)
+{
+	if (cmd_match (cmd, "boot")) {
+		*addr = 0x19;
+	}
+	else if (cmd_match (cmd, "color")) {
+		*addr = 0x16;
+	}
+	else if (cmd_match (cmd, "cursor")) {
+		*addr = 0x13;
+	}
+	else if (cmd_match (cmd, "mdelay")) {
+		*addr = 0x14;
+	}
+	else if (cmd_match (cmd, "mdisk")) {
+		*addr = 0x1b;
+	}
+	else if (cmd_match (cmd, "scroll")) {
+		*addr = 0x12;
+	}
+	else if (cmd_match (cmd, "year")) {
+		*addr = 0x18;
+	}
+	else if (cmd_match_uint16 (cmd, addr)) {
+		;
+	}
+	else {
+		cmd_error (cmd, "need an address");
+		return (0);
+	}
+
+	return (1);
+}
+
+static
+void rc759_cmd_nvget (cmd_t *cmd, rc759_t *sim)
+{
+	unsigned short addr, cnt, val;
+
+	if (!rc759_cmd_nv_match_addr (cmd, &addr)) {
+		return;
+	}
+
+	if (!cmd_match_uint16 (cmd, &cnt)) {
+		cnt = 1;
+	}
+
+	while (cnt--) {
+		val = rc759_nvm_get_uint8 (&sim->nvm, addr);
+		pce_printf ("NVM: %03X -> %02X\n", addr, val);
+		addr += 1;
+	}
+
+	cmd_match_end (cmd);
+}
+
+static
+void rc759_cmd_nvset (cmd_t *cmd, rc759_t *sim)
+{
+	unsigned short addr, val;
+
+	if (!rc759_cmd_nv_match_addr (cmd, &addr)) {
+		return;
+	}
+
+	while (cmd_match_uint16 (cmd, &val)) {
+		pce_printf ("NVM: %03X <- %02X\n", addr, val);
+		rc759_nvm_set_uint8 (&sim->nvm, addr, val);
+		addr += 1;
+	}
+
+	cmd_match_end (cmd);
+}
+
+static
+void rc759_cmd_nvsum (cmd_t *cmd, rc759_t *sim)
+{
+	unsigned v1, v2;
+
+	v1 = rc759_nvm_get_uint8 (&sim->nvm, 0);
+	rc759_nvm_fix_checksum (&sim->nvm);
+	v2 = rc759_nvm_get_uint8 (&sim->nvm, 0);
+
+	if (v1 != v2) {
+		pce_printf ("NVM: %03X <- %02X\n", 0, v2);
+	}
+	else {
+		pce_printf ("NVM: %03X -> %02X\n", 0, v1);
+	}
+
+	cmd_match_end (cmd);
+}
+
+static
+void rc759_cmd_nv (cmd_t *cmd, rc759_t *sim)
+{
+	if (cmd_match (cmd, "set")) {
+		rc759_cmd_nvset (cmd, sim);
+	}
+	else if (cmd_match (cmd, "get")) {
+		rc759_cmd_nvget (cmd, sim);
+	}
+	else if (cmd_match (cmd, "sum")) {
+		rc759_cmd_nvsum (cmd, sim);
+	}
+	else {
+		cmd_error (cmd, "nv: unknown command");
+	}
+}
+
+static
 void rc759_cmd_o (cmd_t *cmd, rc759_t *sim)
 {
 	int            word;
@@ -1245,6 +1359,9 @@ int rc759_cmd (rc759_t *sim, cmd_t *cmd)
 	}
 	else if (cmd_match (cmd, "log")) {
 		rc759_cmd_log (cmd, sim);
+	}
+	else if (cmd_match (cmd, "nv")) {
+		rc759_cmd_nv (cmd, sim);
 	}
 	else if (cmd_match (cmd, "o")) {
 		rc759_cmd_o (cmd, sim);
