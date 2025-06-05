@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/psi/psi-img-psi.c                                *
  * Created:     2013-05-29 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2013-2023 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2013-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -952,6 +952,7 @@ int psi_save_macg (FILE *fp, const psi_sct_t *sct, unsigned c, unsigned h, unsig
 	req = (sct->c != c) || (sct->h != h);
 	req |= ((sct->flags & (PSI_FLAG_CRC_ID | PSI_FLAG_NO_DAM)) != 0);
 	req |= (sct->encoding != enc);
+	req |= sct->have_gcr_format;
 
 	if (psi_sct_get_tags (sct, buf + 6, 12) > 0) {
 		for (i = 0; i < 12; i++) {

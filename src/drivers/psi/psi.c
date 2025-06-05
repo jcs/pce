@@ -373,7 +373,7 @@ unsigned psi_sct_get_mfm_size (const psi_sct_t *sct)
 
 void psi_sct_set_gcr_format (psi_sct_t *sct, unsigned char val)
 {
-	sct->have_gcr_format = 1;
+	sct->have_gcr_format = (val < 64);
 	sct->gcr_format = val;
 }
 
@@ -383,7 +383,7 @@ unsigned psi_sct_get_gcr_format (const psi_sct_t *sct)
 		return (sct->gcr_format);
 	}
 
-	return (0);
+	return (0xff);
 }
 
 unsigned psi_sct_set_tags (psi_sct_t *sct, const void *buf, unsigned cnt)
