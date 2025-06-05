@@ -661,6 +661,7 @@ int txt_enc_track (pri_text_t *ctx)
 
 	pri_trk_set_pos (ctx->trk, 0);
 
+	ctx->index_position = 0;
 	ctx->rotate = 0;
 
 	ctx->mac_check_active = 0;
