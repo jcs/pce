@@ -395,13 +395,17 @@ int txt_enc_comm (pri_text_t *ctx)
 		return (1);
 	}
 
-	cnt = strlen (str);
-
-	if (cnt < 256) {
-		str[cnt++] = 0x0a;
+	if (pri_img_add_comment_nl (ctx->img)) {
+		return (1);
 	}
 
+	cnt = strlen (str);
+
 	if (pri_img_add_comment (ctx->img, (unsigned char *) str, cnt)) {
+		return (1);
+	}
+
+	if (pri_img_add_comment (ctx->img, (unsigned char *) "\x0a", 1)) {
 		return (1);
 	}
 

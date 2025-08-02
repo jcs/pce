@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pri/pri.c                                        *
  * Created:     2012-01-31 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -1317,6 +1317,24 @@ int pri_img_set_comment (pri_img_t *img, const unsigned char *buf, unsigned cnt)
 	}
 
 	if (pri_img_add_comment (img, buf, cnt)) {
+		return (1);
+	}
+
+	return (0);
+}
+
+/* Force a <nl> at the end of the comment */
+int pri_img_add_comment_nl (pri_img_t *img)
+{
+	if (img->comment_size == 0) {
+		return (0);
+	}
+
+	if (img->comment[img->comment_size - 1] == 0x0a) {
+		return (0);
+	}
+
+	if (pri_img_add_comment (img, (unsigned char *) "\x0a", 1)) {
 		return (1);
 	}
 
