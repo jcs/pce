@@ -849,6 +849,11 @@ int txt_encode_pri0 (pri_text_t *ctx)
 				return (1);
 			}
 		}
+		else if (txt_match (&ctx->txt, "TEXT", 1)) {
+			if (txt_enc_comm (ctx)) {
+				return (1);
+			}
+		}
 		else if (txt_match (&ctx->txt, "TRACK", 1)) {
 			if (txt_match (&ctx->txt, "SIZE", 1)) {
 				if (txt_enc_track_size (ctx)) {
