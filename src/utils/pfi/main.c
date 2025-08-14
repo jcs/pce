@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/utils/pfi/main.c                                         *
  * Created:     2012-01-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2022 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -71,6 +71,8 @@ double        par_slack2 = 0.01;
 int           par_weak_bits = 0;
 unsigned long par_weak_i1 = 0;
 unsigned long par_weak_i2 = 0;
+
+int           par_decode_clock = 0;
 
 unsigned long par_clock_tolerance = 40;
 
@@ -149,6 +151,7 @@ void print_help (void)
 		"\n"
 		"parameters are:\n"
 		"  clock-tolerance\n"
+		"  decode-clock\n"
 		"  fold-max\n"
 		"  fold-mode\n"
 		"  pfi-clock\n"
@@ -732,6 +735,11 @@ int pfi_set_parameter (const char *name, const char *val)
 {
 	if (strcmp (name, "clock-tolerance") == 0) {
 		if (pfi_parse_ulong (val, &par_clock_tolerance)) {
+			return (1);
+		}
+	}
+	else if (strcmp (name, "decode-clock") == 0) {
+		if (pfi_parse_bool (val, &par_decode_clock)) {
 			return (1);
 		}
 	}

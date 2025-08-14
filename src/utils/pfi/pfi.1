@@ -1,4 +1,4 @@
-.TH PFI 1 "2022-01-15" "HH" "pce"
+.TH PFI 1 "2025-08-14" "HH" "pce"
 \
 .SH NAME
 pfi \- convert and modify PFI flux images
@@ -231,9 +231,13 @@ Set parameter \fIpar\fR to \fIval\fR.
 .RS
 .TP
 .BI "clock-tolerance " val
-Set the clock tolerance in tenth of a percent. The default is 40. If
+Set the clock tolerance in percent. The default is 4.0. If
 during decoding the data rate changes by more than the tolerance, a
 clock event is recorded in the PRI file.
+.TP
+.BI "decode-clock " val
+Enable or disable the decoding of clock rate changes. The default is
+disabled.
 .TP
 .BI "fold-max " bits
 When folding tracks, compare at most \fIbits\fR bits. The default is
