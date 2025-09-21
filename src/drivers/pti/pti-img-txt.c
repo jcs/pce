@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/pti/pti-img-txt.c                                *
  * Created:     2020-04-25 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020-2024 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2020-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -231,6 +231,11 @@ int txt_load_text (txt_load_t *txt)
 {
 	unsigned n;
 	char     str[256];
+
+	if (txt_match (&txt->txt, "RESET", 1)) {
+		pti_img_set_comment (txt->img, NULL, 0);
+		return (0);
+	}
 
 	if (txt_match_eol (&txt->txt)) {
 		str[0] = 0;
