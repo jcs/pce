@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/spectrum/cmd.c                                      *
  * Created:     2022-02-02 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2022-2024 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2022-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -439,7 +439,7 @@ void spec_run (spectrum_t *sim)
 
 
 static
-int spec_hook_undef (void *ext, unsigned char op)
+int spec_hook_undef (void *ext, unsigned op)
 {
 	spectrum_t *sim;
 
@@ -460,17 +460,8 @@ int spec_hook_undef (void *ext, unsigned char op)
 }
 
 static
-int spec_hook_rst (void *ext, unsigned char op)
+int spec_hook_rst (void *ext, unsigned n)
 {
-#if 0
-	unsigned  fct, ex;
-	spectrum_t *sim;
-
-	sim = ext;
-
-	ex = (op >> 3) & 7;
-#endif
-
 	return (0);
 }
 

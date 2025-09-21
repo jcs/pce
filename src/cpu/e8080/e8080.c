@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e8080/e8080.c                                        *
  * Created:     2012-11-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2024 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -26,9 +26,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
-
-/* #define E8080_ENABLE_HOOK_ALL 1 */
 
 
 void e8080_init (e8080_t *c)
@@ -61,9 +58,13 @@ void e8080_init (e8080_t *c)
 	c->get_port8 = NULL;
 	c->set_port8 = NULL;
 
-	c->hook_ext = NULL;
-	c->hook_all = NULL;
+	c->hook_exec_ext = NULL;
+	c->hook_exec = NULL;
+
+	c->hook_undef_ext = NULL;
 	c->hook_undef = NULL;
+
+	c->hook_rst_ext = NULL;
 	c->hook_rst = NULL;
 
 	c->delay = 0;
@@ -208,21 +209,21 @@ void e8080_set_port_fct (e8080_t *c, void *ext, void *get8, void *set8)
 	c->set_port8 = set8;
 }
 
-void e8080_set_hook_all_fct (e8080_t *c, void *ext, void *fct)
+void e8080_set_hook_exec_fct (e8080_t *c, void *ext, void *fct)
 {
-	c->hook_ext = ext;
-	c->hook_all = fct;
+	c->hook_exec_ext = ext;
+	c->hook_exec = fct;
 }
 
 void e8080_set_hook_undef_fct (e8080_t *c, void *ext, void *fct)
 {
-	c->hook_ext = ext;
+	c->hook_undef_ext = ext;
 	c->hook_undef = fct;
 }
 
 void e8080_set_hook_rst_fct (e8080_t *c, void *ext, void *fct)
 {
-	c->hook_ext = ext;
+	c->hook_rst_ext = ext;
 	c->hook_rst = fct;
 }
 
@@ -472,10 +473,10 @@ unsigned e8080_get_delay (e8080_t *c)
 	return (c->delay);
 }
 
-int e8080_hook_all (e8080_t *c)
+int e8080_hook_exec (e8080_t *c)
 {
-	if (c->hook_all != NULL) {
-		return (c->hook_all (c->hook_ext, c->inst[0]));
+	if (c->hook_exec != NULL) {
+		return (c->hook_exec (c->hook_exec_ext));
 	}
 
 	return (0);
@@ -484,7 +485,7 @@ int e8080_hook_all (e8080_t *c)
 int e8080_hook_undefined (e8080_t *c)
 {
 	if (c->hook_undef != NULL) {
-		return (c->hook_undef (c->hook_ext, c->inst[0]));
+		return (c->hook_undef (c->hook_undef_ext, c->inst[0]));
 	}
 
 	return (0);
@@ -493,7 +494,7 @@ int e8080_hook_undefined (e8080_t *c)
 int e8080_hook_rst (e8080_t *c)
 {
 	if (c->hook_rst != NULL) {
-		return (c->hook_rst (c->hook_ext, c->inst[0]));
+		return (c->hook_rst (c->hook_rst_ext, (c->inst[0] >> 3) & 7));
 	}
 
 	return (0);
@@ -586,15 +587,13 @@ void e8080_execute (e8080_t *c)
 
 	c->inst[0] = e8080_get_mem8 (c, pc);
 
-	e8080_inc_r (c);
-
-#ifdef E8080_ENABLE_HOOK_ALL
-	if (c->hook_all != NULL) {
-		if (e8080_hook_all (c)) {
+	if (c->hook_exec != NULL) {
+		if (e8080_hook_exec (c)) {
 			return;
 		}
 	}
-#endif
+
+	e8080_inc_r (c);
 
 	iff = c->iff;
 

@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e8080/internal.h                                     *
  * Created:     2012-11-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2024 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -90,7 +90,7 @@ typedef struct {
 } e8080_dop_t;
 
 
-int e8080_hook_all (e8080_t *c);
+int e8080_hook_exec (e8080_t *c);
 int e8080_hook_undefined (e8080_t *c);
 int e8080_hook_rst (e8080_t *c);
 

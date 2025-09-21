@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/cpu/e8080/e8080.h                                        *
  * Created:     2012-11-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2024 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -90,10 +90,14 @@ typedef struct e8080_t {
 	unsigned char  (*get_port8) (void *ext, unsigned long addr);
 	void           (*set_port8) (void *ext, unsigned long addr, unsigned char val);
 
-	void           *hook_ext;
-	int            (*hook_all) (void *ext, unsigned char op);
-	int            (*hook_undef) (void *ext, unsigned char op);
-	int            (*hook_rst) (void *ext, unsigned char op);
+	void           *hook_exec_ext;
+	int            (*hook_exec) (void *ext);
+
+	void           *hook_undef_ext;
+	int            (*hook_undef) (void *ext, unsigned op);
+
+	void           *hook_rst_ext;
+	int            (*hook_rst) (void *ext, unsigned n);
 
 	unsigned char  inst[4];
 
@@ -305,7 +309,7 @@ void e8080_set_port_read_fct (e8080_t *c, void *ext, void *get8);
 void e8080_set_port_write_fct (e8080_t *c, void *ext, void *set8);
 void e8080_set_port_fct (e8080_t *c, void *ext, void *get8, void *set8);
 
-void e8080_set_hook_all_fct (e8080_t *c, void *ext, void *fct);
+void e8080_set_hook_exec_fct (e8080_t *c, void *ext, void *fct);
 void e8080_set_hook_undef_fct (e8080_t *c, void *ext, void *fct);
 void e8080_set_hook_rst_fct (e8080_t *c, void *ext, void *fct);
 

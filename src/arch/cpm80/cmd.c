@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/cpm80/cmd.c                                         *
  * Created:     2012-11-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2012-2024 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2012-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -385,11 +385,9 @@ void c80_run (cpm80_t *sim)
 
 
 static
-int c80_hook_undef (void *ext, unsigned char op)
+int c80_hook_undef (void *ext, unsigned op)
 {
-	cpm80_t *sim;
-
-	sim = ext;
+	cpm80_t *sim = ext;
 
 	pce_log (MSG_DEB,
 		"%04X: undefined operation [%02X %02X %02X %02X]\n",
@@ -406,16 +404,12 @@ int c80_hook_undef (void *ext, unsigned char op)
 }
 
 static
-int c80_hook_rst (void *ext, unsigned char op)
+int c80_hook_rst (void *ext, unsigned n)
 {
-	unsigned  fct, ex;
-	cpm80_t *sim;
+	cpm80_t  *sim = ext;
+	unsigned fct;
 
-	sim = ext;
-
-	ex = (op >> 3) & 7;
-
-	if (ex == 0) {
+	if (n == 0) {
 		fct = e8080_get_pc (sim->cpu);
 
 		if (fct < sim->addr_bios) {
@@ -428,7 +422,7 @@ int c80_hook_rst (void *ext, unsigned char op)
 
 		return (1);
 	}
-	else if (ex == 7) {
+	else if (n == 7) {
 		if (mem_get_uint16_le (sim->mem, 56) == 0) {
 			c80_stop (sim);
 			return (1);
