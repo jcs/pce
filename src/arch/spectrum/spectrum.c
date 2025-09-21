@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/spectrum/spectrum.c                                 *
  * Created:     2021-11-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2021-2024 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2021-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -93,7 +93,7 @@ void spec_set_port8 (spectrum_t *sim, unsigned long addr, unsigned char val)
 		sim_log_deb ("OUT %04lX, %02X\n", addr, val);
 		spec_set_port_fe (sim, val);
 	}
-#if 0
+#ifdef DEBUG_PORTS
 	else {
 		sim_log_deb ("OUT %04lX, %02X\n", addr, val);
 	}
