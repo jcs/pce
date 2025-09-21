@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/drivers/video/terminal.c                                 *
  * Created:     2003-04-18 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2003-2020 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2003-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include <drivers/video/terminal.h>
+#include <lib/sysdep.h>
 
 
 #define TRM_ESC_ESC  1
@@ -166,6 +167,22 @@ void trm_set_mouse_fct (terminal_t *trm, void *ext, void *fct)
 	trm->set_mouse = fct;
 }
 
+static
+int trm_screenshot_get_name (terminal_t *trm, char *str)
+{
+	unsigned i;
+
+	for (i = 0; i < 256; i++) {
+		sprintf (str, "pce%04u.ppm", trm->pict_index++);
+
+		if (pce_file_exists (str) == 0) {
+			return (0);
+		}
+	}
+
+	return (1);
+}
+
 int trm_screenshot (terminal_t *trm, const char *fname)
 {
 	FILE          *fp;
@@ -173,14 +190,14 @@ int trm_screenshot (terminal_t *trm, const char *fname)
 	unsigned long cnt;
 
 	if ((fname == NULL) || (fname[0] == 0)) {
-		sprintf (str, "pce%04u.ppm", trm->pict_index);
-		trm->pict_index += 1;
+		if (trm_screenshot_get_name (trm, str)) {
+			return (1);
+		}
+
 		fname = str;
 	}
 
-	fp = fopen (fname, "wb");
-
-	if (fp == NULL) {
+	if ((fp = fopen (fname, "wb")) == NULL) {
 		return (1);
 	}
 
