@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/lib/inidsk.c                                             *
  * Created:     2004-12-13 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2004-2019 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2004-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -28,6 +28,7 @@
 #include <lib/inidsk.h>
 #include <lib/log.h>
 #include <lib/path.h>
+#include <lib/sysdep.h>
 
 #include <drivers/block/blkchd.h>
 #include <drivers/block/blkcow.h>
@@ -101,20 +102,6 @@ int dsk_insert (disks_t *dsks, const char *str, int eject)
 	return (0);
 }
 
-static
-int file_exists (const char *name)
-{
-	FILE *fp;
-
-	if ((fp = fopen (name, "rb")) == NULL) {
-		return (0);
-	}
-
-	fclose (fp);
-
-	return (1);
-}
-
 disk_t *ini_get_cow (ini_sct_t *sct, disk_t *dsk)
 {
 	disk_t     *cow;
@@ -129,7 +116,7 @@ disk_t *ini_get_cow (ini_sct_t *sct, disk_t *dsk)
 			return (NULL);
 		}
 
-		if (file_exists (cname) == 0) {
+		if (pce_file_exists (cname) == 0) {
 			cow = dsk_create_cow (dsk, cname, 16384);
 		}
 		else {

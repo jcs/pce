@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/lib/sysdep.c                                             *
  * Created:     2006-06-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2006-2015 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2006-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -37,6 +37,10 @@
 
 #ifdef HAVE_SYS_POLL_H
 #include <sys/poll.h>
+#endif
+
+#ifdef HAVE_SYS_STAT_H
+#include <sys/stat.h>
 #endif
 
 #ifdef HAVE_TERMIOS_H
@@ -184,6 +188,26 @@ void pce_set_fd_interactive (int fd, int interactive)
 		tcsetattr (fd, TCSANOW, &tios);
 	}
 #endif
+}
+
+int pce_file_exists (const char *name)
+{
+#ifdef HAVE_SYS_STAT_H
+	struct stat st;
+
+	if (stat (name, &st) != 0) {
+		return (0);
+	}
+#else
+	FILE *fp;
+
+	if ((fp = fopen (name, "rb")) == NULL) {
+		return (0);
+	}
+
+	fclose (fp);
+#endif
+	return (1);
 }
 
 void pce_start (unsigned *brk)

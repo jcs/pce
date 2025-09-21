@@ -493,19 +493,6 @@ int pce_block_is_uniform_32 (const void *buf, unsigned cnt, unsigned long *val)
 	return (1);
 }
 
-int pce_file_exists (const char *name)
-{
-	FILE *fp;
-
-	if ((fp = fopen (name, "rb")) == NULL) {
-		return (0);
-	}
-
-	fclose (fp);
-
-	return (1);
-}
-
 void pce_set_disk_parameters (disk_t *dsk)
 {
 	if (dsk == NULL) {

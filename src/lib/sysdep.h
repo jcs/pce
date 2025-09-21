@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/lib/sysdep.h                                             *
  * Created:     2006-06-19 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2006-2015 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2006-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -56,6 +56,7 @@ int pce_fd_readable (int fd, int t);
  *****************************************************************************/
 int pce_fd_writeable (int fd, int t);
 
+int pce_file_exists (const char *name);
 
 void pce_start (unsigned *brk);
 

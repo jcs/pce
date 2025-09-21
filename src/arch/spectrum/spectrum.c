@@ -465,20 +465,6 @@ void spec_setup_speaker (spectrum_t *sim, ini_sct_t *ini)
 }
 
 static
-int file_exists (const char *fname)
-{
-	FILE *fp;
-
-	if ((fp = fopen (fname, "rb")) == NULL) {
-		return (0);
-	}
-
-	fclose (fp);
-
-	return (1);
-}
-
-static
 void spec_setup_snap (spectrum_t *sim, ini_sct_t *ini)
 {
 	const char *snap;
@@ -496,7 +482,7 @@ void spec_setup_snap (spectrum_t *sim, ini_sct_t *ini)
 		snap = par_snapshot;
 	}
 
-	if (file_exists (snap) == 0) {
+	if (pce_file_exists (snap) == 0) {
 		return;
 	}
 

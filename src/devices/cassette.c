@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/devices/cassette.c                                       *
  * Created:     2020-04-30 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2020-2021 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2020-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -15,7 +15,7 @@
  *                                                                           *
  * This program is distributed in the hope  that  it  will  be  useful,  but *
  * WITHOUT  ANY   WARRANTY,   without   even   the   implied   warranty   of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU  General *
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General *
  * Public License for more details.                                          *
  *****************************************************************************/
 
@@ -33,6 +33,7 @@
 #include <lib/console.h>
 #include <lib/msg.h>
 #include <lib/string.h>
+#include <lib/sysdep.h>
 
 
 typedef struct {
@@ -404,20 +405,6 @@ pti_img_t *cas_get_read_img (const cassette_t *cas)
 	return (NULL);
 }
 
-static
-int cas_file_exists (const char *name)
-{
-	FILE *fp;
-
-	if ((fp = fopen (name, "rb")) == NULL) {
-		return (0);
-	}
-
-	fclose (fp);
-
-	return (1);
-}
-
 int cas_set_read_name (cassette_t *cas, const char *fname)
 {
 	cas_set_record (cas, 0);
@@ -477,7 +464,7 @@ int cas_set_write_name (cassette_t *cas, const char *fname, int create)
 	}
 
 	if (create) {
-		if (cas_file_exists (fname) == 0) {
+		if (pce_file_exists (fname) == 0) {
 			if ((cas->write_img = pti_img_new()) == NULL) {
 				return (1);
 			}

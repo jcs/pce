@@ -2415,7 +2415,8 @@ src/devices/cassette.o: src/devices/cassette.c \
 	src/drivers/pti/pti.h \
 	src/lib/console.h \
 	src/lib/msg.h \
-	src/lib/string.h
+	src/lib/string.h \
+	src/lib/sysdep.h
 
 src/devices/clock/ds1743.o: src/devices/clock/ds1743.c \
 	src/chipset/clock/ds1743.h \
@@ -3130,6 +3131,7 @@ src/lib/inidsk.o: src/lib/inidsk.c \
 	src/lib/inidsk.h \
 	src/lib/log.h \
 	src/lib/path.h \
+	src/lib/sysdep.h \
 	src/libini/libini.h
 
 src/lib/iniram.o: src/lib/iniram.c \
