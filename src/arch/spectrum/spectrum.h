@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/spectrum/spectrum.h                                 *
  * Created:     2021-11-28 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2021-2024 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2021-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -50,6 +50,8 @@
 #define SPEC_MODEL_16 1
 #define SPEC_MODEL_48 2
 
+#define SPEC_LAST_CNT 256
+
 
 /*****************************************************************************
  * @short The ZX Spectrum context struct
@@ -92,6 +94,10 @@ typedef struct spectrum_s {
 	unsigned       speed;
 
 	unsigned       brk;
+
+	char           last_enabled;
+	unsigned       last_idx;
+	unsigned short last[SPEC_LAST_CNT];
 } spectrum_t;
 
 

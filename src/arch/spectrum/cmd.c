@@ -42,6 +42,8 @@ static mon_cmd_t par_cmd[] = {
 	{ "g", "", "run" },
 	{ "hm", "", "print help on messages" },
 	{ "i", "port", "input a byte from a port" },
+	{ "last", "on|off", "start/stop recording pc values" },
+	{ "last", "[cnt [idx]]", "print last pc values [80 0]" },
 	{ "n", "[0|1]", "execute to next instruction" },
 	{ "o", "port val", "output a byte to a port" },
 	{ "p", "[cnt]", "execute cnt instructions, skip calls [1]" },
@@ -52,6 +54,9 @@ static mon_cmd_t par_cmd[] = {
 	{ "xl", "fname", "load a snapshot" },
 	{ "xs", "fname", "save a snapshot" }
 };
+
+
+void spec_last_set (spectrum_t *sim, unsigned pc);
 
 
 static
@@ -437,13 +442,20 @@ void spec_run (spectrum_t *sim)
 	pce_stop();
 }
 
+static
+int spec_hook_exec (void *ext)
+{
+	spectrum_t *sim = ext;
+
+	spec_last_set (sim, e8080_get_pc (sim->cpu));
+
+	return (0);
+}
 
 static
 int spec_hook_undef (void *ext, unsigned op)
 {
-	spectrum_t *sim;
-
-	sim = ext;
+	spectrum_t *sim = ext;
 
 	pce_log (MSG_DEB,
 		"%04X: undefined operation [%02X %02X %02X %02X]\n",
@@ -465,6 +477,59 @@ int spec_hook_rst (void *ext, unsigned n)
 	return (0);
 }
 
+void spec_last_enable (spectrum_t *sim, int enable)
+{
+	unsigned i;
+
+	enable = (enable != 0);
+
+	if (sim->last_enabled == enable) {
+		return;
+	}
+
+	sim->last_enabled = enable;
+	sim->last_idx = 0;
+
+	for (i = 0; i < SPEC_LAST_CNT; i++) {
+		sim->last[i] = 0;
+	}
+
+	if (sim->last_enabled) {
+		e8080_set_hook_exec_fct (sim->cpu, sim, spec_hook_exec);
+	}
+	else {
+		e8080_set_hook_exec_fct (sim->cpu, NULL, NULL);
+	}
+}
+
+unsigned spec_last_get (spectrum_t *sim, unsigned idx)
+{
+	if (sim->last_enabled == 0) {
+		return (0);
+	}
+
+	if (idx == 0) {
+		return (e8080_get_pc (sim->cpu));
+	}
+
+	if (idx > SPEC_LAST_CNT) {
+		return (0);
+	}
+
+	idx = (sim->last_idx + SPEC_LAST_CNT - (idx - 1)) % SPEC_LAST_CNT;
+
+	return (sim->last[idx]);
+}
+
+void spec_last_set (spectrum_t *sim, unsigned pc)
+{
+	if (sim->last[sim->last_idx] == pc) {
+		return;
+	}
+
+	sim->last_idx = (sim->last_idx + 1) % SPEC_LAST_CNT;
+	sim->last[sim->last_idx] = pc;
+}
 
 static
 void spec_cmd_c (cmd_t *cmd, spectrum_t *sim)
@@ -573,6 +638,52 @@ void spec_cmd_i (cmd_t *cmd, spectrum_t *sim)
 	}
 
 	cmd_match_end (cmd);
+}
+
+static
+void spec_cmd_last (cmd_t *cmd, spectrum_t *sim)
+{
+	unsigned       i, j, k;
+	unsigned       col, pc;
+	unsigned short idx, cnt;
+
+	if (cmd_match (cmd, "on")) {
+		spec_last_enable (sim, 1);
+		cmd_match_end (cmd);
+		return;
+	}
+
+	if (cmd_match (cmd, "off")) {
+		spec_last_enable (sim, 0);
+		cmd_match_end (cmd);
+		return;
+	}
+
+	if (sim->last_enabled == 0) {
+		return;
+	}
+
+	col = 8;
+	cnt = 128;
+	idx = 0;
+
+	cmd_match_uint16 (cmd, &cnt);
+	cmd_match_uint16 (cmd, &idx);
+
+	if (!cmd_match_end (cmd)) {
+		return;
+	}
+
+	cnt = (cnt + col - 1) / col;
+
+	for (i = cnt; i > 0; i--) {
+		for (j = col; j > 0; j--) {
+			k = idx + (j - 1) * cnt + i - 1;
+			pc = spec_last_get (sim, k);
+			pce_printf ("  %04X", pc);
+		}
+		pce_putc ('\n');
+	}
 }
 
 static
@@ -941,6 +1052,9 @@ int spec_cmd (spectrum_t *sim, cmd_t *cmd)
 	else if (cmd_match (cmd, "i")) {
 		spec_cmd_i (cmd, sim);
 	}
+	else if (cmd_match (cmd, "last")) {
+		spec_cmd_last (cmd, sim);
+	}
 	else if (cmd_match (cmd, "n")) {
 		spec_cmd_n (cmd, sim);
 	}
@@ -977,6 +1091,7 @@ void spec_cmd_init (spectrum_t *sim, monitor_t *mon)
 	mon_cmd_add (mon, par_cmd, sizeof (par_cmd) / sizeof (par_cmd[0]));
 	mon_cmd_add_bp (mon);
 
+	e8080_set_hook_exec_fct (sim->cpu, NULL, NULL);
 	e8080_set_hook_undef_fct (sim->cpu, sim, spec_hook_undef);
 	e8080_set_hook_rst_fct (sim->cpu, sim, spec_hook_rst);
 }
