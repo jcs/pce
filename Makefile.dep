@@ -1944,6 +1944,7 @@ src/arch/spectrum/snapshot.o: src/arch/spectrum/snapshot.c \
 	src/lib/cmd.h \
 	src/lib/endian.h \
 	src/lib/log.h \
+	src/lib/sysdep.h \
 	src/libini/libini.h
 
 src/arch/spectrum/spectrum.o: src/arch/spectrum/spectrum.c \

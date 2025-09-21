@@ -5,7 +5,7 @@
 /*****************************************************************************
  * File name:   src/arch/spectrum/snapshot.c                                 *
  * Created:     2022-02-08 by Hampa Hug <hampa@hampa.ch>                     *
- * Copyright:   (C) 2022-2024 Hampa Hug <hampa@hampa.ch>                     *
+ * Copyright:   (C) 2022-2025 Hampa Hug <hampa@hampa.ch>                     *
  *****************************************************************************/
 
 /*****************************************************************************
@@ -32,6 +32,7 @@
 #include <lib/ciff.h>
 #include <lib/endian.h>
 #include <lib/log.h>
+#include <lib/sysdep.h>
 
 
 #define SNAP_CKID_SNAP 0x534e4150
@@ -430,11 +431,29 @@ int spec_snap_save (spectrum_t *sim, const char *fname)
 	return (r);
 }
 
+static
+int snap_get_name (spectrum_t *sim, char *str)
+{
+	unsigned i;
+
+	for (i = 0; i < 256; i++) {
+		sprintf (str, "pce%04u.snap", sim->snap_count++);
+
+		if (pce_file_exists (str) == 0) {
+			return (0);
+		}
+	}
+
+	return (1);
+}
+
 int spec_snapshot (spectrum_t *sim)
 {
 	char name[256];
 
-	sprintf (name, "pce%04u.snap", sim->snap_count++);
+	if (snap_get_name (sim, name)) {
+		return (1);
+	}
 
 	if (spec_snap_save (sim, name)) {
 		return (1);
