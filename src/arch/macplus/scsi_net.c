@@ -45,11 +45,6 @@ int mac_scsi_ethernet_open (mac_scsi_t *scsi, mac_scsi_dev_t *dev)
 
 	dev->tap_fd = -1;
 
-	if ((dev->tap_fd = open (dev->tap_dev, O_RDWR)) < 0) {
-		pce_log (MSG_ERR, "*** opening %s failed (%s)\n", dev->tap_dev, strerror(errno));
-		return - 1;
-	}
-
 	if (dev->tap_cmd[0] != '\0') {
 		/* run command with args "/dev/tap0" "00:00:00:00:00:00" */
 		snprintf (tap_cmd_sh, sizeof(tap_cmd_sh), "%s \"%s\" \"%02x:%02x:%02x:%02x:%02x:%02x\"",
@@ -65,6 +60,11 @@ int mac_scsi_ethernet_open (mac_scsi_t *scsi, mac_scsi_dev_t *dev)
 		if (system (tap_cmd_sh) != 0) {
 			pce_log (MSG_ERR, "*** tap command failed (%s)\n", strerror(errno));
 		}
+	}
+
+	if ((dev->tap_fd = open (dev->tap_dev, O_RDWR)) < 0) {
+		pce_log (MSG_ERR, "*** opening %s failed (%s)\n", dev->tap_dev, strerror(errno));
+		return - 1;
 	}
 #endif
 
