@@ -376,6 +376,16 @@ void mac_set_mouse (void *ext, int dx, int dy, unsigned but)
 }
 
 static
+void mac_get_mouse (void *ext, int *x, int *y)
+{
+	macplus_t *sim = ext;
+
+	/* RawMouse low-memory global at 0x82c */
+	*y = (int) mem_get_uint16_be (sim->mem, 0x82c);
+	*x = (int) mem_get_uint16_be (sim->mem, 0x82e);
+}
+
+static
 void mac_set_key (void *ext, unsigned event, pce_key_t key)
 {
 	macplus_t *sim = ext;
@@ -1262,6 +1272,7 @@ void mac_setup_terminal (macplus_t *sim, ini_sct_t *ini)
 	trm_set_msg_fct (sim->trm, sim, mac_set_msg);
 	trm_set_key_fct (sim->trm, sim, mac_set_key);
 	trm_set_mouse_fct (sim->trm, sim, mac_set_mouse);
+	trm_set_get_mouse_fct (sim->trm, sim, mac_get_mouse);
 }
 
 static

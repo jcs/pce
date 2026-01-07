@@ -111,6 +111,10 @@ terminal {
 	# (pixelated) or "linear" (smooth).
 	#scale_quality = "linear"
 
+	# Automatically ungrab mouse/keyboard when the cursor reaches
+	# the window edge, and regrab when the mouse re-enters the window.
+	autograb = 0
+
 	# The mouse speed. The host mouse speed is multiplied by
 	# (mouse_mul_x / mouse_div_x) and (mouse_mul_y / mouse_div_y)
 	mouse_mul_x = 1

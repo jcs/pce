@@ -46,6 +46,9 @@ typedef struct {
 	void *set_mouse_ext;
 	void (*set_mouse) (void *ext, int dx, int dy, unsigned but);
 
+	void *get_mouse_ext;
+	void (*get_mouse) (void *ext, int *x, int *y);
+
 	void (*del) (void *ext);
 
 	int  (*open) (void *ext, unsigned w, unsigned h);
@@ -156,6 +159,14 @@ void trm_set_key_fct (terminal_t *trm, void *ext, void *fct);
 void trm_set_mouse_fct (terminal_t *trm, void *ext, void *fct);
 
 /*!***************************************************************************
+ * @short Set the terminal get_mouse function
+ *
+ * The terminal calls the get_mouse function to get the cursor position from
+ * the emulator core.
+ *****************************************************************************/
+void trm_set_get_mouse_fct (terminal_t *trm, void *ext, void *fct);
+
+/*!***************************************************************************
  * @short Save the terminal buffer to an image file
  *
  * If the file name is NULL, a default name is generated automatically.
@@ -248,6 +259,11 @@ void trm_set_key (terminal_t *trm, unsigned event, pce_key_t key);
  * @short Send a mouse event to the emulator core
  *****************************************************************************/
 void trm_set_mouse (terminal_t *trm, int dx, int dy, unsigned but);
+
+/*!***************************************************************************
+ * @short Get the current mouse position from the emulator core
+ *****************************************************************************/
+void trm_get_mouse (terminal_t *trm, int *x, int *y);
 
 /*!***************************************************************************
  * @short Get the scale factors, given a specific terminal size

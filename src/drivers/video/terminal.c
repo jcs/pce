@@ -55,6 +55,9 @@ void trm_init (terminal_t *trm, void *ext)
 	trm->set_mouse_ext = NULL;
 	trm->set_mouse = NULL;
 
+	trm->get_mouse_ext = NULL;
+	trm->get_mouse = NULL;
+
 	trm->del = NULL;
 	trm->set_msg_trm = NULL;
 	trm->update = NULL;
@@ -170,6 +173,12 @@ void trm_set_mouse_fct (terminal_t *trm, void *ext, void *fct)
 {
 	trm->set_mouse_ext = ext;
 	trm->set_mouse = fct;
+}
+
+void trm_set_get_mouse_fct (terminal_t *trm, void *ext, void *fct)
+{
+	trm->get_mouse_ext = ext;
+	trm->get_mouse = fct;
 }
 
 static
@@ -664,6 +673,17 @@ void trm_set_mouse (terminal_t *trm, int dx, int dy, unsigned but)
 
 	if (trm->set_mouse != NULL) {
 		trm->set_mouse (trm->set_mouse_ext, dx, dy, but);
+	}
+}
+
+void trm_get_mouse (terminal_t *trm, int *x, int *y)
+{
+	if (trm->get_mouse != NULL) {
+		trm->get_mouse (trm->get_mouse_ext, x, y);
+	}
+	else {
+		*x = 0;
+		*y = 0;
 	}
 }
 

@@ -521,6 +521,8 @@ void sdl2_event_mouse_button (sdl2_t *sdl, int down, unsigned button)
 static
 void sdl2_event_mouse_motion (sdl2_t *sdl, int dx, int dy)
 {
+	int ax, ay, fx, fy;
+
 	if (sdl->grab == 0) {
 		return;
 	}
@@ -530,6 +532,20 @@ void sdl2_event_mouse_motion (sdl2_t *sdl, int dx, int dy)
 	}
 
 	trm_set_mouse (&sdl->trm, dx, dy, sdl->button);
+
+	if (!sdl->autograb || sdl->trm.get_mouse == NULL || sdl->fullscreen) {
+		return;
+	}
+
+	trm_get_mouse (&sdl->trm, &ax, &ay);
+
+	/* if at screen edge and still moving that direction, unbind */
+	if ((ax == 0 && dx < 0) || (ay == 0 && dy < 0) ||
+	    (ax == sdl->trm.w && dx > 0) || (ay == sdl->trm.h && dy > 0)) {
+		trm_get_scale (&sdl->trm, sdl->trm.w, sdl->trm.h, &fx, &fy);
+		SDL_WarpMouseInWindow (sdl->window, ax * fx, ay * fy);
+		sdl2_grab_mouse (sdl, 0);
+	}
 }
 
 static
@@ -571,6 +587,9 @@ void sdl2_event_window (sdl2_t *sdl, SDL_WindowEvent *evt)
 		break;
 
 	case SDL_WINDOWEVENT_ENTER:
+		if (sdl->autograb && sdl->grab == 0) {
+			sdl2_grab_mouse (sdl, 1);
+		}
 		break;
 
 	case SDL_WINDOWEVENT_LEAVE:
@@ -845,6 +864,9 @@ void sdl2_init (sdl2_t *sdl, ini_sct_t *sct)
 	ini_get_string (sct, "scale_quality", &sdl->scale_quality, "linear");
 
 	sdl->grab = 0;
+
+	ini_get_bool (sct, "autograb", &rep, 0);
+	sdl->autograb = (rep != 0);
 
 	ini_get_bool (sct, "report_keys", &rep, 0);
 	sdl->report_keys = (rep != 0);

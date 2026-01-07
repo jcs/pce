@@ -60,6 +60,7 @@ typedef struct {
 	char          update;
 	char          fullscreen;
 	char          grab;
+	char          autograb;
 	char          report_keys;
 	char          grave_down;
 	char          ignore_keys;
