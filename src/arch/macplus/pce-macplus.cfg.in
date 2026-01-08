@@ -353,6 +353,12 @@ video {
 
 	# Brightness in the range 0 - 1000.
 	brightness = 1000
+
+	# Screen width (a value other than 512 requires a patched ROM)
+	#width = 512
+
+	# Screen height (a value other than 342 requires a patched ROM)
+	#height = 342
 }
 
 

@@ -28,14 +28,6 @@
 
 
 #define MAC_VIDEO_PFREQ 15667200
-#define MAC_VIDEO_HFREQ (MAC_VIDEO_PFREQ / (512 + 192))
-#define MAC_VIDEO_VFREQ (MAC_VIDEO_HFREQ / (342 + 28))
-
-/* #define MAC_VIDEO_VB1 ((342 * (512 + 192) * 7833600) / MAC_VIDEO_PFREQ) */
-#define MAC_VIDEO_VB1 120384
-
-/* #define MAC_VIDEO_VB2 (((342 + 28) * (512 + 192) * 7833600) / MAC_VIDEO_PFREQ) */
-#define MAC_VIDEO_VB2 130240
 
 
 int mac_video_init (mac_video_t *mv, unsigned w, unsigned h)
@@ -45,6 +37,13 @@ int mac_video_init (mac_video_t *mv, unsigned w, unsigned h)
 
 	mv->w = w;
 	mv->h = h;
+
+	mv->hfreq = MAC_VIDEO_PFREQ / (w + 192);
+	mv->vfreq = mv->hfreq / (h + 28);
+	mv->vb1 = ((unsigned long)h * (unsigned long)(w + 192) * 7833600) /
+	    MAC_VIDEO_PFREQ;
+	mv->vb2 = ((unsigned long)(h + 28) * (unsigned long)(w + 192) *
+	    7833600) / MAC_VIDEO_PFREQ;
 
 	mv->force = 0;
 
@@ -254,19 +253,19 @@ void mac_video_clock (mac_video_t *mv, unsigned long n)
 
 	mv->clk += n;
 
-	if (mv->clk < MAC_VIDEO_VB1) {
+	if (mv->clk < mv->vb1) {
 		return;
 	}
 
-	if (old < MAC_VIDEO_VB1) {
+	if (old < mv->vb1) {
 		/* vbl start */
 		mac_video_update (mv);
 		mac_video_set_vbi (mv, 1);
 	}
 
-	if (mv->clk >= MAC_VIDEO_VB2) {
+	if (mv->clk >= mv->vb2) {
 		mac_video_set_vbi (mv, 0);
 
-		mv->clk -= MAC_VIDEO_VB2;
+		mv->clk -= mv->vb2;
 	}
 }

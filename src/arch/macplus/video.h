@@ -33,6 +33,11 @@ typedef struct {
 	unsigned            w;
 	unsigned            h;
 
+	unsigned long       hfreq;
+	unsigned long       vfreq;
+	unsigned long       vb1;
+	unsigned long       vb2;
+
 	char                force;
 
 	unsigned            cmp_cnt;

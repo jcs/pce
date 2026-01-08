@@ -1290,12 +1290,13 @@ void mac_setup_video (macplus_t *sim, ini_sct_t *ini)
 
 	sct = ini_next_sct (ini, NULL, "video");
 
-	addr1 = mem_blk_get_size (sim->ram);
-	addr1 = (addr1 < 0x5900) ? 0 : (addr1 - 0x5900);
-
-	ini_get_uint32 (sct, "address", &addr2, addr1);
 	ini_get_uint16 (sct, "width", &w, 512);
 	ini_get_uint16 (sct, "height", &h, 342);
+
+	addr1 = mem_blk_get_size (sim->ram);
+	addr1 = (addr1 < 0x5900) ? 0 : (addr1 - ((w * h / 8) + 0x380));
+
+	ini_get_uint32 (sct, "address", &addr2, addr1);
 	ini_get_uint32 (sct, "color0", &col0, 0);
 	ini_get_uint32 (sct, "color1", &col1, 0xffffff);
 	ini_get_uint16 (sct, "brightness", &bright, 1000);
