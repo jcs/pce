@@ -632,6 +632,19 @@ void sdl2_check (sdl2_t *sdl)
 {
 	static SDL_Event cur_keydown_evt = { 0 };
 	SDL_Event evt;
+	SDL_Event peek_evt;
+	unsigned int now;
+
+	if (sdl->mouse_button_delay) {
+		now = SDL_GetTicks();
+
+		SDL_PumpEvents();
+		if (SDL_PeepEvents(&peek_evt, 1, SDL_PEEKEVENT, SDL_MOUSEMOTION,
+		    SDL_MOUSEBUTTONUP) > 0 &&
+		    now - sdl->last_mouse_button_at <= sdl->mouse_button_delay) {
+			goto done;
+		}
+	}
 
 	while (SDL_PollEvent (&evt)) {
 		switch (evt.type) {
@@ -650,12 +663,18 @@ void sdl2_check (sdl2_t *sdl)
 			break;
 
 		case SDL_MOUSEBUTTONDOWN:
+			if (sdl->mouse_button_delay) {
+				sdl->last_mouse_button_at = now;
+			}
 			sdl2_event_mouse_button (sdl, 1, evt.button.button);
-			break;
+			goto done;
 
 		case SDL_MOUSEBUTTONUP:
+			if (sdl->mouse_button_delay) {
+				sdl->last_mouse_button_at = now;
+			}
 			sdl2_event_mouse_button (sdl, 0, evt.button.button);
-			break;
+			goto done;
 
 		case SDL_MOUSEMOTION:
 			sdl2_event_mouse_motion (sdl, evt.motion.xrel, evt.motion.yrel);
@@ -682,6 +701,7 @@ void sdl2_check (sdl2_t *sdl)
 			break;
 		}
 	}
+done:
 
 	if (sdl->update) {
 		sdl2_update (sdl);
@@ -880,6 +900,8 @@ void sdl2_init (sdl2_t *sdl, ini_sct_t *sct)
 
 	sdl->grave_down = 0;
 	sdl->ignore_keys = 0;
+
+	ini_get_uint16 (sct, "mouse_button_delay", &sdl->mouse_button_delay, 0);
 
 	sdl2_init_keymap_default (sdl);
 	sdl2_init_keymap_user (sdl, sct);

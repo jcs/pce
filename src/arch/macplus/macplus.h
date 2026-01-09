@@ -114,6 +114,7 @@ struct macplus_s {
 	long               mouse_delta_x;
 	long               mouse_delta_y;
 	unsigned           mouse_button;
+	unsigned long      mouse_last_click;
 
 	unsigned           disk_id;
 

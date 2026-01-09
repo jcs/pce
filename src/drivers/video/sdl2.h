@@ -56,6 +56,8 @@ typedef struct {
 	unsigned      wdw_h;
 
 	unsigned      button;
+	unsigned      mouse_button_delay;
+	unsigned long last_mouse_button_at;
 
 	char          update;
 	char          fullscreen;
