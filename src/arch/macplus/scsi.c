@@ -656,11 +656,37 @@ void mac_scsi_cmd_write_finish (mac_scsi_t *scsi, unsigned long lba, unsigned lo
 		}
 		break;
 	case MAC_SCSI_DEV_ETHERNET:
-		if (scsi->cmd[5] == 0x80) {
-			cnt = (scsi->buf[0] << 8) | scsi->buf[1];
-			mac_scsi_ethernet_write (dev, scsi->buf + 4, cnt);
-		} else {
-			mac_scsi_ethernet_write (dev, scsi->buf, cnt);
+		for (;;) {
+			if (scsi->cmd[5] == 0x80) {
+				cnt = (long)(scsi->buf[0] << 8) | scsi->buf[1];
+				mac_scsi_ethernet_write (dev, scsi->buf + 4, cnt);
+			} else {
+				/* XXX: do these non-preamble packets exist? */
+				mac_scsi_ethernet_write (dev, scsi->buf, cnt);
+				break;
+			}
+
+			/* trailing 2 bytes are size of next packet + flags */
+			cnt = (long)(scsi->buf[cnt + 4] << 8) |
+			    scsi->buf[cnt + 5];
+			if (cnt == 0)
+				break;
+
+			/*
+			 * setup scsi buffers to pretend this next packet in
+			 * the same read(6) is actually a new transaction
+			 */
+			scsi->cmd[3] = (cnt >> 8) & 0xff;
+			scsi->cmd[4] = cnt & 0xff;
+
+			scsi->buf[0] = (cnt >> 8) & 0xff;
+			scsi->buf[1] = cnt & 0xff;
+			scsi->buf[2] = 0;
+			scsi->buf[3] = 0;
+
+			scsi->buf_i = 4;
+			scsi->buf_n = 4 + cnt + 4;
+			return;
 		}
 		break;
 	}
@@ -719,9 +745,14 @@ void mac_scsi_cmd_write6 (mac_scsi_t *scsi)
 		break;
 
 	case MAC_SCSI_DEV_ETHERNET:
-		size = scsi->cmd[4] + (scsi->cmd[3] << 8);
+		size = ((long)(scsi->cmd[3]) << 8) + scsi->cmd[4];
+
 		if (scsi->cmd[5] == 0x80) {
-			size += 8;
+			/*
+			 * multi-packet capable, include 4-byte header and
+			 * 4-byte header of next packet
+			 */
+			size += 4 + 4;
 		}
 		break;
 	}
